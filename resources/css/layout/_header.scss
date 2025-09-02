@@ -1,0 +1,103 @@
+// =====================================================
+// HEADER & NAVIGATION STYLES
+// =====================================================
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-fixed);
+  background: rgba(15, 23, 42, 0.95); // Dark background with transparency (same as footer)
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--color-neutral-700); // Dark border
+  transition: all var(--transition-base);
+
+  &--scrolled {
+    box-shadow: var(--shadow-md);
+    border-bottom-color: var(--color-accent); // Purple accent border when scrolled
+    background: rgba(15, 23, 42, 0.98); // More opaque when scrolled
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+  }
+}
+
+.logo {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-50); // White text for logo
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-accent); // Purple accent on hover
+  }
+}
+
+.nav {
+  &__list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  &__item {
+    position: relative;
+  }
+
+  &__link {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-300);  // Light gray text
+    text-decoration: none;
+    padding: var(--space-2) 0;
+    transition: color var(--transition-base);
+    position: relative;
+
+    &:hover {
+      color: var(--color-neutral-50);  // White on hover
+    }
+
+    &--active {
+      color: var(--color-accent);  // Purple for active state
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-accent); // Purple underline
+        border-radius: 1px;
+      }
+    }
+  }
+}
+
+.mobile-menu-toggle {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-neutral-300); // Light gray text for mobile menu
+
+    &:hover {
+      color: var(--color-neutral-50); // White on hover
+    }
+  }
+}

@@ -1,0 +1,103 @@
+// =====================================================
+// FOOTER STYLES
+// =====================================================
+
+.footer {
+  background: var(--color-neutral-900); // Black footer background
+  color: var(--color-neutral-300); // Light gray text
+  padding: var(--space-16) 0 var(--space-8);
+  border-top: 2px solid var(--color-neutral-800);
+
+  &__content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+  }
+
+  &__section {
+    &-title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-neutral-50); // White title text
+      margin-bottom: var(--space-4);
+    }
+
+    &-text {
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--space-4);
+      color: var(--color-neutral-300); // Light gray text
+    }
+  }
+
+  &__links {
+    list-style: none;
+
+    li {
+      margin-bottom: var(--space-2);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    a {
+      color: var(--color-neutral-300); // Light gray links
+      text-decoration: none;
+      transition: color var(--transition-base);
+
+      &:hover {
+        color: var(--color-neutral-50); // White on hover
+      }
+    }
+  }
+
+  &__bottom {
+    border-top: 1px solid var(--color-neutral-800);
+    padding-top: var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: var(--space-4);
+      text-align: center;
+    }
+  }
+
+  &__copyright {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-400);
+  }
+
+  &__social {
+    display: flex;
+    gap: var(--space-4);
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--color-neutral-800);
+      border-radius: 50%;
+      color: var(--color-neutral-300);
+      text-decoration: none;
+      transition: all var(--transition-base);
+
+      &:hover {
+        background: var(--color-primary-600);
+        color: white;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}

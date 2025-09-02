@@ -1,0 +1,66 @@
+// =====================================================
+// FORM COMPONENTS
+// =====================================================
+
+// Base form styles
+.form {
+  &__group {
+    margin-bottom: var(--space-6);
+  }
+
+  &__label {
+    display: block;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-900);  // Black label text
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  &__input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    background: var(--color-neutral-50);  // White input background
+    color: var(--color-neutral-900);  // Black input text
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);  // Black focus border
+      box-shadow: 0 0 0 3px rgb(0 0 0 / 0.15);  // Black focus shadow
+    }
+
+    &::placeholder {
+      color: var(--color-neutral-500);  // Medium gray placeholder
+    }
+
+    &:invalid {
+      border-color: var(--color-error-500);
+    }
+  }
+
+  &__textarea {
+    @extend .form__input;
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  &__select {
+    @extend .form__input;
+    cursor: pointer;
+  }
+
+  &__error {
+    color: var(--color-error-500);  // Dark gray for error
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-1);
+  }
+
+  &__help {
+    color: var(--color-neutral-600);  // Dark gray help text
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-1);
+  }
+}

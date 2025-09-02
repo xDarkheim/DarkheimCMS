@@ -1,0 +1,210 @@
+// =====================================================
+// BUTTON COMPONENTS
+// =====================================================
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  // Button sizes
+  &--sm {
+    padding: 0.5rem 1rem;
+    font-size: var(--font-size-sm);
+    min-height: 2.25rem;
+  }
+
+  &--base {
+    padding: 0.75rem 1.5rem;
+    font-size: var(--font-size-base);
+    min-height: 2.75rem;
+  }
+
+  &--lg {
+    padding: 1rem 2rem;
+    font-size: var(--font-size-lg);
+    min-height: 3.25rem;
+  }
+
+  &--xl {
+    padding: 1.25rem 2.5rem;
+    font-size: var(--font-size-lg);
+    min-height: 3.75rem;
+  }
+
+  // Button variants
+  &--primary {
+    background: var(--color-primary);  // Deep dark
+    color: var(--color-light);  // White text
+
+    &:hover {
+      background: var(--color-neutral-800);  // Very dark gray hover
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--secondary {
+    background: var(--color-secondary);  // Pure white
+    color: var(--color-primary);  // Deep dark text
+    border: 2px solid var(--color-neutral-300);
+
+    &:hover {
+      background: var(--color-neutral-100);  // Off-white hover
+      border-color: var(--color-primary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--accent {
+    background: var(--color-accent);  // Purple accent
+    color: var(--color-light);  // White text
+
+    &:hover {
+      background: var(--color-accent-purple-600);  // Darker purple
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--accent-alt {
+    background: var(--color-accent-alt);  // Blue accent
+    color: var(--color-light);  // White text
+
+    &:hover {
+      background: var(--color-accent-blue-600);  // Darker blue
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--color-neutral-700);  // Dark gray text
+    border: 1px solid var(--color-neutral-300);
+
+    &:hover {
+      background: var(--color-bg-alt);  // Light gray hover
+      color: var(--color-primary);
+      border-color: var(--color-accent);
+    }
+  }
+
+  &--outline {
+    background: transparent;
+    color: var(--color-primary);  // Deep dark text
+    border: 2px solid var(--color-primary);  // Deep dark border
+
+    &:hover {
+      background: var(--color-primary);  // Deep dark background
+      color: var(--color-light);  // White text
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--success {
+    background: var(--color-success-500);  // Emerald
+    color: var(--color-light);  // White text
+
+    &:hover {
+      background: var(--color-success-600);  // Darker emerald
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--warning {
+    background: var(--color-warning-500);  // Amber
+    color: var(--color-warning-900);  // Dark amber text
+
+    &:hover {
+      background: var(--color-warning-600);  // Darker amber
+      color: var(--color-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &--danger {
+    background: var(--color-error-500);  // Rose
+    color: var(--color-light);  // White text
+
+    &:hover {
+      background: var(--color-error-600);  // Darker rose
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  // Button icons
+  &__icon {
+    &--right {
+      margin-left: 0.5rem;
+    }
+
+    &--left {
+      margin-right: 0.5rem;
+    }
+  }
+
+  // Hover effects for icons
+  &:hover .btn__icon--right {
+    transform: translateX(2px);
+  }
+
+  &:hover .btn__icon--left {
+    transform: translateX(-2px);
+  }
+
+  // Loading state
+  &--loading {
+    pointer-events: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    span {
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

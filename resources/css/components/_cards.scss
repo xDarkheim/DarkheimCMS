@@ -1,0 +1,269 @@
+// =====================================================
+// CARD COMPONENTS
+// =====================================================
+
+// Base card component
+.card {
+  background: var(--color-neutral-50);  // White card background
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  border: 2px solid var(--color-neutral-200);  // Light gray border
+
+  &:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+    border-color: var(--color-accent);  // Purple border on hover
+  }
+
+  &--dark {
+    background: var(--color-bg-dark);  // Dark background
+    border-color: var(--color-neutral-700);
+    color: var(--color-light);
+
+    &:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 20px 25px -5px rgb(139 92 246 / 0.3);
+    }
+  }
+
+  &--accent {
+    background: linear-gradient(135deg, var(--color-accent-purple-50) 0%, var(--color-accent-blue-50) 100%);
+    border-color: var(--color-accent-purple-200);
+
+    &:hover {
+      border-color: var(--color-accent);
+      transform: translateY(-4px);
+    }
+  }
+
+  &__header {
+    padding: var(--space-6);
+    border-bottom: 2px solid var(--color-neutral-200);
+    background: var(--color-neutral-100);  // Light gray header
+
+    .card--dark & {
+      background: var(--color-neutral-800);
+      border-bottom-color: var(--color-neutral-700);
+    }
+  }
+
+  &__body {
+    padding: var(--space-6);
+    color: var(--color-neutral-900);  // Black text
+
+    .card--dark & {
+      color: var(--color-light);
+    }
+  }
+
+  &__footer {
+    padding: var(--space-6);
+    border-top: 2px solid var(--color-neutral-200);
+    background: var(--color-neutral-100);  // Light gray footer
+
+    .card--dark & {
+      background: var(--color-neutral-800);
+      border-top-color: var(--color-neutral-700);
+    }
+  }
+}
+
+// Feature cards for services section
+.feature-card {
+  background: var(--color-neutral-50);  // White card background
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--color-neutral-200);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);  // Black border on hover
+    background: var(--color-neutral-100);  // Light gray hover background
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    transform: scaleX(0);
+    transition: transform var(--transition-base);
+  }
+
+  &:hover::before {
+    transform: scaleX(1);
+  }
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+    display: block;
+    color: var(--color-primary);  // Black icon color
+  }
+
+  &__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-neutral-900);  // Black title text
+    margin-bottom: var(--space-3);
+  }
+
+  &__text {
+    color: var(--color-neutral-700);  // Dark gray text
+    line-height: var(--line-height-relaxed);
+  }
+}
+
+// Product/Portfolio cards
+.product-card {
+  background: var(--color-neutral-50);  // White card background
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  border: 2px solid var(--color-neutral-200);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);  // Black border on hover
+  }
+
+  &__image {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    background: var(--color-neutral-100);  // Darker image background
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--transition-slow);
+    }
+
+    &:hover img {
+      transform: scale(1.05);
+    }
+  }
+
+  &__content {
+    padding: var(--space-6);
+  }
+
+  &__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-neutral-900);  // Black title text
+    margin-bottom: var(--space-2);
+  }
+
+  &__description {
+    color: var(--color-neutral-700);  // Dark gray description
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-4);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);  // Dark gray meta text
+  }
+}
+
+// Profile/Team cards
+.profile-card {
+  background: var(--color-neutral-50);  // White background
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  border: 2px solid var(--color-neutral-200);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);  // Black border on hover
+  }
+
+  &__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto var(--space-4);
+    background: var(--color-neutral-100);  // Light gray avatar background
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);  // Black avatar text
+    border: 2px solid var(--color-neutral-200);
+  }
+
+  &__name {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-neutral-900);  // Black name text
+    margin-bottom: var(--space-1);
+  }
+
+  &__role {
+    color: var(--color-neutral-700);  // Dark gray role
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-4);
+  }
+
+  &__bio {
+    color: var(--color-neutral-700);  // Dark gray bio
+    line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-sm);
+  }
+}
+
+// Stats cards
+.stats-card {
+  background: var(--color-neutral-50);  // White background
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  border: 2px solid var(--color-neutral-200);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);  // Black border on hover
+  }
+
+  &__number {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-extrabold);
+    color: var(--color-primary);  // Black numbers
+    line-height: 1;
+    margin-bottom: var(--space-2);
+  }
+
+  &__label {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-700);  // Dark gray label text
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}

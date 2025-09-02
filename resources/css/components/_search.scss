@@ -1,0 +1,231 @@
+// =====================================================
+// SEARCH COMPONENT STYLES
+// =====================================================
+
+.portfolio-search {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-8);
+  padding: var(--space-6);
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.03) 0%,
+    rgba(168, 85, 247, 0.03) 100%
+  );
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-4);
+  }
+}
+
+.search-input {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+
+  // Search icon
+  svg:first-child {
+    position: absolute;
+    left: var(--space-5);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-primary-500);
+    transition: var(--transition-fast);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  &__field {
+    width: 100%;
+    padding: var(--space-5) var(--space-5) var(--space-5) calc(var(--space-5) * 2.8);
+    border: 2px solid transparent;
+    border-radius: var(--radius-2xl);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    background: white;
+    color: var(--color-neutral-700);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-fast);
+    position: relative;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow:
+        var(--shadow-lg),
+        0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+      color: var(--color-neutral-400);
+      font-weight: var(--font-weight-normal);
+    }
+
+    &:hover:not(:focus) {
+      border-color: var(--color-primary-300);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+}
+
+// Clear search button
+.search-clear {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--color-neutral-100);
+  border: none;
+  border-radius: var(--radius-full);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  opacity: 0;
+  visibility: hidden;
+  z-index: 3;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &:hover {
+    background: var(--color-neutral-200);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: var(--color-neutral-500);
+  }
+}
+
+// Filter buttons container
+.portfolio-filters {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-8);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-sm);
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+}
+
+// Filter buttons - упрощенные анимации
+.filter-btn {
+  padding: var(--space-3) var(--space-6);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background: white;
+  color: var(--color-neutral-600);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-sans);
+  transition: var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+  line-height: var(--line-height-tight);
+
+  // Button text
+  span {
+    position: relative;
+    z-index: 2;
+  }
+
+  // Simple hover state
+  &:hover:not(&--active) {
+    border-color: var(--color-primary-500);
+    color: var(--color-primary-600);
+    box-shadow: var(--shadow-sm);
+  }
+
+  // Active state
+  &--active {
+    background: var(--color-primary-500);
+    border-color: var(--color-primary-500);
+    color: white;
+    box-shadow: var(--shadow-md);
+
+    &:hover {
+      background: var(--color-primary-600);
+      border-color: var(--color-primary-600);
+    }
+  }
+
+  // Focus state for accessibility
+  &:focus {
+    outline: none;
+    box-shadow:
+      0 0 0 3px rgba(59, 130, 246, 0.2),
+      var(--shadow-sm);
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--space-4);
+    text-align: center;
+  }
+}
+
+// Responsive improvements
+@media (max-width: 640px) {
+  .portfolio-search {
+    margin-bottom: var(--space-6);
+    padding: var(--space-3);
+  }
+
+  .search-input {
+    max-width: none;
+
+    &__field {
+      font-size: var(--font-size-base);
+      padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) * 2.5);
+    }
+
+    svg:first-child {
+      left: var(--space-4);
+    }
+  }
+
+  .search-clear {
+    right: var(--space-3);
+    width: 20px;
+    height: 20px;
+
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  .portfolio-filters {
+    margin-bottom: var(--space-6);
+    padding: var(--space-2);
+  }
+
+  .filter-btn {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-xs);
+  }
+}
