@@ -5,13 +5,18 @@ import AdminDashboard from './admin-pages/AdminDashboard.vue'
 import AdminPortfolio from './admin-pages/AdminPortfolio.vue'
 import AdminNews from './admin-pages/AdminNews.vue'
 import AdminUsers from './admin-pages/AdminUsers.vue'
+import AdminContactMessages from './admin-pages/AdminContactMessages.vue'
+import AdminSettings from './admin-pages/AdminSettings.vue'
 
 const routes = [
   {
     path: '/admin/login',
     name: 'admin.login',
     component: AdminLogin,
-    meta: { requiresGuest: true }
+    meta: {
+      requiresGuest: true,
+      title: 'Admin Login - Darkheim Development Studio'
+    }
   },
   {
     path: '/admin',
@@ -27,7 +32,7 @@ const routes = [
         name: 'admin.dashboard',
         component: AdminDashboard,
         meta: {
-          title: 'Dashboard',
+          title: 'Admin Dashboard - Darkheim Development Studio',
           icon: 'fas fa-tachometer-alt'
         }
       },
@@ -36,7 +41,7 @@ const routes = [
         name: 'admin.portfolio',
         component: AdminPortfolio,
         meta: {
-          title: 'Portfolio',
+          title: 'Portfolio Management - Admin Panel',
           icon: 'fas fa-briefcase'
         }
       },
@@ -45,7 +50,7 @@ const routes = [
         name: 'admin.news',
         component: AdminNews,
         meta: {
-          title: 'News',
+          title: 'News Management - Admin Panel',
           icon: 'fas fa-newspaper'
         }
       },
@@ -54,8 +59,26 @@ const routes = [
         name: 'admin.users',
         component: AdminUsers,
         meta: {
-          title: 'Users',
+          title: 'User Management - Admin Panel',
           icon: 'fas fa-users'
+        }
+      },
+      {
+        path: 'contact-messages',
+        name: 'admin.contactMessages',
+        component: AdminContactMessages,
+        meta: {
+          title: 'Contact Messages - Admin Panel',
+          icon: 'fas fa-envelope'
+        }
+      },
+      {
+        path: 'settings',
+        name: 'admin.settings',
+        component: AdminSettings,
+        meta: {
+          title: 'Settings - Admin Panel',
+          icon: 'fas fa-cog'
         }
       }
     ]
@@ -70,6 +93,13 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('admin_token')
+
+  // Устанавливаем title из meta данных маршрута только при навигации
+  if (to.meta && to.meta.title) {
+    document.title = to.meta.title
+  } else {
+    document.title = 'Admin Panel - Darkheim Development Studio'
+  }
 
   if (to.meta.requiresAuth && !token) {
     next('/admin/login')

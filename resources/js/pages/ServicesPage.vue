@@ -262,10 +262,7 @@
 
 <script>
 export default {
-  name: 'ServicesPage',
-  mounted() {
-    document.title = 'Services - Darkheim Development Studio'
-  }
+  name: 'ServicesPage'
 }
 </script>
 

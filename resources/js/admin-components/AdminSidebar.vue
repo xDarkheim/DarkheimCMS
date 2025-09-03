@@ -143,8 +143,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import adminContactService from '../admin-services/contactService.js'
 
 const props = defineProps({
   isCollapsed: {
@@ -161,6 +162,21 @@ const emit = defineEmits(['toggle', 'close-mobile'])
 
 const route = useRoute()
 const router = useRouter()
+
+// Reactive data for unread messages count
+const unreadMessagesCount = ref(0)
+
+// Load unread messages count
+const loadUnreadCount = async () => {
+  try {
+    const response = await adminContactService.getStats()
+    if (response.success) {
+      unreadMessagesCount.value = response.data.unread || 0
+    }
+  } catch (error) {
+    console.error('Failed to load unread messages count:', error)
+  }
+}
 
 // Navigation routes organized by sections
 const mainRoutes = computed(() => [
@@ -180,7 +196,12 @@ const contentRoutes = computed(() => [
   {
     name: 'admin.news',
     meta: { title: 'News', icon: 'fas fa-newspaper' },
-    badge: '3' // Example badge for new items
+    badge: null
+  },
+  {
+    name: 'admin.contactMessages',
+    meta: { title: 'Contact Messages', icon: 'fas fa-envelope' },
+    badge: unreadMessagesCount.value > 0 ? unreadMessagesCount.value.toString() : null
   }
 ])
 
@@ -188,6 +209,11 @@ const systemRoutes = computed(() => [
   {
     name: 'admin.users',
     meta: { title: 'Users', icon: 'fas fa-users' },
+    badge: null
+  },
+  {
+    name: 'admin.settings',
+    meta: { title: 'Settings', icon: 'fas fa-cog' },
     badge: null
   }
 ])
@@ -204,6 +230,13 @@ const handleLogout = () => {
   localStorage.removeItem('admin_token')
   router.push('/admin/login')
 }
+
+// Load data on mount and refresh periodically
+onMounted(() => {
+  loadUnreadCount()
+  // Refresh unread count every 30 seconds
+  setInterval(loadUnreadCount, 30000)
+})
 </script>
 
 <style lang="scss" scoped>

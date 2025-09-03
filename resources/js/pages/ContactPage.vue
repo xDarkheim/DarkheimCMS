@@ -114,6 +114,10 @@
                 <span>Send Message</span>
                 <i class="fas fa-arrow-right btn__icon btn__icon--right"></i>
               </button>
+
+              <div v-if="submitError" class="form__error form__error--submit">
+                {{ submitError }}
+              </div>
             </form>
           </div>
 
@@ -167,12 +171,14 @@
 
 <script>
 import { reactive, ref, onMounted } from 'vue'
+import contactService from '../services/contactService.js'
 
 export default {
   name: 'ContactPage',
   setup() {
     const isSubmitting = ref(false)
     const showSuccess = ref(false)
+    const submitError = ref('')
 
     const form = reactive({
       name: '',
@@ -223,20 +229,32 @@ export default {
       if (!validateForm()) return
 
       isSubmitting.value = true
+      submitError.value = ''
 
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        const response = await contactService.submit(form)
 
-        // Reset form
-        Object.keys(form).forEach(key => {
-          form[key] = ''
-        })
+        if (response.success) {
+          // Reset form
+          Object.keys(form).forEach(key => {
+            form[key] = ''
+          })
 
-        showSuccess.value = true
+          showSuccess.value = true
+        }
       } catch (error) {
         console.error('Form submission error:', error)
-        // Handle error (show error message)
+
+        if (error.errors) {
+          // Handle validation errors
+          Object.keys(error.errors).forEach(key => {
+            if (errors.hasOwnProperty(key)) {
+              errors[key] = error.errors[key][0]
+            }
+          })
+        } else {
+          submitError.value = error.message || 'An error occurred while sending your message. Please try again.'
+        }
       } finally {
         isSubmitting.value = false
       }
@@ -273,6 +291,7 @@ export default {
       errors,
       isSubmitting,
       showSuccess,
+      submitError,
       validateForm,
       submitForm,
       closeSuccess

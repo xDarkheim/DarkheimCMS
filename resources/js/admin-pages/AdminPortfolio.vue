@@ -62,7 +62,7 @@
             <div class="project-meta">
               <div class="meta-item">
                 <i class="fas fa-folder"></i>
-                <span>{{ project.category }}</span>
+                <span>{{ project.portfolio_category?.name || project.category || 'Uncategorized' }}</span>
               </div>
               <div v-if="project.client" class="meta-item">
                 <i class="fas fa-user"></i>
@@ -431,7 +431,10 @@ const technologiesString = computed({
 
 const filteredProjects = computed(() => {
   if (!filterCategory.value) return portfolios.value.data
-  return portfolios.value.data.filter(project => project.category === filterCategory.value)
+  return portfolios.value.data.filter(project => {
+    const categoryName = project.portfolio_category?.name || project.category || 'Uncategorized'
+    return categoryName === filterCategory.value
+  })
 })
 
 const loadProjects = async (page = 1) => {
@@ -458,26 +461,35 @@ const loadProjects = async (page = 1) => {
 
 const loadCategories = async () => {
   try {
-    // Используем новый API endpoint для получения активных категорий
-    const response = await adminApiService.get('/admin/portfolio-categories/active')
-    if (response.data && response.data.success) {
-      categories.value = response.data.data.map(cat => ({
+    // Используем существующий API endpoint для получения категорий портфолио
+    const response = await adminApiService.getPortfolioCategories()
+    if (response.data && Array.isArray(response.data)) {
+      categories.value = response.data.map(cat => ({
         id: cat.id,
         name: cat.name,
-        slug: cat.slug,
-        icon: cat.icon,
-        color: cat.color
+        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
+        icon: cat.icon || '',
+        color: cat.color || ''
       }))
     } else {
-      // Fallback к старому методу если новый API не работает
-      const fallbackResponse = await adminApiService.getPortfolioCategories()
-      categories.value = fallbackResponse.data || []
+      console.warn('Portfolio categories response format unexpected:', response.data)
+      // Fallback: extract unique categories from existing projects
+      const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.portfolio_category?.name || p.category).filter(Boolean))]
+      categories.value = uniqueCategories.map((name, index) => ({
+        id: index + 1,
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, '-')
+      }))
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
-    // Fallback: extract categories from existing projects
-    const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.category).filter(Boolean))]
-    categories.value = uniqueCategories.map(name => ({ id: name, name, slug: name.toLowerCase().replace(/\s+/g, '-') }))
+    // Fallback: extract unique categories from existing projects
+    const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.portfolio_category?.name || p.category).filter(Boolean))]
+    categories.value = uniqueCategories.map((name, index) => ({
+      id: index + 1,
+      name,
+      slug: name.toLowerCase().replace(/\s+/g, '-')
+    }))
   }
 }
 
@@ -505,11 +517,37 @@ const openCreateModal = () => {
 
 const editProject = (project) => {
   editingProject.value = project
+
+  // Добавляем отладочную информацию для диагностики проблемы
+  console.log('Editing project:', project)
+  console.log('Project category data:', {
+    portfolio_category: project.portfolio_category,
+    portfolio_category_id: project.portfolio_category_id,
+    category: project.category
+  })
+  console.log('Available categories:', categories.value)
+
+  // Определяем правильный ID категории
+  let categoryId = ''
+  if (project.portfolio_category && project.portfolio_category.id) {
+    categoryId = project.portfolio_category.id
+  } else if (project.portfolio_category_id) {
+    categoryId = project.portfolio_category_id
+  } else if (project.category) {
+    // Ищем категорию по имени в списке доступных категорий
+    const foundCategory = categories.value.find(cat => cat.name === project.category)
+    if (foundCategory) {
+      categoryId = foundCategory.id
+    }
+  }
+
+  console.log('Selected category ID:', categoryId)
+
   form.value = {
     ...project,
     gallery_images: project.gallery_images || [],
     technologies: project.technologies || [],
-    portfolio_category_id: project.portfolio_category_id || ''
+    portfolio_category_id: categoryId
   }
   error.value = ''
   showModal.value = true

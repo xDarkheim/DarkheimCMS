@@ -7,7 +7,7 @@
         <meta name="keywords" content="web development, laravel, vue.js, responsive design, digital solutions">
         <meta name="author" content="Darkheim Web Development">
 
-        <title>Darkheim Web Development - Innovative Digital Solutions</title>
+        <title>Darkheim Development Studio - Professional Web Development</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,27 +17,6 @@
         @vite(['resources/css/app.scss', 'resources/js/app.js'])
     </head>
     <body class="antialiased">
-        <div id="app">
-            <!-- Header Navigation -->
-            <darkheim-header></darkheim-header>
-
-            <!-- Hero Section -->
-            <darkheim-hero></darkheim-hero>
-
-            <!-- Services Section -->
-            <darkheim-services></darkheim-services>
-
-            <!-- Portfolio Section -->
-            <darkheim-portfolio></darkheim-portfolio>
-
-            <!-- About Section -->
-            <darkheim-about></darkheim-about>
-
-            <!-- Contact Section -->
-            <darkheim-contact></darkheim-contact>
-
-            <!-- Footer -->
-            <darkheim-footer></darkheim-footer>
-        </div>
+        <div id="app"></div>
     </body>
 </html>

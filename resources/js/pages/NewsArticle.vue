@@ -236,12 +236,21 @@ export default {
         const response = await axios.get(`/api/news/${slug}`)
         article.value = response.data.data
 
+        // Используем setPageTitle вместо прямого обращения к document.title
+        if (article.value && article.value.title) {
+          const { setPageTitle } = await import('../composables/usePageTitle.js')
+          setPageTitle(article.value.title)
+        }
+
         // Load related content after getting the article
         loadRelatedArticles()
         loadNavigation()
       } catch (error) {
         console.error('Failed to load article:', error)
         article.value = null
+        // Используем setPageTitle для fallback
+        const { setPageTitle } = await import('../composables/usePageTitle.js')
+        setPageTitle('Article Not Found')
       } finally {
         loading.value = false
       }

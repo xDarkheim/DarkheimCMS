@@ -13,37 +13,58 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomePage
+    component: HomePage,
+    meta: {
+      title: 'Darkheim Development Studio - Professional Web Development'
+    }
   },
   {
     path: '/about',
     name: 'about',
-    component: AboutPage
+    component: AboutPage,
+    meta: {
+      title: 'About Us - Darkheim Development Studio'
+    }
   },
   {
     path: '/services',
     name: 'services',
-    component: ServicesPage
+    component: ServicesPage,
+    meta: {
+      title: 'Our Services - Web Development & Design'
+    }
   },
   {
     path: '/portfolio',
     name: 'portfolio',
-    component: PortfolioPage
+    component: PortfolioPage,
+    meta: {
+      title: 'Portfolio - Our Work & Projects'
+    }
   },
   {
     path: '/contact',
     name: 'contact',
-    component: ContactPage
+    component: ContactPage,
+    meta: {
+      title: 'Contact Us - Get Your Project Started'
+    }
   },
   {
     path: '/news',
     name: 'news',
-    component: NewsPage
+    component: NewsPage,
+    meta: {
+      title: 'News & Blog - Latest Updates'
+    }
   },
   {
     path: '/news/:slug',
     name: 'news-article',
-    component: NewsArticle
+    component: NewsArticle,
+    meta: {
+      title: 'News Article - Darkheim Development Studio'
+    }
   }
 ]
 
@@ -62,6 +83,17 @@ const router = createRouter({
     }
     return { top: 0 }
   }
+})
+
+// Guard для обновления title страницы
+router.beforeEach((to, from, next) => {
+  // Устанавливаем title из meta данных маршрута только при навигации
+  if (to.meta && to.meta.title) {
+    document.title = to.meta.title
+  } else {
+    document.title = 'Darkheim Development Studio'
+  }
+  next()
 })
 
 export default router

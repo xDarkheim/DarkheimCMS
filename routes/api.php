@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,9 @@ Route::prefix('news')->group(function () {
     Route::get('/all-categories', [NewsController::class, 'allCategories']);
     Route::get('/{slug}', [NewsController::class, 'show']);
 });
+
+// Public Contact Form
+Route::post('/contact', [ContactController::class, 'submit']);
 
 // Admin Routes (protected by Sanctum)
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
@@ -83,4 +87,13 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Portfolio categories for admin (legacy endpoint)
     Route::get('/portfolios-categories', [AdminPortfolioController::class, 'categories']);
+
+    // Contact Messages Management
+    Route::prefix('contact-messages')->group(function () {
+        Route::get('/', [ContactController::class, 'index']);
+        Route::get('/stats', [ContactController::class, 'stats']);
+        Route::get('/{contactMessage}', [ContactController::class, 'show']);
+        Route::post('/{contactMessage}/mark-as-read', [ContactController::class, 'markAsRead']);
+        Route::delete('/{contactMessage}', [ContactController::class, 'destroy']);
+    });
 });

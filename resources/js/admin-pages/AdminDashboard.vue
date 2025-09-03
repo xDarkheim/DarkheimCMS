@@ -50,15 +50,16 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon activity">
-          <i class="fas fa-chart-line"></i>
+        <div class="stat-icon contact-messages">
+          <i class="fas fa-envelope"></i>
         </div>
         <div class="stat-content">
-          <h3>94.5%</h3>
-          <p>System Health</p>
-          <div class="stat-trend positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>All systems operational</span>
+          <h3>{{ stats.contact_messages_count || 0 }}</h3>
+          <p>Contact Messages</p>
+          <div class="stat-trend" :class="{ 'urgent': stats.contact_messages_unread > 0 }">
+            <i class="fas fa-exclamation-circle" v-if="stats.contact_messages_unread > 0"></i>
+            <i class="fas fa-check-circle" v-else></i>
+            <span>{{ stats.contact_messages_unread || 0 }} unread</span>
           </div>
         </div>
       </div>
@@ -96,6 +97,19 @@
             <div class="action-content">
               <h4>Write Article</h4>
               <p>Share news and updates</p>
+            </div>
+          </router-link>
+
+          <router-link to="/admin/contact-messages" class="action-card">
+            <div class="action-icon contact-messages">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="action-content">
+              <h4>View Messages</h4>
+              <p>Manage customer inquiries</p>
+              <span v-if="stats.contact_messages_unread > 0" class="unread-badge">
+                {{ stats.contact_messages_unread }} unread
+              </span>
             </div>
           </router-link>
         </div>
@@ -144,17 +158,22 @@ import { ref, onMounted } from 'vue'
 import { useAdminAuth } from '../admin-composables/useAdminAuth'
 import { adminApiService } from '../admin-services/adminApi'
 
-const { user } = useAdminAuth()
+const { user, initializeAuth } = useAdminAuth()
 
 const stats = ref({
   users_count: 0,
   portfolios_count: 0,
   news_count: 0,
   published_news_count: 0,
-  featured_portfolios_count: 0
+  featured_portfolios_count: 0,
+  contact_messages_count: 0,
+  contact_messages_unread: 0
 })
 
 onMounted(async () => {
+  // Initialize authentication state to load user data from localStorage
+  initializeAuth()
+
   try {
     const response = await adminApiService.getStats()
     stats.value = response.data
@@ -227,6 +246,7 @@ onMounted(async () => {
 .stat-icon.portfolio { background: linear-gradient(135deg, #f093fb, #f5576c); }
 .stat-icon.news { background: linear-gradient(135deg, #4facfe, #00f2fe); }
 .stat-icon.activity { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.stat-icon.contact-messages { background: linear-gradient(135deg, #ff758c, #ff7eb3); }
 
 .stat-content h3 {
   font-size: 2rem;
@@ -318,6 +338,7 @@ onMounted(async () => {
 .action-icon.users { background: #667eea; }
 .action-icon.portfolio { background: #f5576c; }
 .action-icon.news { background: #4facfe; }
+.action-icon.contact-messages { background: #ff758c; }
 
 .action-content h4 {
   font-size: 1rem;
@@ -330,6 +351,25 @@ onMounted(async () => {
   font-size: 0.85rem;
   color: #7f8c8d;
   margin: 0;
+}
+
+.unread-badge {
+  display: inline-block;
+  background: #ff4757;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.stat-trend.urgent {
+  color: #ff4757;
+}
+
+.stat-trend.urgent i {
+  color: #ff4757;
 }
 
 .activity-list {

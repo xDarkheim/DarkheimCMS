@@ -15,7 +15,10 @@ class PortfolioController extends Controller
      */
     public function index()
     {
-        $portfolios = Portfolio::orderBy('sort_order')->orderBy('created_at', 'desc')->paginate(15);
+        $portfolios = Portfolio::with('portfolioCategory')
+            ->orderBy('sort_order')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
         return response()->json($portfolios);
     }
 
@@ -80,7 +83,7 @@ class PortfolioController extends Controller
      */
     public function show(Portfolio $portfolio)
     {
-        return response()->json($portfolio);
+        return response()->json($portfolio->load('portfolioCategory'));
     }
 
     /**
