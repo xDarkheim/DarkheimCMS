@@ -2,75 +2,220 @@
   <div class="home-page">
     <!-- Hero Section -->
     <section class="hero-section">
+      <div class="hero-background">
+        <div class="hero-particles"></div>
+        <div class="hero-gradient"></div>
+      </div>
+
       <div class="container">
         <div class="hero-content">
           <div class="hero-left">
             <div class="intro-badge">
               <i class="fas fa-code"></i>
               <span>Development Studio</span>
+              <div class="badge-glow"></div>
             </div>
+
             <h1 class="hero-title">
-              Darkheim<br>
-              <span class="highlight">Development Studio</span>
+              <span class="title-line">Darkheim</span>
+              <span class="title-line highlight">Development Studio</span>
             </h1>
+
             <p class="hero-subtitle">
-              We specialize in creating professional websites for small businesses.
+              We specialize in creating <strong>professional websites</strong> for small businesses.
               From simple landing pages to complex e-commerce systems - we build
-              digital solutions that help your business grow.
+              <em>digital solutions</em> that help your business grow online.
             </p>
-            <div class="hero-actions">
-              <router-link to="/contact" class="btn btn-primary btn-large">
+
+            <div class="hero-features">
+              <div class="feature-item">
                 <i class="fas fa-rocket"></i>
-                Start Project
+                <span>Fast Delivery</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile First</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Secure & Reliable</span>
+              </div>
+            </div>
+
+            <div class="hero-actions">
+              <router-link to="/contact" class="btn btn-primary btn-hero">
+                <span class="btn-content">
+                  <i class="fas fa-rocket"></i>
+                  Start Your Project
+                </span>
+                <div class="btn-glow"></div>
               </router-link>
-              <router-link to="/portfolio" class="btn btn-secondary btn-large">
-                <i class="fas fa-eye"></i>
-                View Portfolio
+
+              <router-link to="/portfolio" class="btn btn-secondary btn-hero">
+                <span class="btn-content">
+                  <i class="fas fa-eye"></i>
+                  View Portfolio
+                </span>
               </router-link>
             </div>
 
-            <!-- Quick Stats -->
+            <!-- Enhanced Stats -->
             <div class="hero-stats">
               <div class="stat-item">
-                <div class="stat-number">5</div>
-                <div class="stat-label">Completed Projects</div>
+                <div class="stat-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">15+</div>
+                  <div class="stat-label">Completed Projects</div>
+                </div>
               </div>
+
               <div class="stat-item">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">Client Satisfaction</div>
+                <div class="stat-icon">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">100%</div>
+                  <div class="stat-label">Client Satisfaction</div>
+                </div>
               </div>
+
               <div class="stat-item">
-                <div class="stat-number">10</div>
-                <div class="stat-label">Months Experience</div>
+                <div class="stat-icon">
+                  <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">2-4</div>
+                  <div class="stat-label">Weeks Delivery</div>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-number">5.0</div>
+                  <div class="stat-label">Average Rating</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="hero-trust">
+              <p class="trust-text">Trusted by local businesses</p>
+              <div class="trust-logos">
+                <div class="trust-item">
+                  <i class="fas fa-store"></i>
+                  <span>Retail</span>
+                </div>
+                <div class="trust-item">
+                  <i class="fas fa-utensils"></i>
+                  <span>Restaurants</span>
+                </div>
+                <div class="trust-item">
+                  <i class="fas fa-briefcase"></i>
+                  <span>Services</span>
+                </div>
+                <div class="trust-item">
+                  <i class="fas fa-home"></i>
+                  <span>Real Estate</span>
+                </div>
               </div>
             </div>
           </div>
 
           <div class="hero-right">
-            <div class="hero-image">
-              <div class="code-preview">
+            <div class="hero-visual">
+              <!-- Enhanced Code Preview -->
+              <div class="code-window">
                 <div class="code-header">
-                  <span class="dot red"></span>
-                  <span class="dot yellow"></span>
-                  <span class="dot green"></span>
-                  <span class="filename">index.php</span>
+                  <div class="window-controls">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                  </div>
+                  <div class="window-title">
+                    <i class="fab fa-php"></i>
+                    <span class="filename">portfolio-controller.php</span>
+                  </div>
+                  <div class="window-actions">
+                    <i class="fas fa-search"></i>
+                    <i class="fas fa-cog"></i>
+                  </div>
                 </div>
+
                 <div class="code-content">
-                  <div class="code-line"><span class="purple">&lt;?php</span></div>
-                  <div class="code-line"></div>
-                  <div class="code-line"><span class="blue">namespace</span> <span class="green">App\Http\Controllers</span>;</div>
-                  <div class="code-line"></div>
-                  <div class="code-line"><span class="blue">use</span> <span class="green">Illuminate\Http\Request</span>;</div>
-                  <div class="code-line"></div>
-                  <div class="code-line"><span class="blue">class</span> <span class="yellow">PortfolioController</span> <span class="blue">extends</span> <span class="yellow">Controller</span></div>
-                  <div class="code-line">{</div>
-                  <div class="code-line">&nbsp;&nbsp;<span class="blue">public function</span> <span class="yellow">index</span>()</div>
-                  <div class="code-line">&nbsp;&nbsp;{</div>
-                  <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="purple">$projects</span> = <span class="yellow">Portfolio</span>::<span class="yellow">all</span>();</div>
-                  <div class="code-line"></div>
-                  <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="blue">return</span> <span class="yellow">view</span>(<span class="green">'portfolio'</span>, <span class="yellow">compact</span>(<span class="green">'projects'</span>));</div>
-                  <div class="code-line">&nbsp;&nbsp;}</div>
-                  <div class="code-line">}</div>
+                  <div class="line-numbers">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                    <span>6</span>
+                    <span>7</span>
+                    <span>8</span>
+                    <span>9</span>
+                    <span>10</span>
+                    <span>11</span>
+                    <span>12</span>
+                    <span>13</span>
+                    <span>14</span>
+                  </div>
+
+                  <div class="code-text">
+                    <div class="code-line"><span class="keyword">&lt;?php</span></div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="keyword">namespace</span> <span class="string">App\Http\Controllers</span>;</div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="keyword">use</span> <span class="string">Illuminate\Http\Request</span>;</div>
+                    <div class="code-line"><span class="keyword">use</span> <span class="string">App\Models\Darkheim</span>;</div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="keyword">class</span> <span class="function">DarkheimController</span> <span class="keyword">extends</span> <span class="function">Controller</span></div>
+                    <div class="code-line">{</div>
+                    <div class="code-line">&nbsp;&nbsp;<span class="keyword">public function</span> <span class="function">index</span>()</div>
+                    <div class="code-line">&nbsp;&nbsp;{</div>
+                    <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="variable">$projects</span> = <span class="function">Darkheim</span>::<span class="function">published</span>()-><span class="function">get</span>();</div>
+                    <div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> <span class="function">response</span>()-><span class="function">json</span>(<span class="variable">$projects</span>);</div>
+                    <div class="code-line">&nbsp;&nbsp;}</div>
+                    <div class="code-line">}<span class="cursor">|</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Floating Elements -->
+              <div class="floating-elements">
+                <div class="float-element" style="--delay: 0s; --duration: 3s;">
+                  <i class="fab fa-laravel"></i>
+                </div>
+                <div class="float-element" style="--delay: 1s; --duration: 4s;">
+                  <i class="fab fa-vuejs"></i>
+                </div>
+                <div class="float-element" style="--delay: 2s; --duration: 3.5s;">
+                  <i class="fab fa-js-square"></i>
+                </div>
+                <div class="float-element" style="--delay: 0.5s; --duration: 4.5s;">
+                  <i class="fab fa-html5"></i>
+                </div>
+                <div class="float-element" style="--delay: 1.5s; --duration: 3.2s;">
+                  <i class="fab fa-css3-alt"></i>
+                </div>
+              </div>
+
+              <!-- Achievement Badges -->
+              <div class="achievement-badges">
+                <div class="achievement-badge" style="--delay: 2s;">
+                  <i class="fas fa-trophy"></i>
+                  <span>Best Design</span>
+                </div>
+                <div class="achievement-badge" style="--delay: 2.5s;">
+                  <i class="fas fa-bolt"></i>
+                  <span>Fast Loading</span>
+                </div>
+                <div class="achievement-badge" style="--delay: 3s;">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span>Mobile Ready</span>
                 </div>
               </div>
             </div>

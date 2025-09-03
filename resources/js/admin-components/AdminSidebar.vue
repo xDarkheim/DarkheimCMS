@@ -15,7 +15,7 @@
         <transition name="fade">
           <div v-if="!isCollapsed" class="logo-text">
             <h2>Admin Panel</h2>
-            <span>Portfolio CMS</span>
+            <span>Darkheim CMS</span>
           </div>
         </transition>
       </div>

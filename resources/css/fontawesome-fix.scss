@@ -312,6 +312,21 @@
 .fa-headphones::before { content: "\f025"; }
 .fa-speaker::before { content: "\f1c0"; }
 
+/* Brand icons needed for HomePage.vue */
+.fa-laravel::before { content: "\f3bd"; }
+.fa-vuejs::before { content: "\f41f"; }
+.fa-js-square::before { content: "\f3b9"; }
+.fa-html5::before { content: "\f13b"; }
+.fa-css3-alt::before { content: "\f38b"; }
+.fa-php::before { content: "\f457"; }
+
+/* Specific icons used in HomePage.vue */
+.fa-check-circle::before { content: "\f058"; }
+.fa-store::before { content: "\f54e"; }
+.fa-utensils::before { content: "\f2e7"; }
+.fa-shield-alt::before { content: "\f3ed"; }
+.fa-mobile-alt::before { content: "\f3cd"; }
+
 /* Size modifiers */
 .fa-xs { font-size: 0.75em; }
 .fa-sm { font-size: 0.875em; }
