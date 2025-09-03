@@ -18,7 +18,6 @@ class TeamMember extends Model
         'department',
         'bio',
         'email',
-        'phone',
         'avatar',
         'skills',
         'social_links',
@@ -34,7 +33,9 @@ class TeamMember extends Model
     protected $casts = [
         'joined_date' => 'date',
         'show_on_website' => 'boolean',
-        'priority' => 'integer'
+        'priority' => 'integer',
+        'skills' => 'array',
+        'social_links' => 'array'
     ];
 
     /**

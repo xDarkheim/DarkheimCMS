@@ -543,11 +543,36 @@ const editProject = (project) => {
 
   console.log('Selected category ID:', categoryId)
 
+  // Правильная обработка даты - преобразование в формат YYYY-MM-DD для input[type="date"]
+  let completedAtFormatted = ''
+  if (project.completed_at) {
+    try {
+      const date = new Date(project.completed_at)
+      if (!isNaN(date.getTime())) {
+        // Форматируем дату в формат YYYY-MM-DD
+        completedAtFormatted = date.toISOString().split('T')[0]
+      }
+    } catch (error) {
+      console.warn('Error parsing completed_at date:', project.completed_at, error)
+    }
+  }
+
+  // Правильная обработка всех полей формы
   form.value = {
-    ...project,
-    gallery_images: project.gallery_images || [],
-    technologies: project.technologies || [],
-    portfolio_category_id: categoryId
+    title: project.title || '',
+    description: project.description || '',
+    short_description: project.short_description || '',
+    image_url: project.image_url || '',
+    gallery_images: Array.isArray(project.gallery_images) ? [...project.gallery_images] : [],
+    project_url: project.project_url || '',
+    github_url: project.github_url || '',
+    technologies: Array.isArray(project.technologies) ? [...project.technologies] : [],
+    portfolio_category_id: categoryId,
+    client: project.client || '',
+    completed_at: completedAtFormatted,
+    is_featured: Boolean(project.is_featured),
+    is_published: Boolean(project.is_published),
+    sort_order: Number(project.sort_order) || 0
   }
   error.value = ''
   showModal.value = true
@@ -572,11 +597,31 @@ const saveProject = async () => {
     saving.value = true
     error.value = ''
 
-    // Filter out empty gallery images
+    // Подготавливаем данные для отправки с правильной обработкой всех типов
     const cleanedForm = {
       ...form.value,
-      gallery_images: form.value.gallery_images.filter(img => img.trim())
+      // Очищаем пустые изображения галереи
+      gallery_images: form.value.gallery_images.filter(img => img && img.trim()),
+      // Убеждаемся что массив технологий корректно обработан
+      technologies: Array.isArray(form.value.technologies) ? form.value.technologies : [],
+      // Правильно обрабатываем числовые значения
+      sort_order: Number(form.value.sort_order) || 0,
+      portfolio_category_id: form.value.portfolio_category_id || null,
+      // Обрабатываем булевы значения
+      is_featured: Boolean(form.value.is_featured),
+      is_published: Boolean(form.value.is_published),
+      // Обрабатываем дату - если пустая, отправляем null
+      completed_at: form.value.completed_at || null
     }
+
+    // Удаляем пустые строковые поля для более чистых данных
+    Object.keys(cleanedForm).forEach(key => {
+      if (typeof cleanedForm[key] === 'string' && cleanedForm[key].trim() === '') {
+        cleanedForm[key] = null
+      }
+    })
+
+    console.log('Sending cleaned form data:', cleanedForm)
 
     if (editingProject.value) {
       await adminApiService.updatePortfolio(editingProject.value.id, cleanedForm)
@@ -587,8 +632,24 @@ const saveProject = async () => {
     closeModal()
     loadProjects(portfolios.value.current_page)
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to save project'
     console.error('Failed to save project:', err)
+
+    // Более подробная обработка ошибок
+    if (err.response?.data?.errors) {
+      // Если сервер вернул ошибки валидации
+      const validationErrors = err.response.data.errors
+      const errorMessages = Object.values(validationErrors).flat()
+      error.value = errorMessages.join('; ')
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else if (err.response?.status === 422) {
+      error.value = 'Validation failed. Please check your input data.'
+    } else if (err.response?.status === 401) {
+      error.value = 'Authentication failed. Please log in again.'
+      isAuthenticated.value = false
+    } else {
+      error.value = 'Failed to save project. Please try again.'
+    }
   } finally {
     saving.value = false
   }

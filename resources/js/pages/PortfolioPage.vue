@@ -24,40 +24,38 @@
         </div>
 
         <!-- Search and Filters -->
-        <template v-else>
-          <div class="portfolio-filters animate-fade-in">
-            <button
-              @click="setActiveCategory('all')"
-              class="filter-btn"
-              :class="{ 'filter-btn--active': activeCategory === 'all' }"
-            >
-              <span>All Projects</span>
-            </button>
-            <button
-              v-for="category in categories"
-              :key="category.id"
-              @click="setActiveCategory(category.id)"
-              class="filter-btn"
-              :class="{ 'filter-btn--active': activeCategory === category.id }"
-            >
-              <span>{{ category.name }}</span>
-            </button>
-          </div>
-        </template>
+        <div class="portfolio-filters animate-fade-in">
+          <button
+            @click="setActiveCategory('all')"
+            class="filter-btn"
+            :class="{ 'filter-btn--active': activeCategory === 'all' }"
+          >
+            <span>All Projects</span>
+          </button>
+          <button
+            v-for="category in categories"
+            :key="category.id"
+            @click="setActiveCategory(category.id)"
+            class="filter-btn"
+            :class="{ 'filter-btn--active': activeCategory === category.id }"
+          >
+            <span>{{ category.name }}</span>
+          </button>
+        </div>
       </div>
     </section>
 
     <!-- Portfolio Grid -->
     <section class="section" v-if="!loading && !error">
       <div class="container">
-        <div v-if="portfolios.length === 0" class="empty-state">
+        <div v-if="displayedProjects.length === 0" class="empty-state">
           <p>No projects found matching your criteria.</p>
         </div>
 
         <template v-else>
           <div class="portfolio-grid animate-slide-up">
             <div
-              v-for="project in portfolios"
+              v-for="project in displayedProjects"
               :key="project.id"
               class="portfolio-item"
               @click="openProjectModal(project)"
@@ -69,16 +67,35 @@
                   :alt="project.title"
                   class="portfolio-image"
                 />
-                <div v-else class="portfolio-placeholder">{{ project.category }}</div>
+                <div v-else class="portfolio-placeholder" :class="`portfolio-placeholder--${project.categoryId}`">
+                  <div class="portfolio-placeholder__icon">
+                    <i :class="getPlaceholderIcon(project.categoryId)"></i>
+                  </div>
+                  <span class="portfolio-placeholder__text">{{ project.category }}</span>
+                </div>
                 <div class="portfolio-item__overlay">
                   <div class="portfolio-item__actions">
                     <button class="portfolio-action-btn eye-btn" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <a :href="project.project_url" target="_blank" class="portfolio-action-btn external-btn" v-if="project.project_url" @click.stop title="View Live Project">
+                    <a
+                      v-if="project.project_url"
+                      :href="project.project_url"
+                      target="_blank"
+                      class="portfolio-action-btn external-btn"
+                      @click.stop
+                      title="View Live Project"
+                    >
                       <i class="fas fa-external-link-alt"></i>
                     </a>
-                    <a :href="project.github_url" target="_blank" class="portfolio-action-btn github-btn" v-if="project.github_url" @click.stop title="View Source Code">
+                    <a
+                      v-if="project.github_url"
+                      :href="project.github_url"
+                      target="_blank"
+                      class="portfolio-action-btn github-btn"
+                      @click.stop
+                      title="View Source Code"
+                    >
                       <i class="fab fa-github"></i>
                     </a>
                   </div>
@@ -190,40 +207,57 @@
         </div>
 
         <div class="project-modal__content">
-          <div v-if="selectedProject.gallery_images?.length" class="project-modal__gallery">
-            <div class="gallery">
+          <!-- Левая колонка с изображениями -->
+          <div class="project-modal__left-column">
+            <!-- Основное изображение проекта -->
+            <div class="project-modal__main-image" v-if="selectedProject.image_url">
               <img
-                v-for="(image, index) in selectedProject.gallery_images"
-                :key="index"
-                :src="image"
-                :alt="`${selectedProject.title} gallery image ${index + 1}`"
-                class="gallery-image"
+                :src="selectedProject.image_url"
+                :alt="selectedProject.title"
+                class="main-project-image"
               />
             </div>
-          </div>
 
-          <p class="project-modal__description">{{ selectedProject.description }}</p>
-
-          <div class="project-modal__details">
-            <div class="detail-section" v-if="selectedProject.technologies?.length">
-              <h3>Technologies Used</h3>
-              <div class="tech-list">
-                <span v-for="tech in selectedProject.technologies" :key="tech" class="tech-tag">
-                  {{ tech }}
-                </span>
+            <!-- Дополнительная галерея изображений -->
+            <div v-if="selectedProject.gallery_images?.length" class="project-modal__gallery">
+              <h3>Project Gallery</h3>
+              <div class="gallery">
+                <img
+                  v-for="(image, index) in selectedProject.gallery_images"
+                  :key="index"
+                  :src="image"
+                  :alt="`${selectedProject.title} gallery image ${index + 1}`"
+                  class="gallery-image"
+                />
               </div>
             </div>
           </div>
 
-          <div class="project-modal__actions" v-if="selectedProject.project_url || selectedProject.github_url">
-            <a v-if="selectedProject.project_url" :href="selectedProject.project_url" target="_blank" class="btn btn--primary btn--base">
-              <span>View Live Project</span>
-              <i class="fas fa-external-link-alt btn__icon btn__icon--right"></i>
-            </a>
-            <a v-if="selectedProject.github_url" :href="selectedProject.github_url" target="_blank" class="btn btn--outline btn--base">
-              <span>View on GitHub</span>
-              <i class="fab fa-github btn__icon btn__icon--right"></i>
-            </a>
+          <!-- Правая колонка с текстом и деталями -->
+          <div class="project-modal__right-column">
+            <p class="project-modal__description">{{ selectedProject.description }}</p>
+
+            <div class="project-modal__details">
+              <div class="detail-section" v-if="selectedProject.technologies?.length">
+                <h3>Technologies Used</h3>
+                <div class="tech-list">
+                  <span v-for="tech in selectedProject.technologies" :key="tech" class="tech-tag">
+                    {{ tech }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="project-modal__actions" v-if="selectedProject.project_url || selectedProject.github_url">
+              <a v-if="selectedProject.project_url" :href="selectedProject.project_url" target="_blank" class="btn btn--primary btn--base">
+                <span>View Live Project</span>
+                <i class="fas fa-external-link-alt btn__icon btn__icon--right"></i>
+              </a>
+              <a v-if="selectedProject.github_url" :href="selectedProject.github_url" target="_blank" class="btn btn--outline btn--base">
+                <span>View on GitHub</span>
+                <i class="fab fa-github btn__icon btn__icon--right"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -249,6 +283,25 @@ export default {
     const selectedProject = ref(null)
     const currentPage = ref(1)
     const isInitialLoad = ref(true)
+
+    // Обновляем computed свойство для отображаемых проектов
+    const displayedProjects = computed(() => {
+      const realProjects = portfolios.value || []
+
+      // Если выбрана категория "all"
+      if (activeCategory.value === 'all') {
+        return realProjects
+      }
+
+      // Для конкретной категории
+      const selectedCategory = categories.value.find(cat => cat.id === activeCategory.value)
+      if (!selectedCategory) {
+        return []
+      }
+
+      // Фильтруем реальные проекты по выбранной категории
+      return realProjects.filter(p => p.category === selectedCategory.name)
+    })
 
     // Load portfolios from API
     const loadPortfolios = async (page = 1, categoryName = undefined) => {
@@ -412,6 +465,20 @@ export default {
       })
     }
 
+    // Function to get placeholder icons for different categories
+    const getPlaceholderIcon = (categoryId) => {
+      const iconMap = {
+        'web-development': 'fas fa-globe',
+        'mobile-applications': 'fas fa-mobile-alt',
+        'ecommerce-solutions': 'fas fa-shopping-cart',
+        'business-applications': 'fas fa-briefcase',
+        'landing-pages': 'fas fa-rocket',
+        'portfolio-websites': 'fas fa-image',
+        'api-development': 'fas fa-code'
+      }
+      return iconMap[categoryId] || 'fas fa-project-diagram'
+    }
+
     onMounted(async () => {
       // Проверяем URL параметры при загрузке страницы
       const urlParams = new URLSearchParams(window.location.search)
@@ -494,7 +561,9 @@ export default {
       nextPage,
       prevPage,
       loadPortfolios,
-      formatDate
+      formatDate,
+      displayedProjects,
+      getPlaceholderIcon
     }
   }
 }

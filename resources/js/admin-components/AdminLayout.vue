@@ -6,11 +6,6 @@
     />
 
     <div class="admin-main" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <AdminTopbar
-        @toggle-sidebar="toggleSidebar"
-        :is-sidebar-collapsed="isSidebarCollapsed"
-      />
-
       <main class="admin-content">
         <router-view />
       </main>
@@ -28,7 +23,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import AdminSidebar from './AdminSidebar.vue'
-import AdminTopbar from './AdminTopbar.vue'
 
 const isSidebarCollapsed = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -90,7 +84,7 @@ onUnmounted(() => {
 
 .admin-content {
   padding: 1.5rem;
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
 }
 
 .mobile-overlay {

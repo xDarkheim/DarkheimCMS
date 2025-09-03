@@ -8,7 +8,7 @@
         <span class="logo__text text-gradient">Darkheim</span>
       </router-link>
 
-      <nav class="nav">
+      <nav class="nav" @mouseleave="closeAllDropdowns">
         <ul class="nav__list">
           <li class="nav__item">
             <router-link
@@ -279,7 +279,13 @@ export default {
       isMobileMenuOpen.value = false
     }
 
+    const closeAllDropdowns = () => {
+      Object.keys(dropdowns.value).forEach(k => (dropdowns.value[k] = false))
+    }
+
     const showDropdown = (menu) => {
+      // ensure only one dropdown is open at a time
+      closeAllDropdowns()
       dropdowns.value[menu] = true
     }
 
@@ -289,10 +295,18 @@ export default {
 
     onMounted(() => {
       window.addEventListener('scroll', handleScroll)
+      // close dropdowns when clicking outside header
+      document.addEventListener('click', (e) => {
+        const headerEl = document.querySelector('.header')
+        if (headerEl && !headerEl.contains(e.target)) {
+          closeAllDropdowns()
+        }
+      })
     })
 
     onUnmounted(() => {
       window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('click', () => {})
     })
 
     return {
@@ -302,7 +316,8 @@ export default {
       toggleMobileMenu,
       closeMobileMenu,
       showDropdown,
-      hideDropdown
+      hideDropdown,
+      closeAllDropdowns
     }
   }
 }
@@ -394,7 +409,7 @@ $border-radius: 12px;
 .nav {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; // moved from center to right align the menu
   margin: 0 2rem;
 
   &__list {
@@ -417,7 +432,7 @@ $border-radius: 12px;
       &:hover .nav__dropdown {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0);
+        transform: translateY(0); // updated: only vertical translate
       }
     }
   }
@@ -483,8 +498,9 @@ $border-radius: 12px;
   &__dropdown {
     position: absolute;
     top: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-10px);
+    right: 0;
+    left: auto;
+    transform: translateY(-10px);
     min-width: 320px;
     background: $bg-darker;
     border-radius: $border-radius;
@@ -494,19 +510,19 @@ $border-radius: 12px;
     transition: $transition;
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
+    z-index: 1100; // ensure above neighbors
 
     &--visible {
       opacity: 1;
       visibility: visible;
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
 
     &::before {
       content: '';
       position: absolute;
       top: -8px;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 16px;
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
       border-bottom: 8px solid $bg-darker;

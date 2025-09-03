@@ -10,6 +10,8 @@ import AdminContactInfo from './admin-pages/AdminContactInfo.vue'
 import AdminSettings from './admin-pages/AdminSettings.vue'
 import AdminCareers from './admin-pages/AdminCareers.vue'
 import AdminTeam from './admin-pages/AdminTeam.vue'
+import AdminFileManager from './admin-pages/AdminFileManager.vue'
+import AdminActivityLogs from './admin-pages/AdminActivityLogs.vue'
 
 const routes = [
   {
@@ -110,6 +112,24 @@ const routes = [
           title: 'Settings - Admin Panel',
           icon: 'fas fa-cog'
         }
+      },
+      {
+        path: 'file-manager',
+        name: 'admin.file-manager',
+        component: AdminFileManager,
+        meta: {
+          title: 'File Manager - Admin Panel',
+          icon: 'fas fa-file'
+        }
+      },
+      {
+        path: 'activity-logs',
+        name: 'admin.activity-logs',
+        component: AdminActivityLogs,
+        meta: {
+          title: 'Activity Logs - Admin Panel',
+          icon: 'fas fa-list'
+        }
       }
     ]
   }
@@ -124,7 +144,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('admin_token')
 
-  // Устанавливаем title из meta данных маршрута только при навигации
+  // Устанавливаем title из meta данных маршрута только пр�� навигации
   if (to.meta && to.meta.title) {
     document.title = to.meta.title
   } else {

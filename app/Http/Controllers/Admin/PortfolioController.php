@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
 use App\Models\PortfolioCategory;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -49,33 +50,43 @@ class PortfolioController extends Controller
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
-            'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
-
-        // Получаем категорию для заполнения legacy поля category
-        $category = PortfolioCategory::find($request->portfolio_category_id);
 
         $portfolio = Portfolio::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title),
             'description' => $request->description,
-            'short_description' => $request->short_description ?: '',
+            'short_description' => $request->short_description,
             'image_url' => $request->image_url,
-            'gallery_images' => $request->gallery_images ?? [],
+            'gallery_images' => $request->gallery_images,
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
-            'technologies' => $request->technologies ?? [],
+            'technologies' => $request->technologies,
             'portfolio_category_id' => $request->portfolio_category_id,
-            'category' => $category ? $category->name : 'Uncategorized', // Legacy поле для обратной совместимости
             'client' => $request->client,
-            'completed_at' => $request->completed_at ?: now(),
+            'completed_at' => $request->completed_at,
             'is_featured' => $request->boolean('is_featured'),
-            'is_published' => $request->boolean('is_published'),
             'sort_order' => $request->sort_order ?? 0,
         ]);
 
-        return response()->json($portfolio->load('portfolioCategory'), 201);
+        // Log portfolio creation
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'created',
+            'model_type' => 'App\\Models\\Portfolio',
+            'model_id' => $portfolio->id,
+            'description' => "Created portfolio: {$portfolio->title}",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => $portfolio->toArray(),
+            'severity' => 'info'
+        ]);
+
+        return response()->json([
+            'message' => 'Portfolio created successfully',
+            'portfolio' => $portfolio->load('portfolioCategory')
+        ], 201);
     }
 
     /**
@@ -99,6 +110,9 @@ class PortfolioController extends Controller
      */
     public function update(Request $request, Portfolio $portfolio)
     {
+        // Store original data for logging
+        $originalData = $portfolio->toArray();
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -113,38 +127,56 @@ class PortfolioController extends Controller
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
-            'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
-        // Получаем категорию для заполнения legacy поля category
-        $category = PortfolioCategory::find($request->portfolio_category_id);
-
-        $updateData = [
+        $portfolio->update([
             'title' => $request->title,
+            'slug' => Str::slug($request->title),
             'description' => $request->description,
-            'short_description' => $request->short_description ?: '',
+            'short_description' => $request->short_description,
             'image_url' => $request->image_url,
-            'gallery_images' => $request->gallery_images ?? [],
+            'gallery_images' => $request->gallery_images,
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
-            'technologies' => $request->technologies ?? [],
+            'technologies' => $request->technologies,
             'portfolio_category_id' => $request->portfolio_category_id,
-            'category' => $category ? $category->name : 'Uncategorized', // Legacy поле для обратной совместимости
             'client' => $request->client,
             'completed_at' => $request->completed_at,
             'is_featured' => $request->boolean('is_featured'),
-            'is_published' => $request->boolean('is_published'),
             'sort_order' => $request->sort_order ?? 0,
-        ];
+        ]);
 
-        if ($request->title !== $portfolio->title) {
-            $updateData['slug'] = Str::slug($request->title);
+        // Log portfolio update with changes
+        $changes = [];
+        $newData = $portfolio->fresh()->toArray();
+        foreach ($newData as $key => $newValue) {
+            if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
+                $changes[$key] = [
+                    'old' => $originalData[$key],
+                    'new' => $newValue
+                ];
+            }
         }
 
-        $portfolio->update($updateData);
+        if (!empty($changes)) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'model_type' => 'App\\Models\\Portfolio',
+                'model_id' => $portfolio->id,
+                'description' => "Updated portfolio: {$portfolio->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'changes' => $changes,
+                'severity' => 'info'
+            ]);
+        }
 
-        return response()->json($portfolio->load('portfolioCategory'));
+        return response()->json([
+            'message' => 'Portfolio updated successfully',
+            'portfolio' => $portfolio->load('portfolioCategory')
+        ]);
     }
 
     /**
@@ -152,74 +184,28 @@ class PortfolioController extends Controller
      */
     public function destroy(Portfolio $portfolio)
     {
-        try {
-            // Добавляем детальное логирование для отладки
-            \Log::info('Attempting to delete portfolio', [
-                'portfolio_id' => $portfolio->id,
-                'portfolio_title' => $portfolio->title,
-                'portfolio_category' => $portfolio->category,
-                'user_id' => auth()->id(),
-            ]);
+        $portfolioData = $portfolio->toArray();
+        $portfolioTitle = $portfolio->title;
+        $portfolioId = $portfolio->id;
 
-            // Проверяем, существует ли портфолио
-            if (!$portfolio->exists) {
-                \Log::warning('Portfolio does not exist', ['portfolio_id' => $portfolio->id]);
-                return response()->json([
-                    'message' => 'Portfolio not found',
-                    'error' => 'The requested portfolio does not exist'
-                ], 404);
-            }
+        $portfolio->delete();
 
-            // Сохраняем информацию для логирования
-            $portfolioData = [
-                'id' => $portfolio->id,
-                'title' => $portfolio->title,
-                'category' => $portfolio->category
-            ];
+        // Log portfolio deletion
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => 'App\\Models\\Portfolio',
+            'model_id' => $portfolioId,
+            'description' => "Deleted portfolio: {$portfolioTitle}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => $portfolioData,
+            'severity' => 'warning'
+        ]);
 
-            // Выполняем удаление
-            $deleted = $portfolio->delete();
-
-            if ($deleted) {
-                \Log::info('Portfolio deleted successfully', $portfolioData);
-                return response()->json([
-                    'message' => 'Portfolio item deleted successfully',
-                    'deleted_id' => $portfolioData['id'],
-                    'deleted_title' => $portfolioData['title']
-                ]);
-            } else {
-                \Log::error('Portfolio deletion failed - delete() returned false', $portfolioData);
-                return response()->json([
-                    'message' => 'Failed to delete portfolio item',
-                    'error' => 'Database deletion failed'
-                ], 500);
-            }
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Database error during portfolio deletion', [
-                'portfolio_id' => $portfolio->id ?? 'unknown',
-                'error_code' => $e->getCode(),
-                'error_message' => $e->getMessage(),
-                'sql_state' => $e->errorInfo[0] ?? 'unknown'
-            ]);
-
-            return response()->json([
-                'message' => 'Database error occurred while deleting the portfolio',
-                'error' => 'A database constraint or connection issue prevented deletion'
-            ], 500);
-
-        } catch (\Exception $e) {
-            \Log::error('Unexpected error during portfolio deletion', [
-                'portfolio_id' => $portfolio->id ?? 'unknown',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'message' => 'An unexpected error occurred while deleting the portfolio',
-                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Portfolio deleted successfully'
+        ]);
     }
 
     /**

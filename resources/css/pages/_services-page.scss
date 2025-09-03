@@ -343,10 +343,12 @@
       border-radius: var(--radius-2xl);
       width: 100%;
       max-width: 800px;
-      max-height: 90vh;
-      overflow-y: auto;
+      max-height: 95vh;
+      overflow: hidden;
       position: relative;
       box-shadow: var(--shadow-2xl);
+      display: flex;
+      flex-direction: column;
     }
 
     &__close {
@@ -408,16 +410,20 @@
 
     &__body {
       padding: var(--space-8);
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
 
       .service-modal__description {
         font-size: var(--font-size-lg);
         color: var(--color-neutral-700);
         line-height: var(--line-height-relaxed);
-        margin-bottom: var(--space-8);
+        margin-bottom: var(--space-6);
       }
 
       .service-modal__section {
-        margin-bottom: var(--space-8);
+        margin-bottom: var(--space-6);
 
         h4 {
           font-size: var(--font-size-lg);
@@ -442,17 +448,18 @@
           padding: 0;
           margin: 0;
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: var(--space-3);
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: var(--space-2);
 
           li {
             display: flex;
             align-items: center;
-            gap: var(--space-3);
+            gap: var(--space-2);
             padding: var(--space-2);
             background: var(--color-neutral-50);
             border-radius: var(--radius-lg);
             color: var(--color-neutral-700);
+            font-size: var(--font-size-sm);
 
             i {
               color: #10b981;
@@ -479,15 +486,17 @@
         p {
           color: var(--color-neutral-600);
           line-height: var(--line-height-relaxed);
-          font-size: var(--font-size-base);
+          font-size: var(--font-size-sm);
+          margin: 0;
         }
       }
 
       .service-modal__actions {
         display: flex;
         gap: var(--space-4);
-        padding-top: var(--space-6);
+        padding-top: var(--space-4);
         border-top: 1px solid var(--color-neutral-200);
+        margin-top: auto;
 
         @media (max-width: 480px) {
           flex-direction: column;

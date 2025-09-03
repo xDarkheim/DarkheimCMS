@@ -32,7 +32,7 @@
 
     <!-- Team Members Table -->
     <div class="table-container">
-      <table class="admin-table">
+      <table class="admin-table" v-if="teamMembers.length > 0">
         <thead>
           <tr>
             <th>Photo</th>
@@ -41,7 +41,6 @@
             <th>Department</th>
             <th>Status</th>
             <th>Visible</th>
-            <th>Priority</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -66,18 +65,31 @@
                 {{ member.show_on_website ? 'Yes' : 'No' }}
               </span>
             </td>
-            <td>{{ member.priority }}</td>
             <td class="actions">
-              <button @click="editMember(member)" class="btn-icon" title="Edit">
+              <button @click.stop="toggleVisibility(member)" class="btn-icon" :title="member.show_on_website ? 'Hide from website' : 'Show on website'">
+                <i :class="member.show_on_website ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+              <button @click.stop="editMember(member)" class="btn-icon" title="Edit">
                 <i class="fas fa-edit"></i>
               </button>
-              <button @click="deleteMember(member)" class="btn-icon danger" title="Delete">
+              <button @click.stop="deleteMember(member)" class="btn-icon danger" title="Delete">
                 <i class="fas fa-trash"></i>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Empty State -->
+      <div v-else class="empty-state">
+        <i class="fas fa-users"></i>
+        <h3>No Team Members Yet</h3>
+        <p>Start building your team by adding your first member</p>
+        <button @click="showCreateModal" class="btn btn-primary" style="margin-top: 16px;">
+          <i class="fas fa-plus"></i>
+          Add First Member
+        </button>
+      </div>
     </div>
 
     <!-- Create/Edit Modal -->
@@ -122,16 +134,6 @@
             </div>
 
             <div class="form-group">
-              <label>Phone</label>
-              <input v-model="form.phone" type="text">
-            </div>
-
-            <div class="form-group">
-              <label>Priority</label>
-              <input v-model.number="form.priority" type="number" min="0" max="100">
-            </div>
-
-            <div class="form-group">
               <label>Joined Date</label>
               <input v-model="form.joined_date" type="date">
             </div>
@@ -139,8 +141,8 @@
             <div class="form-group full-width">
               <label>Avatar</label>
               <input @change="handleAvatarChange" type="file" accept="image/*">
-              <div v-if="avatarPreview" class="avatar-preview">
-                <img :src="avatarPreview" alt="Preview">
+              <div v-if="avatarPreview || currentAvatarUrl" class="avatar-preview">
+                <img :src="avatarPreview || currentAvatarUrl" alt="Preview">
               </div>
             </div>
 
@@ -212,6 +214,7 @@ export default {
     const skillsInput = ref('')
     const avatarFile = ref(null)
     const avatarPreview = ref(null)
+    const currentAvatarUrl = ref('')
 
     // Get auth token from localStorage
     const getAuthHeaders = () => {
@@ -225,12 +228,10 @@ export default {
       department: '',
       bio: '',
       email: '',
-      phone: '',
       skills: [],
       social_links: {},
       status: 'active',
       joined_date: null,
-      priority: 0,
       show_on_website: true
     })
 
@@ -259,16 +260,49 @@ export default {
     const showCreateModal = () => {
       resetForm()
       isEditing.value = false
+      currentAvatarUrl.value = ''
       showModal.value = true
     }
 
+    const formatDateForInput = (value) => {
+      if (!value) return null
+      // Accept Date, ISO string, or YYYY-MM-DD
+      try {
+        if (typeof value === 'string') {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
+          const d = new Date(value)
+          if (!isNaN(d.getTime())) {
+            const yyyy = d.getFullYear()
+            const mm = String(d.getMonth() + 1).padStart(2, '0')
+            const dd = String(d.getDate()).padStart(2, '0')
+            return `${yyyy}-${mm}-${dd}`
+          }
+          return null
+        }
+        if (value instanceof Date) {
+          const yyyy = value.getFullYear()
+          const mm = String(value.getMonth() + 1).padStart(2, '0')
+          const dd = String(value.getDate()).padStart(2, '0')
+          return `${yyyy}-${mm}-${dd}`
+        }
+      } catch (_) { return null }
+      return null
+    }
+
     const editMember = (member) => {
+      console.log('editMember called with:', member); // Отладка
+
       Object.keys(form.value).forEach(key => {
-        form.value[key] = member[key] || form.value[key]
+        if (Object.prototype.hasOwnProperty.call(member, key)) {
+          form.value[key] = member[key]
+        }
       })
 
       // Важно: добавляем ID для правильного редактирования
       form.value.id = member.id
+
+      // Normalize joined_date for input type=date
+      form.value.joined_date = formatDateForInput(member.joined_date)
 
       skillsInput.value = member.skills ? member.skills.join(', ') : ''
 
@@ -279,8 +313,14 @@ export default {
         })
       }
 
+      // Show current avatar if exists
+      currentAvatarUrl.value = member.avatar || ''
+      avatarPreview.value = member.avatar || null
+
       isEditing.value = true
       showModal.value = true
+
+      console.log('Modal should be shown:', showModal.value, 'isEditing:', isEditing.value); // Отладка
     }
 
     const handleAvatarChange = (event) => {
@@ -307,21 +347,42 @@ export default {
 
         // Process social links
         form.value.social_links = Object.entries(socialLinks.value)
-          .filter(([, url]) => url.trim() !== '')
+          .filter(([, url]) => (url || '').trim() !== '')
           .reduce((acc, [platform, url]) => {
             acc[platform] = url
             return acc
           }, {})
 
+        // Helper to append only when value is present (and valid)
+        const appendIfPresent = (fd, key, value) => {
+          if (value === undefined || value === null) return
+          if (typeof value === 'string' && value.trim() === '') return
+          fd.append(key, value)
+        }
+
         // Create FormData for file upload
         const formData = new FormData()
-        Object.keys(form.value).forEach(key => {
-          if (key === 'skills' || key === 'social_links') {
-            formData.append(key, JSON.stringify(form.value[key]))
-          } else {
-            formData.append(key, form.value[key] || '')
-          }
-        })
+
+        // Required fields (always append)
+        formData.append('name', form.value.name)
+        formData.append('position', form.value.position)
+        formData.append('department', form.value.department)
+        formData.append('bio', form.value.bio)
+        formData.append('status', form.value.status)
+
+        // Optional fields (append only if present)
+        appendIfPresent(formData, 'email', form.value.email)
+        // Ensure boolean is sent as 1/0 for robustness
+        formData.append('show_on_website', form.value.show_on_website ? '1' : '0')
+        appendIfPresent(formData, 'joined_date', form.value.joined_date)
+
+        // Arrays/objects: send as JSON strings if non-empty
+        if (Array.isArray(form.value.skills) && form.value.skills.length > 0) {
+          formData.append('skills', JSON.stringify(form.value.skills))
+        }
+        if (form.value.social_links && Object.keys(form.value.social_links).length > 0) {
+          formData.append('social_links', JSON.stringify(form.value.social_links))
+        }
 
         if (avatarFile.value) {
           formData.append('avatar', avatarFile.value)
@@ -351,7 +412,14 @@ export default {
         loadTeamMembers()
       } catch (error) {
         console.error('Failed to save team member:', error)
-        alert('Error saving team member: ' + (error.response?.data?.message || error.message))
+        // Build detailed validation message if available
+        let message = error.response?.data?.message || error.message
+        const errors = error.response?.data?.errors
+        if (errors && typeof errors === 'object') {
+          const details = Object.values(errors).flat().join(', ')
+          if (details) message += `: ${details}`
+        }
+        alert('Error saving team member: ' + message)
       } finally {
         loading.value = false
       }
@@ -374,6 +442,19 @@ export default {
       }
     }
 
+    const toggleVisibility = async (member) => {
+      try {
+        await axios.post(`/api/admin/team/${member.id}/toggle-visible`, {}, {
+          headers: getAuthHeaders()
+        })
+        // Optimistically update the local member data
+        member.show_on_website = !member.show_on_website
+      } catch (error) {
+        console.error('Failed to toggle visibility:', error)
+        alert('Error toggling visibility: ' + (error.response?.data?.message || error.message))
+      }
+    }
+
     const closeModal = () => {
       showModal.value = false
       resetForm()
@@ -386,17 +467,16 @@ export default {
         department: '',
         bio: '',
         email: '',
-        phone: '',
         skills: [],
         social_links: {},
         status: 'active',
         joined_date: null,
-        priority: 0,
         show_on_website: true
       })
       skillsInput.value = ''
       avatarFile.value = null
       avatarPreview.value = null
+      currentAvatarUrl.value = ''
       Object.keys(socialLinks.value).forEach(key => {
         socialLinks.value[key] = ''
       })
@@ -414,12 +494,15 @@ export default {
       skillsInput,
       socialLinks,
       avatarPreview,
+      currentAvatarUrl,
       showCreateModal,
       editMember,
       saveMember,
       deleteMember,
       closeModal,
-      handleAvatarChange
+      handleAvatarChange,
+      formatDateForInput,
+      toggleVisibility
     }
   }
 }
@@ -498,116 +581,293 @@ export default {
 
 .table-container {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+  font-size: 14px;
 }
 
 .admin-table th {
-  background: #f7f7f7;
-  font-weight: bold;
+  padding: 16px 20px;
+  text-align: left;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.admin-table tr:hover {
-  background: #f9f9f9;
+.admin-table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  transition: background-color 0.2s ease;
+}
+
+.admin-table tr:hover td {
+  background: #f9fafb;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
 }
 
 .avatar-cell {
-  width: 60px;
+  width: 80px;
+  padding-right: 12px;
 }
 
 .avatar-small {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   object-fit: cover;
+  border: 2px solid #e5e7eb;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.avatar-small:hover {
+  transform: scale(1.05);
+  border-color: #3b82f6;
 }
 
 .member-name {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
 }
 
 .member-name strong {
+  font-weight: 600;
+  color: #111827;
+  font-size: 15px;
   margin-bottom: 2px;
 }
 
 .member-name small {
-  color: #666;
+  color: #6b7280;
   font-size: 12px;
+  font-weight: 400;
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 70px;
+  justify-content: center;
 }
 
 .status-badge.active {
-  background-color: #28a745;
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
 }
 
 .status-badge.inactive {
-  background-color: #dc3545;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
 }
 
 .status-badge.on-leave {
-  background-color: #ffc107;
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
 }
 
 .visibility-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 60px;
+  justify-content: center;
 }
 
 .visibility-badge.visible {
-  background-color: #28a745;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
 }
 
 .visibility-badge.hidden {
-  background-color: #dc3545;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
 }
 
 .actions {
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  justify-content: flex-end;
+  min-width: 140px;
 }
 
 .btn-icon {
-  background: none;
-  border: none;
-  padding: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 10px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 14px;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
 .btn-icon:hover {
-  background-color: #f1f1f1;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.btn-icon:active {
+  transform: translateY(0);
+}
+
+.btn-icon i {
+  font-size: 14px;
+}
+
+/* Специальные стили для кнопки видимости */
+.btn-icon[title*="Show"]:hover,
+.btn-icon[title*="Hide"]:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+/* Специальные стили для кнопки редактирования */
+.btn-icon[title="Edit"]:hover {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+  color: #d97706;
+}
+
+/* Специальные стили для кнопки удаления */
 .btn-icon.danger:hover {
-  background-color: #f8d7da;
-  color: #dc3545;
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
+/* Адаптивность таблицы */
+@media (max-width: 1200px) {
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 16px;
+  }
+
+  .member-name {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    min-width: 800px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 12px;
+  }
+
+  .avatar-small {
+    width: 40px;
+    height: 40px;
+  }
+
+  .member-name strong {
+    font-size: 14px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 8px;
+  }
+}
+
+/* Анимация для строк таблицы */
+.admin-table tbody tr {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Улучшенные стили для пустого состояния */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state i {
+  font-size: 48px;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Стили модального окна */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -618,52 +878,91 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal-content {
   background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 800px;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 900px;
   width: 100%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #ddd;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 12px 12px 0 0;
 }
 
 .modal-header h2 {
-  font-size: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
 }
 
 .btn-close {
-  background: none;
-  border: none;
-  font-size: 18px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
-  padding: 5px;
+  padding: 8px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.btn-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.05);
+}
+
+.modal-body {
+  padding: 32px;
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 .form-group.full-width {
@@ -671,99 +970,225 @@ export default {
 }
 
 .form-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
+  color: #374151;
+  margin: 0;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
+  transition: all 0.2s ease;
+  background: #fff;
+  color: #111827;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  flex-direction: row;
+  flex-direction: row !important;
+  gap: 12px !important;
+  cursor: pointer;
+  padding: 16px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-.checkbox-label input {
-  margin-right: 10px;
-  margin-bottom: 0;
+.checkbox-label:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0 !important;
+  cursor: pointer;
+  accent-color: #3b82f6;
 }
 
 .avatar-preview {
-  margin-top: 10px;
+  margin-top: 16px;
+  text-align: center;
 }
 
 .avatar-preview img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
   object-fit: cover;
+  border: 3px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .social-inputs {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .social-input {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .social-input i {
-  width: 20px;
+  width: 24px;
+  height: 24px;
   text-align: center;
-  color: #666;
+  color: #6b7280;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .social-input input {
   flex: 1;
+  margin: 0 !important;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #ddd;
+  gap: 16px;
+  padding: 24px 32px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-radius: 0 0 12px 12px;
+  margin: 0 -32px -32px -32px;
 }
 
 .btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  justify-content: center;
 }
 
 .btn-secondary {
-  background-color: #6c757d;
-  color: #fff;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 2px solid #e5e7eb;
 }
 
 .btn-secondary:hover {
-  background-color: #5a6268;
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: #fff;
+  border: 2px solid #3b82f6;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Адаптивность модального окна */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 80px);
+    max-width: 100%;
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .modal-actions {
+    padding: 20px 24px;
+    margin: 0 -24px -24px -24px;
+    flex-direction: column-reverse;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 16px 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-grid {
+    gap: 16px;
+  }
+
+  .modal-actions {
+    padding: 16px 20px;
+    margin: 0 -20px -20px -20px;
+  }
 }
 </style>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
@@ -139,7 +140,32 @@ class ContactController extends Controller
      */
     public function markAsRead(ContactMessage $contactMessage): JsonResponse
     {
+        $wasRead = $contactMessage->is_read;
         $contactMessage->markAsRead();
+
+        // Log marking message as read
+        if (!$wasRead) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'marked_read',
+                'model_type' => 'App\\Models\\ContactMessage',
+                'model_id' => $contactMessage->id,
+                'description' => "Marked contact message as read from {$contactMessage->name} ({$contactMessage->email})",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'changes' => [
+                    'is_read' => [
+                        'old' => false,
+                        'new' => true
+                    ],
+                    'read_at' => [
+                        'old' => null,
+                        'new' => now()
+                    ]
+                ],
+                'severity' => 'info'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -153,12 +179,31 @@ class ContactController extends Controller
      */
     public function destroy(ContactMessage $contactMessage): JsonResponse
     {
+        $messageData = $contactMessage->toArray();
+        $senderName = $contactMessage->name;
+        $senderEmail = $contactMessage->email;
+        $messageId = $contactMessage->id;
+        $messageType = $contactMessage->message_type;
+
         // Delete resume file if exists
         if ($contactMessage->resume_file) {
             Storage::disk('public')->delete($contactMessage->resume_file);
         }
 
         $contactMessage->delete();
+
+        // Log contact message deletion
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => 'App\\Models\\ContactMessage',
+            'model_id' => $messageId,
+            'description' => "Deleted {$messageType} message from {$senderName} ({$senderEmail})",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => $messageData,
+            'severity' => 'warning'
+        ]);
 
         return response()->json([
             'success' => true,
@@ -212,6 +257,23 @@ class ContactController extends Controller
                 'message' => 'Resume file not found'
             ], 404);
         }
+
+        // Log resume download
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'resume_downloaded',
+            'model_type' => 'App\\Models\\ContactMessage',
+            'model_id' => $contactMessage->id,
+            'description' => "Downloaded resume from {$contactMessage->name} ({$contactMessage->email})",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => [
+                'resume_file' => $contactMessage->resume_file,
+                'applicant_name' => $contactMessage->name,
+                'position_interest' => $contactMessage->position_interest
+            ],
+            'severity' => 'info'
+        ]);
 
         return response()->download($filePath);
     }

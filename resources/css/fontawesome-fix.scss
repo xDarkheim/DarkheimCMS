@@ -343,6 +343,23 @@
 .fa-paint-brush::before { content: "\f1fc"; }
 .fa-comments::before { content: "\f086"; }
 
+/* Brand icons needed for AboutPage.vue */
+.fa-laravel::before { content: "\f3bd"; }
+.fa-vuejs::before { content: "\f41f"; }
+.fa-js::before { content: "\f3b8"; }
+.fa-html5::before { content: "\f13b"; }
+.fa-css3-alt::before { content: "\f38b"; }
+.fa-php::before { content: "\f457"; }
+.fa-sass::before { content: "\f41e"; }
+.fa-git-alt::before { content: "\f841"; }
+.fa-docker::before { content: "\f395"; }
+.fa-linux::before { content: "\f17c"; }
+.fa-windows::before { content: "\f17a"; }
+
+/* Additional icons used in AboutPage.vue */
+.fa-calendar-alt::before { content: "\f073"; }
+.fa-project-diagram::before { content: "\f542"; }
+
 /* Size modifiers */
 .fa-xs { font-size: 0.75em; }
 .fa-sm { font-size: 0.875em; }

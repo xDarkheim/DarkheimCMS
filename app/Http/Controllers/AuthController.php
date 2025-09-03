@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,16 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
 
             if (!$user || !Hash::check($request->password, $user->password)) {
+                // Log failed login attempt
+                ActivityLog::create([
+                    'user_id' => null,
+                    'action' => 'login_failed',
+                    'description' => "Failed login attempt for email: {$request->email}",
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'severity' => 'warning'
+                ]);
+
                 return response()->json([
                     'message' => 'Invalid credentials',
                     'errors' => [
@@ -34,6 +45,16 @@ class AuthController extends Controller
 
             // Check if user has admin role
             if ($user->role !== 'admin') {
+                // Log unauthorized access attempt
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'unauthorized_access',
+                    'description' => "User {$user->email} attempted admin access without privileges",
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'severity' => 'critical'
+                ]);
+
                 return response()->json([
                     'message' => 'Unauthorized access',
                     'errors' => [
@@ -44,6 +65,16 @@ class AuthController extends Controller
 
             // Create Sanctum token
             $token = $user->createToken('admin-token')->plainTextToken;
+
+            // Log successful login
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'login',
+                'description' => "User {$user->email} logged in successfully",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'severity' => 'info'
+            ]);
 
             return response()->json([
                 'message' => 'Login successful',
@@ -81,6 +112,18 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            $user = $request->user();
+
+            // Log logout
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'logout',
+                'description' => "User {$user->email} logged out",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'severity' => 'info'
+            ]);
+
             // Revoke the current access token
             $request->user()->currentAccessToken()->delete();
 

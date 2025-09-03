@@ -30,38 +30,44 @@
             class="team-card"
             @click="showMemberDetails(member)"
           >
-            <div class="team-card__avatar">
-              <img
-                :src="member.avatar"
-                :alt="member.name"
-                loading="lazy"
-              >
-            </div>
+            <div class="team-card__header">
+              <div class="team-card__avatar">
+                <img
+                  :src="member.avatar"
+                  :alt="member.name"
+                  loading="lazy"
+                >
+              </div>
 
-            <div class="team-card__info">
               <h3 class="team-card__name">{{ member.name }}</h3>
               <div class="team-card__position">{{ member.position }}</div>
               <div class="team-card__department">{{ member.department }}</div>
             </div>
 
-            <div v-if="member.skills && member.skills.length" class="team-card__skills">
-              <span
-                v-for="skill in member.skills.slice(0, 3)"
-                :key="skill"
-                class="skill-tag"
-              >
-                {{ skill }}
-              </span>
-              <span v-if="member.skills.length > 3" class="skill-more">
-                +{{ member.skills.length - 3 }}
-              </span>
-            </div>
+            <div class="team-card__content">
+              <div class="team-card__bio">
+                {{ member.bio || 'Passionate team member dedicated to delivering excellent results.' }}
+              </div>
 
-            <div class="team-card__actions">
-              <button class="btn btn--ghost btn--sm">
-                View Profile
-                <i class="fas fa-user"></i>
-              </button>
+              <div class="team-card__skills">
+                <span
+                  v-for="skill in member.skills?.slice(0, 3) || []"
+                  :key="skill"
+                  class="skill-tag"
+                >
+                  {{ skill }}
+                </span>
+                <span v-if="member.skills && member.skills.length > 3" class="skill-more">
+                  +{{ member.skills.length - 3 }}
+                </span>
+              </div>
+
+              <div class="team-card__actions">
+                <button class="btn btn--ghost btn--sm">
+                  View Profile
+                  <i class="fas fa-user"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Social Links -->
@@ -73,6 +79,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 class="social-link"
+                @click.stop
               >
                 <i :class="getSocialIcon(platform)"></i>
               </a>
@@ -81,12 +88,12 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="empty-state">
-          <div class="empty-icon">
+        <div v-else class="team-empty">
+          <div class="team-empty__icon">
             <i class="fas fa-users"></i>
           </div>
-          <h3>No Team Members Found</h3>
-          <p>Team information will be available soon.</p>
+          <h3 class="team-empty__title">No Team Members Found</h3>
+          <p class="team-empty__text">Team information will be available soon.</p>
         </div>
       </div>
     </section>

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Models\Portfolio;
 use App\Models\PortfolioCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 
 class PortfolioSeeder extends Seeder
 {
@@ -14,196 +14,150 @@ class PortfolioSeeder extends Seeder
      */
     public function run(): void
     {
-        // Получаем все категории для назначения проектам
-        $webCategory = PortfolioCategory::where('slug', 'web-development')->first();
-        $mobileCategory = PortfolioCategory::where('slug', 'mobile-applications')->first();
-        $ecommerceCategory = PortfolioCategory::where('slug', 'ecommerce-solutions')->first();
-        $businessCategory = PortfolioCategory::where('slug', 'business-applications')->first();
-        $landingCategory = PortfolioCategory::where('slug', 'landing-pages')->first();
-        $portfolioCategory = PortfolioCategory::where('slug', 'portfolio-websites')->first();
-        $apiCategory = PortfolioCategory::where('slug', 'api-development')->first();
+        // Очищаем таблицу перед заполнением
+        Portfolio::truncate();
+
+        // Получаем все категории
+        $categories = PortfolioCategory::all()->keyBy('slug');
 
         $portfolios = [
-            // Web Development Projects
+            // Web Development
             [
-                'title' => 'Local Bakery Website',
-                'slug' => 'local-bakery-website',
-                'short_description' => 'Modern responsive website for a local bakery with online ordering capabilities.',
-                'description' => 'A clean and modern website for Sunrise Bakery featuring their product catalog, online ordering system, and store information. Built with Laravel backend and Vue.js frontend, styled with custom Sass. The site includes a simple CMS for easy content updates and basic e-commerce functionality.',
-                'image_url' => 'https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'title' => 'Modern E-commerce Platform',
+                'slug' => 'modern-ecommerce-platform',
+                'short_description' => 'Comprehensive online store with advanced features and responsive design.',
+                'description' => 'A fully-featured e-commerce platform built with modern technologies. Features include user authentication, product catalog with advanced filtering, shopping cart functionality, secure payment processing, order management system, and comprehensive admin dashboard. The platform supports multiple payment methods, real-time inventory tracking, and provides detailed analytics for business insights.',
+                'category_slug' => 'web-development',
+                'client' => 'RetailTech Solutions',
+                'image_url' => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                    'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1556742111-a301076d9d18?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
                 ],
-                'project_url' => 'https://sunrisebakery-demo.darkheim.dev',
-                'github_url' => 'https://github.com/darkheim-studio/bakery-website',
-                'technologies' => ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'HTML5', 'CSS', 'Sass', 'Git', 'Linux'],
-                'portfolio_category_id' => $webCategory?->id,
-                'category' => $webCategory?->name ?: 'Web Development',
-                'client' => 'Sunrise Bakery',
-                'completed_at' => '2024-12-10',
+                'technologies' => ['Vue.js', 'Laravel', 'MySQL', 'Tailwind CSS', 'Stripe API', 'Redis'],
+                'completed_at' => Carbon::create(2025, 8, 15),
                 'is_featured' => true,
-                'is_published' => true,
-                'sort_order' => 1,
-            ],
-            [
-                'title' => 'Restaurant Menu Website',
-                'slug' => 'restaurant-menu-website',
-                'short_description' => 'Digital menu website with QR code integration for contactless dining.',
-                'description' => 'A digital menu website created during the pandemic for contactless dining experience. Features QR code integration, mobile-optimized design, and easy menu updates. Simple but effective solution for small restaurant business.',
-                'image_url' => 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => 'https://pizza-corner-menu.darkheim.dev',
-                'github_url' => 'https://github.com/darkheim-studio/restaurant-menu',
-                'technologies' => ['PHP', 'Laravel', 'Vue.js', 'MariaDB', 'HTML5', 'Sass', 'Git', 'Linux'],
-                'portfolio_category_id' => $webCategory?->id,
-                'category' => $webCategory?->name ?: 'Web Development',
-                'client' => 'Pizza Corner',
-                'completed_at' => '2024-08-20',
-                'is_featured' => false,
-                'is_published' => true,
-                'sort_order' => 2,
-            ],
-
-            // Portfolio Websites
-            [
-                'title' => 'Portfolio Website for Photographer',
-                'slug' => 'photographer-portfolio',
-                'short_description' => 'Elegant portfolio website showcasing photography work with gallery features.',
-                'description' => 'A minimalist and elegant portfolio website for professional photographer Maria Santos. Features include image galleries, client testimonials, contact forms, and booking system. Optimized for image loading and mobile viewing. Deployed using Docker containers on Linux server.',
-                'image_url' => 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => 'https://mariasantos-photo.darkheim.dev',
-                'github_url' => 'https://github.com/darkheim-studio/photographer-portfolio',
-                'technologies' => ['PHP', 'Laravel', 'JavaScript', 'Vue.js', 'MariaDB', 'HTML5', 'Sass', 'Docker', 'Git', 'Linux'],
-                'portfolio_category_id' => $portfolioCategory?->id,
-                'category' => $portfolioCategory?->name ?: 'Portfolio Websites',
-                'client' => 'Maria Santos Photography',
-                'completed_at' => '2024-11-25',
-                'is_featured' => true,
-                'is_published' => true,
-                'sort_order' => 3,
-            ],
-
-            // Business Applications
-            [
-                'title' => 'Small Business Management System',
-                'slug' => 'business-management-system',
-                'short_description' => 'Simple CRM and inventory management system for small businesses.',
-                'description' => 'A lightweight business management system built for a local auto repair shop. Includes customer management, service tracking, inventory control, and basic reporting. The system runs on Windows Server environment and uses Git for version control throughout development.',
-                'image_url' => 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => null,
-                'github_url' => 'https://github.com/darkheim-studio/business-crm',
-                'technologies' => ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'HTML5', 'CSS', 'JavaScript', 'Git', 'Windows Server'],
-                'portfolio_category_id' => $businessCategory?->id,
-                'category' => $businessCategory?->name ?: 'Business Applications',
-                'client' => 'AutoFix Garage',
-                'completed_at' => '2024-10-08',
-                'is_featured' => false,
-                'is_published' => true,
-                'sort_order' => 4,
-            ],
-
-            // Landing Pages
-            [
-                'title' => 'Company Landing Page',
-                'slug' => 'company-landing-page',
-                'short_description' => 'Modern landing page for a consulting company with contact forms.',
-                'description' => 'A professional landing page for TechConsult Pro featuring company services, team information, and lead generation forms. Built with focus on performance and SEO optimization. Styled with custom Sass and deployed using Docker containers.',
-                'image_url' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => 'https://techconsultpro.darkheim.dev',
-                'github_url' => null,
-                'technologies' => ['PHP', 'Laravel', 'HTML5', 'CSS', 'Sass', 'JavaScript', 'MySQL', 'Docker', 'Git', 'Linux'],
-                'portfolio_category_id' => $landingCategory?->id,
-                'category' => $landingCategory?->name ?: 'Landing Pages',
-                'client' => 'TechConsult Pro',
-                'completed_at' => '2024-09-15',
-                'is_featured' => false,
-                'is_published' => true,
-                'sort_order' => 5,
-            ],
-
-            // E-commerce Solutions
-            [
-                'title' => 'Online Fashion Store',
-                'slug' => 'online-fashion-store',
-                'short_description' => 'Complete e-commerce solution for a fashion boutique with payment integration.',
-                'description' => 'A full-featured e-commerce website for StyleHub boutique with product catalog, shopping cart, payment processing, order management, and customer accounts. Built with Laravel and integrated with Stripe for secure payments.',
-                'image_url' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => 'https://stylehub-demo.darkheim.dev',
-                'github_url' => null,
-                'technologies' => ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'Stripe API', 'HTML5', 'CSS', 'JavaScript', 'Git'],
-                'portfolio_category_id' => $ecommerceCategory?->id,
-                'category' => $ecommerceCategory?->name ?: 'E-commerce Solutions',
-                'client' => 'StyleHub Boutique',
-                'completed_at' => '2024-07-22',
-                'is_featured' => true,
-                'is_published' => true,
-                'sort_order' => 6,
+                'is_published' => true
             ],
 
             // Mobile Applications
             [
-                'title' => 'Task Management Mobile App',
-                'slug' => 'task-management-mobile-app',
-                'short_description' => 'Cross-platform mobile app for team task management and collaboration.',
-                'description' => 'A mobile application for team task management built with React Native. Features include task creation, assignment, progress tracking, team chat, and push notifications. Synchronized with a Laravel backend API.',
-                'image_url' => 'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'title' => 'HealthTracker Mobile App',
+                'slug' => 'healthtracker-mobile-app',
+                'short_description' => 'Comprehensive health and fitness tracking application.',
+                'description' => 'A comprehensive mobile application for health and fitness tracking. Features include workout planning, nutrition tracking, progress monitoring, goal setting, and social features to connect with other users. The app includes integration with wearable devices, personalized recommendations, and detailed analytics to help users achieve their health goals.',
+                'category_slug' => 'mobile-applications',
+                'client' => 'FitLife Inc.',
+                'image_url' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
                 'gallery_images' => [
-                    'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
                 ],
-                'project_url' => null,
-                'github_url' => 'https://github.com/darkheim-studio/task-manager-app',
-                'technologies' => ['React Native', 'PHP', 'Laravel', 'MySQL', 'Redux', 'Firebase', 'JavaScript', 'Git'],
-                'portfolio_category_id' => $mobileCategory?->id,
-                'category' => $mobileCategory?->name ?: 'Mobile Applications',
-                'client' => 'ProductiveTeam Ltd',
-                'completed_at' => '2024-06-10',
+                'technologies' => ['React Native', 'Firebase', 'Node.js', 'MongoDB', 'Health APIs'],
+                'completed_at' => Carbon::create(2025, 8, 22),
+                'is_featured' => true,
+                'is_published' => true
+            ],
+
+            // E-commerce Solutions
+            [
+                'title' => 'Luxury Fashion Boutique',
+                'slug' => 'luxury-fashion-boutique',
+                'short_description' => 'Premium fashion e-commerce with advanced styling features.',
+                'description' => 'An elegant e-commerce solution for luxury fashion brands. Features include high-quality product galleries, virtual styling consultations, size recommendation engine, wishlist functionality, and premium customer service integration. The platform emphasizes visual storytelling and brand experience while maintaining excellent performance and user experience.',
+                'category_slug' => 'ecommerce-solutions',
+                'client' => 'Elegance Fashion House',
+                'image_url' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'technologies' => ['Shopify Plus', 'JavaScript', 'CSS3', 'Payment APIs', 'CDN'],
+                'completed_at' => Carbon::create(2025, 8, 28),
                 'is_featured' => false,
-                'is_published' => true,
-                'sort_order' => 7,
+                'is_published' => true
+            ],
+
+            // Business Applications
+            [
+                'title' => 'Enterprise CRM System',
+                'slug' => 'enterprise-crm-system',
+                'short_description' => 'Comprehensive customer relationship management platform.',
+                'description' => 'A powerful CRM solution designed for enterprise-level sales teams. Includes lead management, contact organization, deal pipeline tracking, email integration, automated workflows, and comprehensive reporting dashboards. The system provides detailed insights into sales performance, customer interactions, and helps optimize sales processes for maximum efficiency.',
+                'category_slug' => 'business-applications',
+                'client' => 'SalesForce Pro',
+                'image_url' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'gallery_images' => [
+                    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                ],
+                'technologies' => ['Laravel', 'Vue.js', 'PostgreSQL', 'Chart.js', 'Email APIs'],
+                'completed_at' => Carbon::create(2025, 9, 1),
+                'is_featured' => true,
+                'is_published' => true
+            ],
+
+            // Landing Pages
+            [
+                'title' => 'SaaS Product Launch Page',
+                'slug' => 'saas-product-launch-page',
+                'short_description' => 'High-converting landing page with modern design.',
+                'description' => 'A conversion-optimized landing page designed for a SaaS product launch. Features compelling copywriting, interactive product demos, social proof elements, email capture forms, and detailed analytics tracking. The page is optimized for maximum conversion rates with A/B testing capabilities and mobile-first responsive design.',
+                'category_slug' => 'landing-pages',
+                'client' => 'CloudTech Startup',
+                'image_url' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'technologies' => ['HTML5', 'CSS3', 'JavaScript', 'Google Analytics', 'Optimization Tools'],
+                'completed_at' => Carbon::create(2025, 8, 12),
+                'is_featured' => false,
+                'is_published' => true
+            ],
+
+            // Portfolio Websites
+            [
+                'title' => 'Creative Artist Portfolio',
+                'slug' => 'creative-artist-portfolio',
+                'short_description' => 'Stunning portfolio website showcasing artistic works.',
+                'description' => 'A visually striking portfolio website for a creative artist featuring an interactive gallery, project showcases, artist biography, exhibition history, and contact functionality. The design emphasizes visual impact and storytelling while maintaining excellent user experience across all devices. Features include image optimization and smooth animations.',
+                'category_slug' => 'portfolio-websites',
+                'client' => 'Marina Art Studio',
+                'image_url' => 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'gallery_images' => [
+                    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1551739440-5dd934d3a94a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                ],
+                'technologies' => ['Next.js', 'React', 'CSS3', 'Image Optimization', 'Animation Libraries'],
+                'completed_at' => Carbon::create(2025, 8, 20),
+                'is_featured' => true,
+                'is_published' => true
             ],
 
             // API Development
             [
-                'title' => 'RESTful API for Delivery Service',
-                'slug' => 'delivery-service-api',
-                'short_description' => 'Comprehensive REST API for food delivery platform with real-time tracking.',
-                'description' => 'A robust REST API built for a food delivery platform. Includes endpoints for restaurants, orders, customers, drivers, real-time tracking, and payment processing. Features comprehensive documentation and rate limiting.',
-                'image_url' => 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'project_url' => 'https://api-docs.quickfood.darkheim.dev',
-                'github_url' => 'https://github.com/darkheim-studio/delivery-api',
-                'technologies' => ['PHP', 'Laravel', 'MySQL', 'Redis', 'WebSockets', 'Swagger', 'Docker', 'Git', 'Linux'],
-                'portfolio_category_id' => $apiCategory?->id,
-                'category' => $apiCategory?->name ?: 'API Development',
-                'client' => 'QuickFood Delivery',
-                'completed_at' => '2024-05-18',
+                'title' => 'RESTful API Service',
+                'slug' => 'restful-api-service',
+                'short_description' => 'Scalable API with comprehensive documentation.',
+                'description' => 'A robust and scalable RESTful API service designed for high performance and reliability. Features include JWT authentication, rate limiting, comprehensive API documentation, versioning support, error handling, and monitoring capabilities. The API supports multiple data formats and includes automated testing suite for reliability.',
+                'category_slug' => 'api-development',
+                'client' => 'DataFlow Technologies',
+                'image_url' => 'https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'technologies' => ['Node.js', 'Express', 'MongoDB', 'JWT', 'Swagger', 'Docker'],
+                'completed_at' => Carbon::create(2025, 8, 25),
                 'is_featured' => false,
-                'is_published' => true,
-                'sort_order' => 8,
-            ],
+                'is_published' => true
+            ]
         ];
 
-        foreach ($portfolios as $portfolio) {
-            Portfolio::create($portfolio);
+        foreach ($portfolios as $portfolioData) {
+            $categorySlug = $portfolioData['category_slug'];
+            unset($portfolioData['category_slug']);
+
+            if (isset($categories[$categorySlug])) {
+                $portfolioData['portfolio_category_id'] = $categories[$categorySlug]->id;
+                $portfolioData['category'] = $categories[$categorySlug]->name;
+
+                Portfolio::create($portfolioData);
+                echo "Created portfolio: {$portfolioData['title']}\n";
+            }
         }
+
+        echo "Portfolio seeding completed successfully!\n";
     }
 }

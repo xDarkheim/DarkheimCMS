@@ -126,6 +126,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/team', [TeamMemberController::class, 'store']);
     Route::put('/team/{teamMember}', [TeamMemberController::class, 'update']);
     Route::delete('/team/{teamMember}', [TeamMemberController::class, 'destroy']);
+    Route::post('/team/{teamMember}/toggle-visible', [TeamMemberController::class, 'toggleVisible']);
 
     // Company Info Management
     Route::prefix('company-info')->group(function () {
@@ -136,4 +137,34 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::delete('/{companyInfo}', [App\Http\Controllers\Admin\CompanyInfoController::class, 'destroy']);
         Route::post('/update-order', [App\Http\Controllers\Admin\CompanyInfoController::class, 'updateOrder']);
     });
+
+    // Settings Management
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index']);
+        Route::get('/group/{group}', [App\Http\Controllers\Admin\SettingsController::class, 'getByGroup']);
+        Route::put('/group/{group}', [App\Http\Controllers\Admin\SettingsController::class, 'updateGroup']);
+        Route::put('/{key}', [App\Http\Controllers\Admin\SettingsController::class, 'update']);
+        Route::delete('/{key}', [App\Http\Controllers\Admin\SettingsController::class, 'destroy']);
+        Route::post('/reset-defaults', [App\Http\Controllers\Admin\SettingsController::class, 'resetToDefaults']);
+    });
+
+    // File Manager
+    Route::prefix('files')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\FileManagerController::class, 'index']);
+        Route::post('/upload', [App\Http\Controllers\Admin\FileManagerController::class, 'upload']);
+        Route::post('/directory', [App\Http\Controllers\Admin\FileManagerController::class, 'createDirectory']);
+        Route::delete('/', [App\Http\Controllers\Admin\FileManagerController::class, 'delete']);
+    });
+
+    // Activity Logs
+    Route::prefix('activity-logs')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ActivityLogController::class, 'index']);
+        Route::get('/stats', [App\Http\Controllers\Admin\ActivityLogController::class, 'stats']);
+        Route::get('/filter-options', [App\Http\Controllers\Admin\ActivityLogController::class, 'filterOptions']);
+        Route::post('/export', [App\Http\Controllers\Admin\ActivityLogController::class, 'export']);
+        Route::post('/cleanup', [App\Http\Controllers\Admin\ActivityLogController::class, 'cleanup']);
+    });
 });
+
+// Public settings endpoint
+Route::get('/settings/public', [App\Http\Controllers\Admin\SettingsController::class, 'getPublic']);

@@ -21,7 +21,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Development',
                 'bio' => 'Alex is our lead developer with over 8 years of experience in web development. He specializes in Laravel, Vue.js, and modern web technologies. Alex leads our development team and ensures code quality and best practices across all projects.',
                 'email' => 'alex.johnson@darkheim.dev',
-                'phone' => '+1 (555) 123-4567',
                 'skills' => json_encode(['Laravel', 'Vue.js', 'PHP', 'JavaScript', 'MySQL', 'Docker', 'AWS', 'Git']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/alexjohnson',
@@ -42,7 +41,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Design',
                 'bio' => 'Sarah is our creative lead with a passion for user-centered design. She has over 6 years of experience in digital design and specializes in creating intuitive and beautiful user interfaces for web and mobile applications.',
                 'email' => 'sarah.chen@darkheim.dev',
-                'phone' => '+1 (555) 234-5678',
                 'skills' => json_encode(['Figma', 'Adobe XD', 'Sketch', 'Photoshop', 'Illustrator', 'Prototyping', 'User Research']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/sarahchen',
@@ -63,7 +61,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Infrastructure',
                 'bio' => 'Michael is our infrastructure expert who ensures our applications run smoothly and securely. With 5 years of experience in DevOps and cloud technologies, he manages our deployment pipelines and server infrastructure.',
                 'email' => 'michael.rodriguez@darkheim.dev',
-                'phone' => '+1 (555) 345-6789',
                 'skills' => json_encode(['Docker', 'Kubernetes', 'AWS', 'Terraform', 'Jenkins', 'Linux', 'Python', 'Bash']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/michaelrodriguez',
@@ -84,7 +81,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Development',
                 'bio' => 'Emily is a talented frontend developer with a keen eye for detail and user experience. She specializes in Vue.js and modern CSS frameworks, creating responsive and interactive web applications.',
                 'email' => 'emily.davis@darkheim.dev',
-                'phone' => '+1 (555) 456-7890',
                 'skills' => json_encode(['Vue.js', 'React', 'JavaScript', 'TypeScript', 'Sass', 'Tailwind CSS', 'Webpack']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/emilydavis',
@@ -105,7 +101,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Development',
                 'bio' => 'David is our backend specialist with expertise in server-side technologies and database design. He focuses on building robust and scalable APIs that power our applications.',
                 'email' => 'david.kim@darkheim.dev',
-                'phone' => '+1 (555) 567-8901',
                 'skills' => json_encode(['Laravel', 'PHP', 'Node.js', 'PostgreSQL', 'MySQL', 'Redis', 'REST APIs', 'GraphQL']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/davidkim',
@@ -126,7 +121,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Management',
                 'bio' => 'Lisa coordinates our development projects and ensures smooth communication between team members and clients. With her strong organizational skills and technical background, she keeps our projects on track and delivered on time.',
                 'email' => 'lisa.thompson@darkheim.dev',
-                'phone' => '+1 (555) 678-9012',
                 'skills' => json_encode(['Project Management', 'Agile', 'Scrum', 'Jira', 'Confluence', 'Team Leadership']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/lisathompson',
@@ -146,7 +140,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Development',
                 'bio' => 'James is our newest team member, bringing fresh ideas and enthusiasm to our development team. He is currently learning our tech stack and contributing to various projects under senior developer guidance.',
                 'email' => 'james.wilson@darkheim.dev',
-                'phone' => '+1 (555) 789-0123',
                 'skills' => json_encode(['PHP', 'JavaScript', 'Laravel', 'Vue.js', 'MySQL', 'Git']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/jameswilson',
@@ -166,7 +159,6 @@ class TeamSeeder extends Seeder
                 'department' => 'Quality Assurance',
                 'bio' => 'Maria ensures the quality and reliability of our applications through comprehensive testing strategies. She has experience in both manual and automated testing methodologies.',
                 'email' => 'maria.garcia@darkheim.dev',
-                'phone' => '+1 (555) 890-1234',
                 'skills' => json_encode(['Manual Testing', 'Automated Testing', 'Selenium', 'Jest', 'Cypress', 'Bug Tracking']),
                 'social_links' => json_encode([
                     'linkedin' => 'https://linkedin.com/in/mariagarcia'

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -52,31 +53,39 @@ class AdminNewsController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
+            'category' => 'required|string|max:100',
             'image_url' => 'nullable|url',
-            'author' => 'required|string|max:100',
-            'category' => ['required', 'string', Rule::in(array_keys(News::CATEGORIES))],
+            'author' => 'required|string|max:255',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
             'published_at' => 'nullable|date',
         ]);
 
-        // Генерируем slug
-        $validated['slug'] = Str::slug($validated['title']);
+        $news = News::create([
+            'title' => $validated['title'],
+            'slug' => Str::slug($validated['title']),
+            'content' => $validated['content'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+            'author' => $validated['author'],
+            'category' => $validated['category'],
+            'is_published' => $validated['is_published'] ?? false,
+            'is_featured' => $validated['is_featured'] ?? false,
+            'published_at' => $validated['published_at'] ?? null,
+        ]);
 
-        // Проверяем уникальность slug
-        $originalSlug = $validated['slug'];
-        $counter = 1;
-        while (News::where('slug', $validated['slug'])->exists()) {
-            $validated['slug'] = $originalSlug . '-' . $counter;
-            $counter++;
-        }
-
-        // Устанавливаем дату публикации если не указана
-        if ($validated['is_published'] && !$validated['published_at']) {
-            $validated['published_at'] = now();
-        }
-
-        $news = News::create($validated);
+        // Log news creation
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'created',
+            'model_type' => 'App\\Models\\News',
+            'model_id' => $news->id,
+            'description' => "Created news article: {$news->title}",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => $news->toArray(),
+            'severity' => 'info'
+        ]);
 
         return response()->json([
             'success' => true,
@@ -95,48 +104,87 @@ class AdminNewsController extends Controller
 
     public function update(Request $request, News $news)
     {
+        // Store original data for logging
+        $originalData = $news->toArray();
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
+            'category' => 'required|string|max:100',
             'image_url' => 'nullable|url',
-            'author' => 'required|string|max:100',
-            'category' => ['required', 'string', Rule::in(array_keys(News::CATEGORIES))],
+            'author' => 'required|string|max:255',
             'is_published' => 'boolean',
             'is_featured' => 'boolean',
             'published_at' => 'nullable|date',
         ]);
 
-        // Обновляем slug если изменился title
-        if ($validated['title'] !== $news->title) {
-            $baseSlug = Str::slug($validated['title']);
-            $validated['slug'] = $baseSlug;
+        $news->update([
+            'title' => $validated['title'],
+            'slug' => Str::slug($validated['title']),
+            'content' => $validated['content'],
+            'excerpt' => $validated['excerpt'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+            'author' => $validated['author'],
+            'category' => $validated['category'],
+            'is_published' => $validated['is_published'] ?? false,
+            'is_featured' => $validated['is_featured'] ?? false,
+            'published_at' => $validated['published_at'] ?? null,
+        ]);
 
-            // Проверяем уникальность slug
-            $counter = 1;
-            while (News::where('slug', $validated['slug'])->where('id', '!=', $news->id)->exists()) {
-                $validated['slug'] = $baseSlug . '-' . $counter;
-                $counter++;
+        // Log news update with changes
+        $changes = [];
+        $newData = $news->fresh()->toArray();
+        foreach ($newData as $key => $newValue) {
+            if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
+                $changes[$key] = [
+                    'old' => $originalData[$key],
+                    'new' => $newValue
+                ];
             }
         }
 
-        // Устанавливаем дату публикации при первой публикации
-        if ($validated['is_published'] && !$news->is_published && !$validated['published_at']) {
-            $validated['published_at'] = now();
+        if (!empty($changes)) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'model_type' => 'App\\Models\\News',
+                'model_id' => $news->id,
+                'description' => "Updated news article: {$news->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'changes' => $changes,
+                'severity' => 'info'
+            ]);
         }
-
-        $news->update($validated);
 
         return response()->json([
             'success' => true,
             'message' => 'News article updated successfully',
-            'data' => $news->fresh()
+            'data' => $news
         ]);
     }
 
     public function destroy(News $news)
     {
+        $newsData = $news->toArray();
+        $newsTitle = $news->title;
+        $newsId = $news->id;
+
         $news->delete();
+
+        // Log news deletion
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => 'App\\Models\\News',
+            'model_id' => $newsId,
+            'description' => "Deleted news article: {$newsTitle}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => $newsData,
+            'severity' => 'warning'
+        ]);
 
         return response()->json([
             'success' => true,
@@ -146,70 +194,112 @@ class AdminNewsController extends Controller
 
     public function togglePublished(News $news)
     {
-        $news->update([
-            'is_published' => !$news->is_published,
-            'published_at' => !$news->is_published ? now() : $news->published_at
+        $oldStatus = $news->is_published;
+        $news->update(['is_published' => !$news->is_published]);
+
+        // Log status change
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'status_changed',
+            'model_type' => 'App\\Models\\News',
+            'model_id' => $news->id,
+            'description' => "Changed publication status of '{$news->title}' from " . ($oldStatus ? 'published' : 'draft') . " to " . ($news->is_published ? 'published' : 'draft'),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => [
+                'is_published' => [
+                    'old' => $oldStatus,
+                    'new' => $news->is_published
+                ]
+            ],
+            'severity' => 'info'
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'News article status updated',
-            'data' => $news->fresh()
+            'message' => 'Publication status updated successfully',
+            'data' => $news
         ]);
     }
 
     public function toggleFeatured(News $news)
     {
-        $news->update([
-            'is_featured' => !$news->is_featured
+        $oldStatus = $news->is_featured;
+        $news->update(['is_featured' => !$news->is_featured]);
+
+        // Log featured status change
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'featured_changed',
+            'model_type' => 'App\\Models\\News',
+            'model_id' => $news->id,
+            'description' => "Changed featured status of '{$news->title}' from " . ($oldStatus ? 'featured' : 'normal') . " to " . ($news->is_featured ? 'featured' : 'normal'),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => [
+                'is_featured' => [
+                    'old' => $oldStatus,
+                    'new' => $news->is_featured
+                ]
+            ],
+            'severity' => 'info'
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'News article featured status updated',
-            'data' => $news->fresh()
+            'message' => 'Featured status updated successfully',
+            'data' => $news
         ]);
     }
 
     public function bulkAction(Request $request)
     {
         $validated = $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:news,id',
-            'action' => 'required|in:publish,unpublish,feature,unfeature,delete'
+            'action' => 'required|in:publish,unpublish,feature,unfeature,delete',
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:news,id'
         ]);
 
-        $news = News::whereIn('id', $validated['ids']);
+        $news = News::whereIn('id', $validated['ids'])->get();
+        $affectedTitles = $news->pluck('title')->toArray();
 
         switch ($validated['action']) {
             case 'publish':
-                $news->update([
-                    'is_published' => true,
-                    'published_at' => now()
-                ]);
-                $message = 'Articles published successfully';
+                News::whereIn('id', $validated['ids'])->update(['is_published' => true]);
                 break;
             case 'unpublish':
-                $news->update(['is_published' => false]);
-                $message = 'Articles unpublished successfully';
+                News::whereIn('id', $validated['ids'])->update(['is_published' => false]);
                 break;
             case 'feature':
-                $news->update(['is_featured' => true]);
-                $message = 'Articles featured successfully';
+                News::whereIn('id', $validated['ids'])->update(['is_featured' => true]);
                 break;
             case 'unfeature':
-                $news->update(['is_featured' => false]);
-                $message = 'Articles unfeatured successfully';
+                News::whereIn('id', $validated['ids'])->update(['is_featured' => false]);
                 break;
             case 'delete':
-                $news->delete();
-                $message = 'Articles deleted successfully';
+                News::whereIn('id', $validated['ids'])->delete();
                 break;
         }
 
+        // Log bulk action
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'bulk_action',
+            'model_type' => 'App\\Models\\News',
+            'description' => "Performed bulk action '{$validated['action']}' on " . count($validated['ids']) . " news articles: " . implode(', ', array_slice($affectedTitles, 0, 3)) . (count($affectedTitles) > 3 ? '...' : ''),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => [
+                'action' => $validated['action'],
+                'affected_ids' => $validated['ids'],
+                'affected_titles' => $affectedTitles
+            ],
+            'severity' => $validated['action'] === 'delete' ? 'warning' : 'info'
+        ]);
+
         return response()->json([
             'success' => true,
-            'message' => $message
+            'message' => ucfirst($validated['action']) . ' action completed successfully'
         ]);
     }
 

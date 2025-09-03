@@ -149,12 +149,7 @@ export const adminApiService = {
   getPortfolioCategories: () => adminApi.get('/admin/portfolios-categories'),
 
   // News management
-  getNews: (page = 1, params = {}) => {
-    let url = `/admin/news?page=${page}`
-    if (params.status) url += `&status=${params.status}`
-    if (params.search) url += `&search=${encodeURIComponent(params.search)}`
-    return adminApi.get(url)
-  },
+  getNews: (page = 1, params = {}) => adminApi.get(`/admin/news`, { params: { page, ...params } }),
   createNews: (data) => adminApi.post('/admin/news', data),
   updateNews: (id, data) => adminApi.put(`/admin/news/${id}`, data),
   deleteNews: (id) => adminApi.delete(`/admin/news/${id}`),
@@ -162,6 +157,64 @@ export const adminApiService = {
   toggleNewsFeatured: (id) => adminApi.post(`/admin/news/${id}/toggle-featured`),
   bulkNewsAction: (data) => adminApi.post('/admin/news/bulk-action', data),
   getNewsCategories: () => adminApi.get('/admin/news/categories'),
+
+  // Contact Messages management
+  getContactMessages: (page = 1) => adminApi.get(`/admin/contact-messages?page=${page}`),
+  getContactMessage: (id) => adminApi.get(`/admin/contact-messages/${id}`),
+  markContactMessageRead: (id) => adminApi.patch(`/admin/contact-messages/${id}/mark-read`),
+  deleteContactMessage: (id) => adminApi.delete(`/admin/contact-messages/${id}`),
+  getContactMessageStats: () => adminApi.get('/admin/contact-messages/stats'),
+
+  // Team management
+  getTeam: () => adminApi.get('/team'),
+  createTeamMember: (data) => adminApi.post('/admin/team', data),
+  updateTeamMember: (id, data) => adminApi.put(`/admin/team/${id}`, data),
+  deleteTeamMember: (id) => adminApi.delete(`/admin/team/${id}`),
+
+  // Career management
+  getCareers: () => adminApi.get('/careers'),
+  createCareer: (data) => adminApi.post('/admin/careers', data),
+  updateCareer: (id, data) => adminApi.put(`/admin/careers/${id}`, data),
+  deleteCareer: (id) => adminApi.delete(`/admin/careers/${id}`),
+
+  // Company Info management
+  getCompanyInfo: () => adminApi.get('/admin/company-info'),
+  createCompanyInfo: (data) => adminApi.post('/admin/company-info', data),
+  updateCompanyInfo: (id, data) => adminApi.put(`/admin/company-info/${id}`, data),
+  deleteCompanyInfo: (id) => adminApi.delete(`/admin/company-info/${id}`),
+  updateCompanyInfoOrder: (data) => adminApi.post('/admin/company-info/update-order', data),
+
+  // Settings management
+  getSettings: () => adminApi.get('/admin/settings'),
+  getSettingsByGroup: (group) => adminApi.get(`/admin/settings/group/${group}`),
+  updateSettingsGroup: (group, settings) => adminApi.put(`/admin/settings/group/${group}`, { settings }),
+  updateSetting: (key, data) => adminApi.put(`/admin/settings/${key}`, data),
+  deleteSetting: (key) => adminApi.delete(`/admin/settings/${key}`),
+  resetSettingsToDefaults: () => adminApi.post('/admin/settings/reset-defaults'),
+
+  // File Manager
+  getFiles: (path = '', type = 'all') => adminApi.get(`/admin/files?path=${path}&type=${type}`),
+  uploadFiles: (files, path = '') => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files[]', file));
+    if (path) formData.append('path', path);
+
+    return adminApi.post('/admin/files/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  createDirectory: (name, path = '') => adminApi.post('/admin/files/directory', { name, path }),
+  deleteFiles: (items) => adminApi.delete('/admin/files', { data: { items } }),
+
+  // Activity Logs
+  getActivityLogs: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return adminApi.get(`/admin/activity-logs?${query}`);
+  },
+  getActivityLogStats: () => adminApi.get('/admin/activity-logs/stats'),
+  getActivityLogFilterOptions: () => adminApi.get('/admin/activity-logs/filter-options'),
+  exportActivityLogs: (data) => adminApi.post('/admin/activity-logs/export', data),
+  cleanupActivityLogs: (days) => adminApi.post('/admin/activity-logs/cleanup', { days })
 }
 
 export default adminApi

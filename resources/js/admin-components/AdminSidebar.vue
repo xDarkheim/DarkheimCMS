@@ -223,6 +223,16 @@ const systemRoutes = computed(() => [
     badge: null
   },
   {
+    name: 'admin.file-manager',
+    meta: { title: 'File Manager', icon: 'fas fa-folder-open' },
+    badge: null
+  },
+  {
+    name: 'admin.activity-logs',
+    meta: { title: 'Activity Logs', icon: 'fas fa-history' },
+    badge: null
+  },
+  {
     name: 'admin.settings',
     meta: { title: 'Settings', icon: 'fas fa-cog' },
     badge: null

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Career;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -52,6 +53,19 @@ class CareerController extends Controller
 
         $career = Career::create($validated);
 
+        // Log career creation
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'created',
+            'model_type' => 'App\\Models\\Career',
+            'model_id' => $career->id,
+            'description' => "Created career position: {$career->title} in {$career->department}",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => $career->toArray(),
+            'severity' => 'info'
+        ]);
+
         return response()->json([
             'success' => true,
             'data' => $career,
@@ -61,6 +75,9 @@ class CareerController extends Controller
 
     public function update(Request $request, Career $career): JsonResponse
     {
+        // Store original data for logging
+        $originalData = $career->toArray();
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'department' => 'required|string|max:255',
@@ -81,6 +98,32 @@ class CareerController extends Controller
 
         $career->update($validated);
 
+        // Log career update with changes
+        $changes = [];
+        $newData = $career->fresh()->toArray();
+        foreach ($newData as $key => $newValue) {
+            if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
+                $changes[$key] = [
+                    'old' => $originalData[$key],
+                    'new' => $newValue
+                ];
+            }
+        }
+
+        if (!empty($changes)) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'model_type' => 'App\\Models\\Career',
+                'model_id' => $career->id,
+                'description' => "Updated career position: {$career->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'changes' => $changes,
+                'severity' => 'info'
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'data' => $career,
@@ -90,7 +133,24 @@ class CareerController extends Controller
 
     public function destroy(Career $career): JsonResponse
     {
+        $careerData = $career->toArray();
+        $careerTitle = $career->title;
+        $careerId = $career->id;
+
         $career->delete();
+
+        // Log career deletion
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => 'App\\Models\\Career',
+            'model_id' => $careerId,
+            'description' => "Deleted career position: {$careerTitle}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => $careerData,
+            'severity' => 'warning'
+        ]);
 
         return response()->json([
             'success' => true,

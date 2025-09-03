@@ -147,12 +147,6 @@
                 <span>News & Blog</span>
               </router-link>
             </li>
-            <li>
-              <router-link to="/portfolio" class="footer__link">
-                <i class="fas fa-folder-open"></i>
-                <span>Portfolio</span>
-              </router-link>
-            </li>
           </ul>
         </div>
 
@@ -200,6 +194,12 @@
           <div class="footer__copyright">
             <i class="far fa-copyright"></i>
             <span>{{ currentYear }} Darkheim. All rights reserved.</span>
+          </div>
+          <div class="footer__creator">
+            <span>Developed by</span>
+            <a href="https://hovenko.com/" target="_blank" rel="noopener noreferrer" class="footer__creator-link">
+              Dmytro Hovenko
+            </a>
           </div>
         </div>
 
@@ -360,7 +360,6 @@ $border-radius: 12px;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   gap: 2.5rem;
   padding: 4rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
   @media (max-width: 1200px) {
     grid-template-columns: 2fr 1fr 1fr;
@@ -714,6 +713,31 @@ $border-radius: 12px;
 
   i {
     color: $primary-color;
+  }
+}
+
+.footer__creator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $text-muted;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+
+  span {
+    color: $text-muted;
+  }
+}
+
+.footer__creator-link {
+  color: $primary-color;
+  text-decoration: none;
+  font-weight: 500;
+  transition: $transition;
+
+  &:hover {
+    color: $primary-hover;
+    text-decoration: underline;
   }
 }
 

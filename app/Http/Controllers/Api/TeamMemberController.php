@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\TeamMember;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -31,16 +32,44 @@ class TeamMemberController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Prepare data for validation - convert JSON strings to arrays if needed
+        $requestData = $request->all();
+
+        // Handle skills - convert JSON string to array if needed
+        if (isset($requestData['skills'])) {
+            if (is_string($requestData['skills'])) {
+                $skills = json_decode($requestData['skills'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($skills)) {
+                    $requestData['skills'] = $skills;
+                } else {
+                    // If not valid JSON, treat as comma-separated string
+                    $requestData['skills'] = array_map('trim', explode(',', $requestData['skills']));
+                    $requestData['skills'] = array_filter($requestData['skills']); // Remove empty values
+                }
+            }
+        }
+
+        // Handle social_links - convert JSON string to array if needed
+        if (isset($requestData['social_links'])) {
+            if (is_string($requestData['social_links'])) {
+                $socialLinks = json_decode($requestData['social_links'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($socialLinks)) {
+                    $requestData['social_links'] = $socialLinks;
+                } else {
+                    $requestData['social_links'] = [];
+                }
+            }
+        }
+
+        $validator = Validator::make($requestData, [
             'name' => 'required|string|max:255',
             'position' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'bio' => 'required|string',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:50',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'skills' => 'nullable|string',
-            'social_links' => 'nullable|string',
+            'skills' => 'nullable|array',
+            'social_links' => 'nullable|array',
             'status' => 'required|in:active,inactive,on-leave',
             'joined_date' => 'nullable|date',
             'priority' => 'nullable|integer|min:0|max:100',
@@ -55,7 +84,7 @@ class TeamMemberController extends Controller
             ], 422);
         }
 
-        $data = $request->all();
+        $data = $requestData;
 
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
@@ -65,36 +94,22 @@ class TeamMemberController extends Controller
             $data['avatar'] = '/storage/' . $path;
         }
 
-        // Process skills from JSON or comma-separated string
-        if (isset($data['skills'])) {
-            if (is_string($data['skills'])) {
-                try {
-                    // Try to decode as JSON first
-                    $skills = json_decode($data['skills'], true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        // If not JSON, treat as comma-separated string
-                        $skills = array_map('trim', explode(',', $data['skills']));
-                        $skills = array_filter($skills); // Remove empty values
-                    }
-                    $data['skills'] = $skills;
-                } catch (\Exception $e) {
-                    $data['skills'] = [];
-                }
-            }
-        }
-
-        // Process social links from JSON string
-        if (isset($data['social_links'])) {
-            if (is_string($data['social_links'])) {
-                try {
-                    $data['social_links'] = json_decode($data['social_links'], true);
-                } catch (\Exception $e) {
-                    $data['social_links'] = [];
-                }
-            }
-        }
+        // Laravel will automatically handle JSON casting for skills and social_links
 
         $teamMember = TeamMember::create($data);
+
+        // Log team member creation
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'created',
+            'model_type' => 'App\\Models\\TeamMember',
+            'model_id' => $teamMember->id,
+            'description' => "Created team member: {$teamMember->name} ({$teamMember->position})",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => $teamMember->toArray(),
+            'severity' => 'info'
+        ]);
 
         return response()->json([
             'success' => true,
@@ -119,16 +134,47 @@ class TeamMemberController extends Controller
      */
     public function update(Request $request, TeamMember $teamMember)
     {
-        $validator = Validator::make($request->all(), [
+        // Store original data for logging
+        $originalData = $teamMember->toArray();
+
+        // Prepare data for validation - convert JSON strings to arrays if needed
+        $requestData = $request->all();
+
+        // Handle skills - convert JSON string to array if needed
+        if (isset($requestData['skills'])) {
+            if (is_string($requestData['skills'])) {
+                $skills = json_decode($requestData['skills'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($skills)) {
+                    $requestData['skills'] = $skills;
+                } else {
+                    // If not valid JSON, treat as comma-separated string
+                    $requestData['skills'] = array_map('trim', explode(',', $requestData['skills']));
+                    $requestData['skills'] = array_filter($requestData['skills']); // Remove empty values
+                }
+            }
+        }
+
+        // Handle social_links - convert JSON string to array if needed
+        if (isset($requestData['social_links'])) {
+            if (is_string($requestData['social_links'])) {
+                $socialLinks = json_decode($requestData['social_links'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($socialLinks)) {
+                    $requestData['social_links'] = $socialLinks;
+                } else {
+                    $requestData['social_links'] = [];
+                }
+            }
+        }
+
+        $validator = Validator::make($requestData, [
             'name' => 'required|string|max:255',
             'position' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'bio' => 'required|string',
             'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:50',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'skills' => 'nullable|string',
-            'social_links' => 'nullable|string',
+            'skills' => 'nullable|array',
+            'social_links' => 'nullable|array',
             'status' => 'required|in:active,inactive,on-leave',
             'joined_date' => 'nullable|date',
             'priority' => 'nullable|integer|min:0|max:100',
@@ -143,7 +189,7 @@ class TeamMemberController extends Controller
             ], 422);
         }
 
-        $data = $request->all();
+        $data = $requestData;
 
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
@@ -158,36 +204,35 @@ class TeamMemberController extends Controller
             $data['avatar'] = '/storage/' . $path;
         }
 
-        // Process skills from JSON or comma-separated string
-        if (isset($data['skills'])) {
-            if (is_string($data['skills'])) {
-                try {
-                    // Try to decode as JSON first
-                    $skills = json_decode($data['skills'], true);
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        // If not JSON, treat as comma-separated string
-                        $skills = array_map('trim', explode(',', $data['skills']));
-                        $skills = array_filter($skills); // Remove empty values
-                    }
-                    $data['skills'] = $skills;
-                } catch (\Exception $e) {
-                    $data['skills'] = [];
-                }
-            }
-        }
-
-        // Process social links from JSON string
-        if (isset($data['social_links'])) {
-            if (is_string($data['social_links'])) {
-                try {
-                    $data['social_links'] = json_decode($data['social_links'], true);
-                } catch (\Exception $e) {
-                    $data['social_links'] = [];
-                }
-            }
-        }
+        // Laravel will automatically handle JSON casting for skills and social_links
 
         $teamMember->update($data);
+
+        // Log team member update with changes
+        $changes = [];
+        $newData = $teamMember->fresh()->toArray();
+        foreach ($newData as $key => $newValue) {
+            if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
+                $changes[$key] = [
+                    'old' => $originalData[$key],
+                    'new' => $newValue
+                ];
+            }
+        }
+
+        if (!empty($changes)) {
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'model_type' => 'App\\Models\\TeamMember',
+                'model_id' => $teamMember->id,
+                'description' => "Updated team member: {$teamMember->name}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'changes' => $changes,
+                'severity' => 'info'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -201,6 +246,10 @@ class TeamMemberController extends Controller
      */
     public function destroy(TeamMember $teamMember)
     {
+        $memberData = $teamMember->toArray();
+        $memberName = $teamMember->name;
+        $memberId = $teamMember->id;
+
         // Delete avatar file if exists
         if ($teamMember->avatar && !empty($teamMember->avatar)) {
             $avatarPath = public_path($teamMember->avatar);
@@ -219,9 +268,57 @@ class TeamMemberController extends Controller
 
         $teamMember->delete();
 
+        // Log team member deletion
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'model_type' => 'App\\Models\\TeamMember',
+            'model_id' => $memberId,
+            'description' => "Deleted team member: {$memberName}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'changes' => $memberData,
+            'severity' => 'warning'
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Team member deleted successfully'
+        ]);
+    }
+
+    /**
+     * Toggle visibility of team member on website
+     */
+    public function toggleVisible(Request $request, TeamMember $teamMember)
+    {
+        $originalValue = $teamMember->show_on_website;
+        $teamMember->show_on_website = !$teamMember->show_on_website;
+        $teamMember->save();
+
+        // Log the visibility toggle
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'model_type' => 'App\\Models\\TeamMember',
+            'model_id' => $teamMember->id,
+            'description' => "Toggled visibility for team member: {$teamMember->name} (" .
+                           ($teamMember->show_on_website ? 'visible' : 'hidden') . " on website)",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'changes' => [
+                'show_on_website' => [
+                    'old' => $originalValue,
+                    'new' => $teamMember->show_on_website
+                ]
+            ],
+            'severity' => 'info'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Team member visibility toggled successfully',
+            'data' => $teamMember
         ]);
     }
 }

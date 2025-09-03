@@ -109,22 +109,24 @@
               </div>
               <div class="card-content">
                 <div class="form-group">
-                  <label for="session_timeout">Session Timeout</label>
-                  <select id="session_timeout" v-model="settings.session_timeout">
-                    <option value="30">30 minutes</option>
-                    <option value="60">1 hour</option>
-                    <option value="120">2 hours</option>
-                    <option value="240">4 hours</option>
-                    <option value="480">8 hours</option>
-                  </select>
+                  <label for="session_timeout">Session Timeout (minutes)</label>
+                  <input
+                    id="session_timeout"
+                    v-model="securitySettings.session_timeout"
+                    type="number"
+                    min="5"
+                    max="480"
+                  >
                 </div>
                 <div class="form-group">
                   <label for="max_login_attempts">Max Login Attempts</label>
-                  <select id="max_login_attempts" v-model="settings.max_login_attempts">
-                    <option value="3">3 attempts</option>
-                    <option value="5">5 attempts</option>
-                    <option value="10">10 attempts</option>
-                  </select>
+                  <input
+                    id="max_login_attempts"
+                    v-model="securitySettings.max_login_attempts"
+                    type="number"
+                    min="3"
+                    max="10"
+                  >
                 </div>
               </div>
             </div>
@@ -132,19 +134,29 @@
             <div class="setting-card">
               <div class="card-header">
                 <div class="card-icon">
-                  <i class="fas fa-tools"></i>
+                  <i class="fas fa-key"></i>
                 </div>
-                <h4>Maintenance</h4>
+                <h4>Authentication</h4>
               </div>
               <div class="card-content">
-                <div class="toggle-field">
-                  <div class="toggle-info">
-                    <h5>Maintenance Mode</h5>
-                    <p>Put your site into maintenance mode for updates</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" v-model="settings.maintenance_mode">
-                    <span class="slider"></span>
+                <div class="form-group checkbox-group">
+                  <label>
+                    <input
+                      v-model="securitySettings.require_email_verification"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    Require Email Verification
+                  </label>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label>
+                    <input
+                      v-model="securitySettings.enable_2fa"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    Enable Two-Factor Authentication
                   </label>
                 </div>
               </div>
@@ -152,11 +164,81 @@
           </div>
         </div>
 
-        <!-- Performance Settings -->
-        <div v-if="activeSection === 'performance'" class="settings-panel">
+        <!-- Email Settings -->
+        <div v-if="activeSection === 'email'" class="settings-panel">
           <div class="panel-header">
-            <h3>Performance & Optimization</h3>
-            <p>Boost your site's speed and efficiency</p>
+            <h3>Email Configuration</h3>
+            <p>Configure email settings for notifications and contact forms</p>
+          </div>
+
+          <div class="settings-grid">
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <h4>SMTP Settings</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group checkbox-group">
+                  <label>
+                    <input
+                      v-model="emailSettings.smtp_enabled"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    Enable SMTP
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label for="smtp_host">SMTP Host</label>
+                  <input
+                    id="smtp_host"
+                    v-model="emailSettings.smtp_host"
+                    type="text"
+                    placeholder="smtp.gmail.com"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="smtp_port">SMTP Port</label>
+                  <input
+                    id="smtp_port"
+                    v-model="emailSettings.smtp_port"
+                    type="number"
+                    placeholder="587"
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <h4>Notifications</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group">
+                  <label for="contact_form_emails">Contact Form Recipients</label>
+                  <textarea
+                    id="contact_form_emails"
+                    v-model="emailSettings.contact_form_emails_text"
+                    placeholder="admin@example.com, support@example.com"
+                    rows="3"
+                  ></textarea>
+                  <small>Enter email addresses separated by commas</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Settings -->
+        <div v-if="activeSection === 'api'" class="settings-panel">
+          <div class="panel-header">
+            <h3>API Configuration</h3>
+            <p>Configure API rate limiting and caching</p>
           </div>
 
           <div class="settings-grid">
@@ -165,190 +247,228 @@
                 <div class="card-icon">
                   <i class="fas fa-tachometer-alt"></i>
                 </div>
-                <h4>Caching</h4>
+                <h4>Rate Limiting</h4>
               </div>
               <div class="card-content">
-                <div class="toggle-field">
-                  <div class="toggle-info">
-                    <h5>Enable Caching</h5>
-                    <p>Cache pages and data for faster loading</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" v-model="settings.cache_enabled">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
                 <div class="form-group">
-                  <label for="cache_duration">Cache Duration</label>
-                  <select id="cache_duration" v-model="settings.cache_duration">
-                    <option value="1">1 hour</option>
-                    <option value="6">6 hours</option>
-                    <option value="12">12 hours</option>
-                    <option value="24">24 hours</option>
-                  </select>
+                  <label for="api_rate_limit">Requests per minute</label>
+                  <input
+                    id="api_rate_limit"
+                    v-model="apiSettings.api_rate_limit"
+                    type="number"
+                    min="10"
+                    max="1000"
+                  >
                 </div>
-              </div>
-            </div>
-
-            <div class="setting-card">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fas fa-broom"></i>
+                <div class="form-group">
+                  <label for="api_cache_ttl">Cache TTL (seconds)</label>
+                  <input
+                    id="api_cache_ttl"
+                    v-model="apiSettings.api_cache_ttl"
+                    type="number"
+                    min="60"
+                    max="86400"
+                  >
                 </div>
-                <h4>Cache Management</h4>
-              </div>
-              <div class="card-content">
-                <p>Clear cached data to see immediate changes</p>
-                <button @click="clearCache" class="btn btn-danger">
-                  <i class="fas fa-trash-alt"></i>
-                  Clear All Cache
-                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Save Actions -->
+      <!-- Action Buttons -->
       <div class="settings-actions">
-        <button @click="resetSettings" class="btn btn-secondary">
+        <button @click="saveSettings" :disabled="saving" class="btn btn-primary">
+          <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+          <i v-else class="fas fa-save"></i>
+          {{ saving ? 'Saving...' : 'Save Settings' }}
+        </button>
+
+        <button @click="resetToDefaults" class="btn btn-warning">
           <i class="fas fa-undo"></i>
           Reset to Defaults
         </button>
-        <button
-          @click="saveSettings"
-          :disabled="saving"
-          class="btn btn-primary"
-        >
-          <div v-if="saving" class="loading-spinner"></div>
-          <i v-else class="fas fa-save"></i>
-          {{ saving ? 'Saving...' : 'Save Changes' }}
+
+        <button @click="loadSettings" class="btn btn-secondary">
+          <i class="fas fa-sync-alt"></i>
+          Reload
         </button>
       </div>
     </div>
-
-    <!-- Toast Notifications -->
-    <transition name="toast">
-      <div v-if="message" :class="['toast-notification', messageType]">
-        <div class="toast-content">
-          <i :class="messageType === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle'"></i>
-          <span>{{ message }}</span>
-        </div>
-        <button @click="message = ''" class="toast-close">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </transition>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { adminApiService } from '../admin-services/adminApi.js'
 
 export default {
   name: 'AdminSettings',
-  setup() {
-    const saving = ref(false)
-    const message = ref('')
-    const messageType = ref('success')
-    const activeSection = ref('general')
+  data() {
+    return {
+      activeSection: 'general',
+      saving: false,
+      sections: [
+        { id: 'general', title: 'General', icon: 'fas fa-cog' },
+        { id: 'security', title: 'Security', icon: 'fas fa-shield-alt' },
+        { id: 'email', title: 'Email', icon: 'fas fa-envelope' },
+        { id: 'api', title: 'API', icon: 'fas fa-code' }
+      ],
 
-    const sections = [
-      { id: 'general', title: 'General', icon: 'fas fa-cog' },
-      { id: 'security', title: 'Security', icon: 'fas fa-shield-alt' },
-      { id: 'performance', title: 'Performance', icon: 'fas fa-rocket' }
-    ]
+      // Settings data
+      settings: {
+        site_name: '',
+        site_description: '',
+        admin_email: '',
+        items_per_page: 15
+      },
 
-    const settings = reactive({
-      site_name: 'Darkheim Portfolio',
-      site_description: 'Creative digital solutions and portfolio showcase',
-      admin_email: 'darkheim.studio@gmail.com',
-      items_per_page: 15,
-      contact_notifications: true,
-      auto_reply_enabled: true,
-      auto_reply_message: 'Thank you for your message! We appreciate your interest and will get back to you within 24 hours.',
-      session_timeout: 120,
-      maintenance_mode: false,
-      max_login_attempts: 5,
-      cache_enabled: true,
-      cache_duration: 12
-    })
+      securitySettings: {
+        session_timeout: 60,
+        max_login_attempts: 5,
+        require_email_verification: true,
+        enable_2fa: false
+      },
 
-    const loadSettings = async () => {
+      emailSettings: {
+        smtp_enabled: false,
+        smtp_host: '',
+        smtp_port: 587,
+        contact_form_emails: [],
+        contact_form_emails_text: ''
+      },
+
+      apiSettings: {
+        api_rate_limit: 100,
+        api_cache_ttl: 3600
+      }
+    }
+  },
+
+  async mounted() {
+    await this.loadSettings()
+  },
+
+  methods: {
+    async loadSettings() {
       try {
-        console.log('Settings loaded')
+        const response = await adminApiService.getSettings()
+        const allSettings = response.data.data
+
+        // Parse settings by group
+        if (allSettings.general) {
+          this.settings = { ...this.settings, ...this.parseSettingsGroup(allSettings.general) }
+        }
+
+        if (allSettings.security) {
+          this.securitySettings = { ...this.securitySettings, ...this.parseSettingsGroup(allSettings.security) }
+        }
+
+        if (allSettings.email) {
+          const emailData = this.parseSettingsGroup(allSettings.email)
+          this.emailSettings = { ...this.emailSettings, ...emailData }
+
+          // Convert array to text for contact form emails
+          if (emailData.contact_form_emails) {
+            this.emailSettings.contact_form_emails_text = emailData.contact_form_emails.join(', ')
+          }
+        }
+
+        if (allSettings.api) {
+          this.apiSettings = { ...this.apiSettings, ...this.parseSettingsGroup(allSettings.api) }
+        }
+
       } catch (error) {
         console.error('Failed to load settings:', error)
-        showMessage('Failed to load settings', 'error')
+        this.$toast?.error('Failed to load settings')
       }
-    }
+    },
 
-    const saveSettings = async () => {
-      saving.value = true
+    parseSettingsGroup(group) {
+      const parsed = {}
+      group.forEach(setting => {
+        parsed[setting.key] = setting.value
+      })
+      return parsed
+    },
+
+    async saveSettings() {
+      this.saving = true
+
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        showMessage('Settings saved successfully!', 'success')
+        // Prepare settings for each group
+        const groups = {
+          general: this.prepareSettingsForSave(this.settings, 'general'),
+          security: this.prepareSettingsForSave(this.securitySettings, 'security'),
+          email: this.prepareEmailSettings(),
+          api: this.prepareSettingsForSave(this.apiSettings, 'api')
+        }
+
+        // Save each group
+        for (const [groupName, settings] of Object.entries(groups)) {
+          if (settings.length > 0) {
+            await adminApiService.updateSettingsGroup(groupName, settings)
+          }
+        }
+
+        this.$toast?.success('Settings saved successfully')
+
       } catch (error) {
         console.error('Failed to save settings:', error)
-        showMessage('Failed to save settings', 'error')
+        this.$toast?.error('Failed to save settings')
       } finally {
-        saving.value = false
+        this.saving = false
       }
-    }
+    },
 
-    const resetSettings = () => {
+    prepareSettingsForSave(settingsObject, group) {
+      return Object.entries(settingsObject).map(([key, value]) => ({
+        key,
+        value,
+        type: this.getSettingType(value),
+        group,
+        is_public: this.isPublicSetting(key)
+      }))
+    },
+
+    prepareEmailSettings() {
+      const emailData = { ...this.emailSettings }
+
+      // Convert contact form emails text to array
+      if (emailData.contact_form_emails_text) {
+        emailData.contact_form_emails = emailData.contact_form_emails_text
+          .split(',')
+          .map(email => email.trim())
+          .filter(email => email)
+      }
+
+      delete emailData.contact_form_emails_text
+
+      return this.prepareSettingsForSave(emailData, 'email')
+    },
+
+    getSettingType(value) {
+      if (typeof value === 'boolean') return 'boolean'
+      if (typeof value === 'number') return 'integer'
+      if (Array.isArray(value)) return 'array'
+      return 'string'
+    },
+
+    isPublicSetting(key) {
+      const publicSettings = ['site_name', 'site_description']
+      return publicSettings.includes(key)
+    },
+
+    async resetToDefaults() {
       if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
-        Object.assign(settings, {
-          site_name: 'Darkheim Portfolio',
-          site_description: 'Creative digital solutions and portfolio showcase',
-          admin_email: 'darkheim.studio@gmail.com',
-          items_per_page: 15,
-          contact_notifications: true,
-          auto_reply_enabled: true,
-          auto_reply_message: 'Thank you for your message! We appreciate your interest and will get back to you within 24 hours.',
-          session_timeout: 120,
-          maintenance_mode: false,
-          max_login_attempts: 5,
-          cache_enabled: true,
-          cache_duration: 12
-        })
-        showMessage('Settings reset to defaults', 'success')
+        try {
+          await adminApiService.resetSettingsToDefaults()
+          await this.loadSettings()
+          this.$toast?.success('Settings reset to defaults')
+        } catch (error) {
+          console.error('Failed to reset settings:', error)
+          this.$toast?.error('Failed to reset settings')
+        }
       }
-    }
-
-    const clearCache = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        showMessage('Cache cleared successfully!', 'success')
-      } catch (error) {
-        console.error('Failed to clear cache:', error)
-        showMessage('Failed to clear cache', 'error')
-      }
-    }
-
-    const showMessage = (text, type = 'success') => {
-      message.value = text
-      messageType.value = type
-      setTimeout(() => {
-        message.value = ''
-      }, 4000)
-    }
-
-    onMounted(() => {
-      loadSettings()
-    })
-
-    return {
-      settings,
-      saving,
-      message,
-      messageType,
-      activeSection,
-      sections,
-      saveSettings,
-      resetSettings,
-      clearCache
     }
   }
 }
