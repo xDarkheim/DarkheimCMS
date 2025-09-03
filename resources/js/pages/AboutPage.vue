@@ -6,8 +6,8 @@
         <div class="section__header animate-fade-in">
           <h1 class="section__title">About Darkheim Development Studio</h1>
           <p class="section__subtitle">
-            A growing development studio passionate about creating quality web solutions
-            for businesses ready to establish their digital presence.
+            A growing development studio creating quality web solutions
+            for businesses ready for digital presence.
           </p>
         </div>
 
@@ -19,28 +19,27 @@
               and growing companies establish their online presence through modern, reliable web solutions.
             </p>
             <p class="section__text mb-6">
-              Though we're a young studio, our team brings together years of individual experience in web development.
-              We focus on delivering quality over quantity, ensuring each project receives the attention it deserves.
+              While we're a young studio, our team combines years of individual experience in web development.
+              We focus on quality over quantity, ensuring each project gets the attention it deserves.
             </p>
             <p class="section__text mb-8">
               We believe that every business, regardless of size, deserves a professional web presence.
               Our approach combines modern technologies with practical solutions that actually work for our clients.
             </p>
-            <div class="stats">
-              <div class="stats__item">
-                <i class="fas fa-calendar-alt stats__icon"></i>
-                <div class="stats__number">10</div>
-                <div class="stats__label">Months in Business</div>
+            <div class="stats" v-if="!loading">
+              <div class="stats__item"
+                   v-for="(stat, index) in statsArray"
+                   :key="stat.key"
+                   :style="{ animationDelay: `${index * 0.1}s` }"
+                   @click="animateNumber(stat.key)">
+                <i :class="`${stat.icon} stats__icon`"></i>
+                <div class="stats__number" :ref="`number-${stat.key}`">{{ stat.value }}</div>
+                <div class="stats__label">{{ stat.label }}</div>
               </div>
-              <div class="stats__item">
-                <i class="fas fa-project-diagram stats__icon"></i>
-                <div class="stats__number">5</div>
-                <div class="stats__label">Projects Completed</div>
-              </div>
-              <div class="stats__item">
-                <i class="fas fa-smile stats__icon"></i>
-                <div class="stats__number">100%</div>
-                <div class="stats__label">Client Satisfaction</div>
+            </div>
+            <div class="stats" v-else>
+              <div class="stats__item stats__item--loading" v-for="i in 4" :key="i">
+                <div class="stats__skeleton"></div>
               </div>
             </div>
           </div>
@@ -48,8 +47,8 @@
             <div class="about-visual">
               <div class="about-visual__card">
                 <h3>Our Philosophy</h3>
-                <p>We believe in building lasting relationships with our clients by delivering reliable,
-                well-crafted websites that help their businesses grow.</p>
+                <p>We believe in building long-term relationships with our clients, creating reliable,
+                quality websites that help their businesses grow.</p>
               </div>
             </div>
           </div>
@@ -63,7 +62,7 @@
         <div class="section__header animate-fade-in">
           <h2 class="section__title">Our Approach</h2>
           <p class="section__subtitle">
-            We keep things simple and focused, delivering websites that work well and look professional.
+            We keep things simple and focused, creating websites that work well and look professional.
           </p>
         </div>
 
@@ -82,9 +81,9 @@
             <div class="approach-card__icon">
               <i class="fas fa-code"></i>
             </div>
-            <h3 class="approach-card__title">Modern Technology</h3>
+            <h3 class="approach-card__title">Modern Technologies</h3>
             <p class="approach-card__text">
-              Using proven technologies like Laravel, Vue.js, and modern web standards to build reliable websites.
+              We use proven technologies like Laravel, Vue.js, and modern web standards to build reliable websites.
             </p>
           </div>
 
@@ -94,7 +93,7 @@
             </div>
             <h3 class="approach-card__title">Mobile-First</h3>
             <p class="approach-card__text">
-              Every website we build looks great and works perfectly on all devices, from phones to desktops.
+              Every website we create looks great and works perfectly on all devices.
             </p>
           </div>
         </div>
@@ -107,7 +106,7 @@
         <div class="section__header animate-fade-in">
           <h2 class="section__title">Technologies We Use</h2>
           <p class="section__subtitle">
-            We work with a modern, reliable tech stack that delivers performance and maintainability.
+            We work with a modern, reliable technology stack that ensures performance and maintainability.
           </p>
         </div>
 
@@ -191,7 +190,7 @@
         <div class="section__header animate-fade-in">
           <h2 class="section__title">What Drives Us</h2>
           <p class="section__subtitle">
-            Our core values guide every project we take on and every relationship we build.
+            Our core values guide every project and every relationship we build.
           </p>
         </div>
 
@@ -224,8 +223,8 @@
             </div>
             <h3 class="value-card__title">Growing Together</h3>
             <p class="value-card__text">
-              As a young studio, we grow with our clients. We build relationships that extend beyond
-              project delivery, providing ongoing support as businesses evolve.
+              As a young studio, we grow alongside our clients. We build relationships that extend beyond
+              project completion, providing ongoing support as businesses evolve.
             </p>
           </div>
 
@@ -247,12 +246,12 @@
     <section class="section section--cta">
       <div class="container">
         <div class="cta animate-fade-in">
-          <h2 class="cta__title">Ready to Work With Us?</h2>
+          <h2 class="cta__title">Ready to work with us?</h2>
           <p class="cta__subtitle">
             Let's discuss how we can help establish or improve your business's online presence.
           </p>
           <router-link to="/contact" class="btn btn--primary btn--xl">
-            Get In Touch
+            Get in Touch
             <i class="fas fa-paper-plane btn__icon btn__icon--right"></i>
           </router-link>
         </div>
@@ -262,14 +261,183 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'AboutPage',
-  mounted() {
+  data() {
+    return {
+      loading: true,
+      stats: {
+        projects_completed: 0,
+        total_projects: 0,
+        team_members: 0,
+        years_experience: 1,
+        open_positions: 0,
+        news_articles: 0
+      },
+      animatingNumbers: new Set()
+    }
+  },
+  computed: {
+    statsArray() {
+      return [
+        {
+          key: 'years_experience',
+          value: this.stats.years_experience,
+          label: `${this.getYearLabel(this.stats.years_experience)} in business`,
+          icon: 'fas fa-calendar-alt'
+        },
+        {
+          key: 'projects_completed',
+          value: this.stats.projects_completed,
+          label: this.getProjectLabel(this.stats.projects_completed),
+          icon: 'fas fa-project-diagram'
+        },
+        {
+          key: 'team_members',
+          value: this.stats.team_members,
+          label: this.getTeamLabel(this.stats.team_members),
+          icon: 'fas fa-users'
+        },
+        {
+          key: 'news_articles',
+          value: this.stats.news_articles,
+          label: this.getNewsLabel(this.stats.news_articles),
+          icon: 'fas fa-newspaper'
+        }
+      ]
+    }
+  },
+  async mounted() {
     document.title = 'About Us - Darkheim Development Studio'
+    await this.loadStats()
+    this.setupIntersectionObserver()
+  },
+  methods: {
+    async loadStats() {
+      try {
+        const response = await axios.get('/api/stats')
+        if (response.data.success) {
+          this.stats = response.data.data
+          // Animate numbers when they load
+          this.$nextTick(() => {
+            this.animateAllNumbers()
+          })
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error)
+        // Use default values if API is unavailable
+      } finally {
+        this.loading = false
+      }
+    },
+    animateNumber(key) {
+      if (this.animatingNumbers.has(key)) return
+
+      this.animatingNumbers.add(key)
+      const element = this.$refs[`number-${key}`]?.[0]
+
+      if (element) {
+        element.style.animation = 'pulse 0.6s ease-in-out'
+        setTimeout(() => {
+          element.style.animation = ''
+          this.animatingNumbers.delete(key)
+        }, 600)
+      }
+    },
+    animateAllNumbers() {
+      this.statsArray.forEach((stat, index) => {
+        setTimeout(() => {
+          this.animateCountUp(stat.key, stat.value)
+        }, index * 200)
+      })
+    },
+    animateCountUp(key, finalValue) {
+      const element = this.$refs[`number-${key}`]?.[0]
+      if (!element) return
+
+      const duration = 1000
+      const startTime = performance.now()
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+
+        // Easing function for smooth animation
+        const easeOutCubic = 1 - Math.pow(1 - progress, 3)
+        const currentValue = Math.floor(finalValue * easeOutCubic)
+
+        element.textContent = currentValue
+
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          element.textContent = finalValue
+        }
+      }
+
+      requestAnimationFrame(animate)
+    },
+    setupIntersectionObserver() {
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in-view')
+            }
+          })
+        }, { threshold: 0.1 })
+
+        // Observe all animatable elements
+        this.$nextTick(() => {
+          const elements = this.$el.querySelectorAll('.tech-category, .approach-card, .value-card, .stats__item')
+          elements.forEach(el => observer.observe(el))
+        })
+      }
+    },
+    getYearLabel(count) {
+      if (count === 1) return 'year'
+      return 'years'
+    },
+    getProjectLabel(count) {
+      if (count === 1) return 'completed project'
+      return 'completed projects'
+    },
+    getTeamLabel(count) {
+      if (count === 1) return 'team member'
+      return 'team members'
+    },
+    getNewsLabel(count) {
+      if (count === 1) return 'article'
+      return 'articles'
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 @use '../../css/pages/about-page';
+
+// Additional component-specific animations
+.stats__item {
+  cursor: pointer;
+
+  &:hover {
+    .stats__number {
+      animation: pulse 0.6s ease-in-out;
+    }
+  }
+}
+
+// Enhanced entrance animations
+.in-view {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+// Smooth transitions for all interactive elements
+* {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
 </style>

@@ -6,7 +6,7 @@
         <div class="section__header animate-fade-in">
           <h1 class="section__title">Get In Touch</h1>
           <p class="section__subtitle">
-            Ready to start your project? We'd love to hear from you.
+            Ready to start your project or join our team? We'd love to hear from you.
             Let's discuss your ideas and bring them to life.
           </p>
         </div>
@@ -14,8 +14,32 @@
         <div class="grid grid--2 gap-12 items-start">
           <!-- Contact Form -->
           <div class="contact-form-container animate-fade-in">
-            <h2 class="contact-form__title">Send us a message</h2>
-            <form @submit.prevent="submitForm" class="contact-form">
+            <div class="form-type-selector">
+              <label class="form-type-option" :class="{ active: form.message_type === 'general' }">
+                <input type="radio" v-model="form.message_type" value="general" @change="resetConditionalFields">
+                <span class="option-content">
+                  <i class="fas fa-envelope"></i>
+                  <strong>General Inquiry</strong>
+                  <small>Project discussion, questions, or partnerships</small>
+                </span>
+              </label>
+
+              <label class="form-type-option" :class="{ active: form.message_type === 'job_application' }">
+                <input type="radio" v-model="form.message_type" value="job_application" @change="resetConditionalFields">
+                <span class="option-content">
+                  <i class="fas fa-briefcase"></i>
+                  <strong>Job Application</strong>
+                  <small>Apply for a position with your resume</small>
+                </span>
+              </label>
+            </div>
+
+            <h2 class="contact-form__title">
+              {{ form.message_type === 'job_application' ? 'Submit Your Application' : 'Send us a message' }}
+            </h2>
+
+            <form @submit.prevent="submitForm" class="contact-form" enctype="multipart/form-data">
+              <!-- Basic Contact Information -->
               <div class="form__group">
                 <label for="name" class="form__label">Full Name *</label>
                 <input
@@ -66,39 +90,136 @@
                 >
               </div>
 
-              <div class="form__group">
-                <label for="service" class="form__label">Service of Interest</label>
-                <select id="service" v-model="form.service" class="form__select">
-                  <option value="">Select a service</option>
-                  <option value="web-development">Web Development</option>
-                  <option value="mobile-development">Mobile Development</option>
-                  <option value="ui-ux-design">UI/UX Design</option>
-                  <option value="ecommerce">E-commerce Solutions</option>
-                  <option value="consultation">Consultation</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+              <!-- Job Application Specific Fields -->
+              <template v-if="form.message_type === 'job_application'">
+                <div class="form__group">
+                  <label for="position_interest" class="form__label">Position of Interest</label>
+                  <input
+                    type="text"
+                    id="position_interest"
+                    v-model="form.position_interest"
+                    class="form__input"
+                    placeholder="e.g. Frontend Developer, Backend Developer"
+                  >
+                </div>
 
-              <div class="form__group">
-                <label for="budget" class="form__label">Project Budget</label>
-                <select id="budget" v-model="form.budget" class="form__select">
-                  <option value="">Select budget range</option>
-                  <option value="under-5k">Under $5,000</option>
-                  <option value="5k-10k">$5,000 - $10,000</option>
-                  <option value="10k-25k">$10,000 - $25,000</option>
-                  <option value="25k-50k">$25,000 - $50,000</option>
-                  <option value="over-50k">Over $50,000</option>
-                </select>
-              </div>
+                <div class="form__group">
+                  <label for="resume_file" class="form__label">Resume/CV *</label>
+                  <div class="file-upload-area" :class="{ 'has-file': form.resume_file }">
+                    <input
+                      type="file"
+                      id="resume_file"
+                      @change="handleFileUpload"
+                      class="file-input"
+                      accept=".pdf,.doc,.docx"
+                      required
+                    >
+                    <div class="file-upload-content">
+                      <i class="fas fa-cloud-upload-alt"></i>
+                      <span v-if="!form.resume_file">
+                        Drop your resume here or click to browse
+                      </span>
+                      <span v-else class="file-selected">
+                        <i class="fas fa-file-pdf"></i>
+                        {{ form.resume_file.name }}
+                      </span>
+                      <small>PDF, DOC, DOCX up to 5MB</small>
+                    </div>
+                  </div>
+                  <span v-if="errors.resume_file" class="form__error">{{ errors.resume_file }}</span>
+                </div>
 
+                <div class="form__group">
+                  <label for="portfolio_url" class="form__label">Portfolio URL</label>
+                  <input
+                    type="url"
+                    id="portfolio_url"
+                    v-model="form.portfolio_url"
+                    class="form__input"
+                    placeholder="https://your-portfolio.com"
+                  >
+                </div>
+
+                <div class="form__group">
+                  <label for="experience_summary" class="form__label">Experience Summary</label>
+                  <textarea
+                    id="experience_summary"
+                    v-model="form.experience_summary"
+                    class="form__textarea"
+                    placeholder="Brief summary of your relevant experience and skills..."
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div class="form__group-row">
+                  <div class="form__group">
+                    <label for="availability" class="form__label">Availability</label>
+                    <select id="availability" v-model="form.availability" class="form__select">
+                      <option value="">Select availability</option>
+                      <option value="immediate">Immediate</option>
+                      <option value="2weeks">2 weeks</option>
+                      <option value="1month">1 month</option>
+                      <option value="2months">2 months</option>
+                      <option value="negotiable">Negotiable</option>
+                    </select>
+                  </div>
+
+                  <div class="form__group">
+                    <label for="salary_expectation" class="form__label">Salary Expectation</label>
+                    <input
+                      type="number"
+                      id="salary_expectation"
+                      v-model="form.salary_expectation"
+                      class="form__input"
+                      placeholder="50000"
+                      min="0"
+                      step="1000"
+                    >
+                  </div>
+                </div>
+              </template>
+
+              <!-- General Inquiry Fields -->
+              <template v-else>
+                <div class="form__group">
+                  <label for="service" class="form__label">Service of Interest</label>
+                  <select id="service" v-model="form.service" class="form__select">
+                    <option value="">Select a service</option>
+                    <option value="web-development">Web Development</option>
+                    <option value="mobile-development">Mobile Development</option>
+                    <option value="ui-ux-design">UI/UX Design</option>
+                    <option value="ecommerce">E-commerce Solutions</option>
+                    <option value="consultation">Consultation</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form__group">
+                  <label for="budget" class="form__label">Project Budget</label>
+                  <select id="budget" v-model="form.budget" class="form__select">
+                    <option value="">Select budget range</option>
+                    <option value="under-5k">Under $5,000</option>
+                    <option value="5k-10k">$5,000 - $10,000</option>
+                    <option value="10k-25k">$10,000 - $25,000</option>
+                    <option value="25k-50k">$25,000 - $50,000</option>
+                    <option value="over-50k">Over $50,000</option>
+                  </select>
+                </div>
+              </template>
+
+              <!-- Message Field -->
               <div class="form__group">
-                <label for="message" class="form__label">Message *</label>
+                <label for="message" class="form__label">
+                  {{ form.message_type === 'job_application' ? 'Cover Letter *' : 'Message *' }}
+                </label>
                 <textarea
                   id="message"
                   v-model="form.message"
                   class="form__textarea"
                   :class="{ 'form__input--error': errors.message }"
-                  placeholder="Tell us about your project, goals, and timeline..."
+                  :placeholder="form.message_type === 'job_application'
+                    ? 'Tell us why you\'re interested in working with us and what you can bring to our team...'
+                    : 'Tell us about your project, goals, and timeline...'"
                   rows="5"
                   required
                 ></textarea>
@@ -111,7 +232,7 @@
                 :class="{ 'btn--loading': isSubmitting }"
                 :disabled="isSubmitting"
               >
-                <span>Send Message</span>
+                <span>{{ form.message_type === 'job_application' ? 'Submit Application' : 'Send Message' }}</span>
                 <i class="fas fa-arrow-right btn__icon btn__icon--right"></i>
               </button>
 
@@ -187,14 +308,63 @@ export default {
       company: '',
       service: '',
       budget: '',
-      message: ''
+      message: '',
+      message_type: 'general',
+      position_interest: '',
+      resume_file: null,
+      portfolio_url: '',
+      experience_summary: '',
+      availability: '',
+      salary_expectation: ''
     })
 
     const errors = reactive({
       name: '',
       email: '',
-      message: ''
+      message: '',
+      resume_file: ''
     })
+
+    const resetConditionalFields = () => {
+      // Reset fields when switching between message types
+      if (form.message_type === 'general') {
+        form.position_interest = ''
+        form.resume_file = null
+        form.portfolio_url = ''
+        form.experience_summary = ''
+        form.availability = ''
+        form.salary_expectation = ''
+      } else {
+        form.service = ''
+        form.budget = ''
+      }
+      errors.resume_file = ''
+    }
+
+    const handleFileUpload = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          errors.resume_file = 'File size must be less than 5MB'
+          form.resume_file = null
+          event.target.value = ''
+          return
+        }
+
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        if (!allowedTypes.includes(file.type)) {
+          errors.resume_file = 'Please upload a PDF, DOC, or DOCX file'
+          form.resume_file = null
+          event.target.value = ''
+          return
+        }
+
+        form.resume_file = file
+        errors.resume_file = ''
+      }
+    }
 
     const validateForm = () => {
       // Reset errors
@@ -218,7 +388,12 @@ export default {
       }
 
       if (!form.message.trim()) {
-        errors.message = 'Message is required'
+        errors.message = form.message_type === 'job_application' ? 'Cover letter is required' : 'Message is required'
+        isValid = false
+      }
+
+      if (form.message_type === 'job_application' && !form.resume_file) {
+        errors.resume_file = 'Resume is required for job applications'
         isValid = false
       }
 
@@ -232,13 +407,36 @@ export default {
       submitError.value = ''
 
       try {
-        const response = await contactService.submit(form)
+        const formData = new FormData()
+
+        // Add all form fields to FormData
+        Object.keys(form).forEach(key => {
+          if (form[key] !== null && form[key] !== '') {
+            if (key === 'resume_file' && form[key] instanceof File) {
+              formData.append(key, form[key])
+            } else if (key !== 'resume_file') {
+              formData.append(key, form[key])
+            }
+          }
+        })
+
+        const response = await contactService.submitWithFile(formData)
 
         if (response.success) {
           // Reset form
           Object.keys(form).forEach(key => {
-            form[key] = ''
+            if (key === 'resume_file') {
+              form[key] = null
+            } else if (key === 'message_type') {
+              form[key] = 'general'
+            } else {
+              form[key] = ''
+            }
           })
+
+          // Reset file input
+          const fileInput = document.getElementById('resume_file')
+          if (fileInput) fileInput.value = ''
 
           showSuccess.value = true
         }
@@ -292,6 +490,8 @@ export default {
       isSubmitting,
       showSuccess,
       submitError,
+      resetConditionalFields,
+      handleFileUpload,
       validateForm,
       submitForm,
       closeSuccess

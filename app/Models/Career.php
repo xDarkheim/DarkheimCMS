@@ -34,12 +34,43 @@ class Career extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
-        'skills' => 'json',
         'is_active' => 'boolean',
         'remote_available' => 'boolean',
         'priority' => 'integer',
         'application_deadline' => 'date'
     ];
+
+    /**
+     * Get the skills attribute.
+     */
+    public function getSkillsAttribute($value)
+    {
+        if (is_null($value)) {
+            return [];
+        }
+
+        if (is_array($value)) {
+            return $value;
+        }
+
+        // If it's a string, try to decode it
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // If the result is still a string (double-encoded JSON), decode again
+                if (is_string($decoded)) {
+                    $doubleDecoded = json_decode($decoded, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
+                        return $doubleDecoded;
+                    }
+                } elseif (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+        }
+
+        return [];
+    }
 
     /**
      * Scope to get only active careers.

@@ -36,6 +36,34 @@
       </div>
 
       <div class="stat-card">
+        <div class="stat-icon team">
+          <i class="fas fa-user-friends"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ stats.team_members_count || 0 }}</h3>
+          <p>Team Members</p>
+          <div class="stat-trend">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ stats.team_members_active || 0 }} active</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon careers">
+          <i class="fas fa-handshake"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ stats.careers_count || 0 }}</h3>
+          <p>Open Positions</p>
+          <div class="stat-trend">
+            <i class="fas fa-briefcase"></i>
+            <span>{{ stats.careers_active || 0 }} active</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
         <div class="stat-icon news">
           <i class="fas fa-newspaper"></i>
         </div>
@@ -90,6 +118,26 @@
             </div>
           </router-link>
 
+          <router-link to="/admin/team" class="action-card">
+            <div class="action-icon team">
+              <i class="fas fa-user-friends"></i>
+            </div>
+            <div class="action-content">
+              <h4>Manage Team</h4>
+              <p>Add or edit team members</p>
+            </div>
+          </router-link>
+
+          <router-link to="/admin/careers" class="action-card">
+            <div class="action-icon careers">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="action-content">
+              <h4>Post Job Opening</h4>
+              <p>Add new career opportunities</p>
+            </div>
+          </router-link>
+
           <router-link to="/admin/news" class="action-card">
             <div class="action-icon news">
               <i class="fas fa-edit"></i>
@@ -120,11 +168,21 @@
         <div class="activity-list">
           <div class="activity-item">
             <div class="activity-icon">
-              <i class="fas fa-user"></i>
+              <i class="fas fa-user-friends"></i>
             </div>
             <div class="activity-content">
-              <p><strong>New user registered</strong></p>
+              <p><strong>Team member added</strong></p>
               <span>2 hours ago</span>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon">
+              <i class="fas fa-handshake"></i>
+            </div>
+            <div class="activity-content">
+              <p><strong>New job posting published</strong></p>
+              <span>4 hours ago</span>
             </div>
           </div>
 
@@ -134,7 +192,17 @@
             </div>
             <div class="activity-content">
               <p><strong>Portfolio item updated</strong></p>
-              <span>5 hours ago</span>
+              <span>6 hours ago</span>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="activity-content">
+              <p><strong>Contact message received</strong></p>
+              <span>8 hours ago</span>
             </div>
           </div>
 
@@ -167,7 +235,11 @@ const stats = ref({
   published_news_count: 0,
   featured_portfolios_count: 0,
   contact_messages_count: 0,
-  contact_messages_unread: 0
+  contact_messages_unread: 0,
+  team_members_count: 0,
+  team_members_active: 0,
+  careers_count: 0,
+  careers_active: 0
 })
 
 onMounted(async () => {
@@ -247,6 +319,8 @@ onMounted(async () => {
 .stat-icon.news { background: linear-gradient(135deg, #4facfe, #00f2fe); }
 .stat-icon.activity { background: linear-gradient(135deg, #43e97b, #38f9d7); }
 .stat-icon.contact-messages { background: linear-gradient(135deg, #ff758c, #ff7eb3); }
+.stat-icon.team { background: linear-gradient(135deg, #6ab04c, #c4e538); }
+.stat-icon.careers { background: linear-gradient(135deg, #ff9f43, #ff6b81); }
 
 .stat-content h3 {
   font-size: 2rem;
@@ -337,6 +411,8 @@ onMounted(async () => {
 
 .action-icon.users { background: #667eea; }
 .action-icon.portfolio { background: #f5576c; }
+.action-icon.team { background: #6ab04c; }
+.action-icon.careers { background: #ff9f43; }
 .action-icon.news { background: #4facfe; }
 .action-icon.contact-messages { background: #ff758c; }
 

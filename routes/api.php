@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Api\CareerController;
+use App\Http\Controllers\Api\TeamMemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,18 +52,21 @@ Route::prefix('news')->group(function () {
 // Public Contact Form
 Route::post('/contact', [ContactController::class, 'submit']);
 
+// Public Statistics
+Route::get('/stats', [App\Http\Controllers\Api\StatsController::class, 'public']);
+
 // Career routes
-Route::get('/careers', [App\Http\Controllers\Api\CareerController::class, 'index']);
-Route::get('/careers/{career}', [App\Http\Controllers\Api\CareerController::class, 'show']);
+Route::get('/careers', [CareerController::class, 'index']);
+Route::get('/careers/{career}', [CareerController::class, 'show']);
 
 // Team routes
-Route::get('/team', [App\Http\Controllers\Api\TeamMemberController::class, 'index']);
-Route::get('/team/{teamMember}', [App\Http\Controllers\Api\TeamMemberController::class, 'show']);
+Route::get('/team', [TeamMemberController::class, 'index']);
+Route::get('/team/{teamMember}', [TeamMemberController::class, 'show']);
 
 // Admin Routes (protected by Sanctum)
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Dashboard stats
-    Route::get('/stats', [AdminDashboardController::class, 'stats']);
+    Route::get('/stats', [App\Http\Controllers\Api\StatsController::class, 'admin']);
 
     // User Management
     Route::apiResource('users', AdminUserController::class);
@@ -101,17 +106,18 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
         Route::get('/', [ContactController::class, 'index']);
         Route::get('/stats', [ContactController::class, 'stats']);
         Route::get('/{contactMessage}', [ContactController::class, 'show']);
-        Route::post('/{contactMessage}/mark-as-read', [ContactController::class, 'markAsRead']);
+        Route::patch('/{contactMessage}/mark-read', [ContactController::class, 'markAsRead']);
         Route::delete('/{contactMessage}', [ContactController::class, 'destroy']);
+        Route::get('/{contactMessage}/resume', [ContactController::class, 'downloadResume']);
     });
 
     // Career management
-    Route::post('/careers', [App\Http\Controllers\Api\CareerController::class, 'store']);
-    Route::put('/careers/{career}', [App\Http\Controllers\Api\CareerController::class, 'update']);
-    Route::delete('/careers/{career}', [App\Http\Controllers\Api\CareerController::class, 'destroy']);
+    Route::post('/careers', [CareerController::class, 'store']);
+    Route::put('/careers/{career}', [CareerController::class, 'update']);
+    Route::delete('/careers/{career}', [CareerController::class, 'destroy']);
 
     // Team management
-    Route::post('/team', [App\Http\Controllers\Api\TeamMemberController::class, 'store']);
-    Route::put('/team/{teamMember}', [App\Http\Controllers\Api\TeamMemberController::class, 'update']);
-    Route::delete('/team/{teamMember}', [App\Http\Controllers\Api\TeamMemberController::class, 'destroy']);
+    Route::post('/team', [TeamMemberController::class, 'store']);
+    Route::put('/team/{teamMember}', [TeamMemberController::class, 'update']);
+    Route::delete('/team/{teamMember}', [TeamMemberController::class, 'destroy']);
 });

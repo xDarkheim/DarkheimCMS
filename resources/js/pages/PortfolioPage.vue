@@ -232,12 +232,14 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import portfolioService from '../services/portfolioService'
 
 export default {
   name: 'PortfolioPage',
   setup() {
+    const route = useRoute()
     const loading = ref(true)
     const error = ref(null)
     const portfolios = ref([])
@@ -411,11 +413,27 @@ export default {
     }
 
     onMounted(async () => {
+      // Проверяем URL параметры при загрузке страницы
+      const urlParams = new URLSearchParams(window.location.search)
+      const categoryParam = urlParams.get('category')
+
       // Load initial data
       await Promise.all([
         loadCategories(),
         loadPortfolios()
       ])
+
+      // Если есть категория в URL, устанавливаем её после загрузки категорий
+      if (categoryParam) {
+        // Ищем категорию по параметру URL
+        const foundCategory = categories.value.find(cat =>
+          cat.id === categoryParam || cat.slug === categoryParam
+        )
+
+        if (foundCategory) {
+          await setActiveCategory(foundCategory.id)
+        }
+      }
 
       // Add scroll-triggered animations
       const observerOptions = {
@@ -438,6 +456,25 @@ export default {
           observer.observe(el)
         })
       }, 100)
+    })
+
+    // Watch for route changes to handle navigation within portfolio page
+    watch(() => route.query.category, async (newCategory) => {
+      if (!isInitialLoad.value && categories.value.length > 0) {
+        if (newCategory) {
+          // Ищем категорию по параметру URL
+          const foundCategory = categories.value.find(cat =>
+            cat.id === newCategory || cat.slug === newCategory
+          )
+
+          if (foundCategory) {
+            await setActiveCategory(foundCategory.id)
+          }
+        } else {
+          // Если нет категории в URL, показываем все проекты
+          await setActiveCategory('all')
+        }
+      }
     })
 
     return {

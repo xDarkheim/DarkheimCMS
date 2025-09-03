@@ -66,38 +66,38 @@
                   <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                  <div class="stat-number">15+</div>
+                  <div class="stat-number">{{ stats.total_projects || 0 }}+</div>
                   <div class="stat-label">Completed Projects</div>
                 </div>
               </div>
 
               <div class="stat-item">
                 <div class="stat-icon">
-                  <i class="fas fa-heart"></i>
+                  <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-content">
-                  <div class="stat-number">100%</div>
-                  <div class="stat-label">Client Satisfaction</div>
+                  <div class="stat-number">{{ stats.team_members || 0 }}</div>
+                  <div class="stat-label">Team Members</div>
                 </div>
               </div>
 
               <div class="stat-item">
                 <div class="stat-icon">
-                  <i class="fas fa-clock"></i>
+                  <i class="fas fa-briefcase"></i>
                 </div>
                 <div class="stat-content">
-                  <div class="stat-number">2-4</div>
-                  <div class="stat-label">Weeks Delivery</div>
+                  <div class="stat-number">{{ stats.open_positions || 0 }}</div>
+                  <div class="stat-label">Open Positions</div>
                 </div>
               </div>
 
               <div class="stat-item">
                 <div class="stat-icon">
-                  <i class="fas fa-star"></i>
+                  <i class="fas fa-calendar"></i>
                 </div>
                 <div class="stat-content">
-                  <div class="stat-number">5.0</div>
-                  <div class="stat-label">Average Rating</div>
+                  <div class="stat-number">{{ stats.years_experience || 8 }}+</div>
+                  <div class="stat-label">Years Experience</div>
                 </div>
               </div>
             </div>
@@ -480,6 +480,7 @@ export default {
     const categories = ref({})
     const loading = ref(false)
     const newsLoading = ref(false)
+    const stats = ref({})
 
     const loadFeaturedProjects = async () => {
       try {
@@ -519,6 +520,17 @@ export default {
       }
     }
 
+    const loadStats = async () => {
+      try {
+        const response = await axios.get('/api/stats')
+        stats.value = response.data.data || response.data
+        console.log('Loaded stats for HomePage:', stats.value)
+      } catch (error) {
+        console.error('Failed to load stats:', error)
+        stats.value = {}
+      }
+    }
+
     const getCategoryDisplayName = (categoryKey) => {
       return categories.value[categoryKey] || categoryKey
     }
@@ -541,6 +553,7 @@ export default {
       loadFeaturedProjects()
       loadFeaturedNews()
       loadCategories()
+      loadStats()
     })
 
     return {
@@ -549,6 +562,7 @@ export default {
       categories,
       loading,
       newsLoading,
+      stats,
       formatDate,
       loadMoreNews,
       getCategoryDisplayName

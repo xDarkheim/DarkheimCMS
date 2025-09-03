@@ -75,8 +75,9 @@
             <thead>
               <tr>
                 <th>Status</th>
+                <th>Type</th>
                 <th>Contact Info</th>
-                <th>Service</th>
+                <th>Service/Position</th>
                 <th>Message Preview</th>
                 <th>Date</th>
                 <th>Actions</th>
@@ -98,6 +99,15 @@
                   </span>
                 </td>
                 <td>
+                  <span
+                    class="type-badge"
+                    :class="message.message_type === 'job_application' ? 'type-job' : 'type-general'"
+                  >
+                    <i :class="message.message_type === 'job_application' ? 'fas fa-briefcase' : 'fas fa-envelope'"></i>
+                    {{ message.message_type === 'job_application' ? 'Job App' : 'General' }}
+                  </span>
+                </td>
+                <td>
                   <div class="contact-info">
                     <div class="contact-name">{{ message.name }}</div>
                     <div class="contact-email">{{ message.email }}</div>
@@ -105,7 +115,10 @@
                   </div>
                 </td>
                 <td>
-                  <span v-if="message.service" class="service-tag">
+                  <span v-if="message.message_type === 'job_application' && message.position_interest" class="service-tag job-position">
+                    {{ message.position_interest }}
+                  </span>
+                  <span v-else-if="message.service" class="service-tag">
                     {{ formatService(message.service) }}
                   </span>
                   <span v-else class="text-muted">-</span>
@@ -129,6 +142,16 @@
                       title="View Message"
                     >
                       <i class="fas fa-eye"></i>
+                    </button>
+
+                    <button
+                      v-if="message.resume_file"
+                      @click="downloadResume(message)"
+                      class="btn btn-sm btn-info"
+                      title="Download Resume"
+                      :disabled="processingIds.includes(message.id)"
+                    >
+                      <i class="fas fa-download"></i>
                     </button>
 
                     <button
@@ -188,8 +211,8 @@
       <div class="modal" @click.stop>
         <div class="modal-header">
           <h3>
-            <i class="fas fa-envelope"></i>
-            Message from {{ selectedMessage.name }}
+            <i :class="selectedMessage.message_type === 'job_application' ? 'fas fa-briefcase' : 'fas fa-envelope'"></i>
+            {{ selectedMessage.message_type === 'job_application' ? 'Job Application' : 'Message' }} from {{ selectedMessage.name }}
           </h3>
           <button @click="closeModal" class="btn btn-ghost btn-sm">
             <i class="fas fa-times"></i>
@@ -198,6 +221,19 @@
 
         <div class="modal-body">
           <div class="message-details">
+            <div class="detail-row">
+              <label>Type:</label>
+              <span>
+                <span
+                  class="type-badge"
+                  :class="selectedMessage.message_type === 'job_application' ? 'type-job' : 'type-general'"
+                >
+                  <i :class="selectedMessage.message_type === 'job_application' ? 'fas fa-briefcase' : 'fas fa-envelope'"></i>
+                  {{ selectedMessage.message_type === 'job_application' ? 'Job Application' : 'General Inquiry' }}
+                </span>
+              </span>
+            </div>
+
             <div class="detail-row">
               <label>Name:</label>
               <span>{{ selectedMessage.name }}</span>
@@ -220,15 +256,58 @@
               <span>{{ selectedMessage.company }}</span>
             </div>
 
-            <div v-if="selectedMessage.service" class="detail-row">
-              <label>Service:</label>
-              <span>{{ formatService(selectedMessage.service) }}</span>
-            </div>
+            <!-- Job Application Specific Fields -->
+            <template v-if="selectedMessage.message_type === 'job_application'">
+              <div v-if="selectedMessage.position_interest" class="detail-row">
+                <label>Position of Interest:</label>
+                <span>{{ selectedMessage.position_interest }}</span>
+              </div>
 
-            <div v-if="selectedMessage.budget" class="detail-row">
-              <label>Budget:</label>
-              <span>{{ formatBudget(selectedMessage.budget) }}</span>
-            </div>
+              <div v-if="selectedMessage.portfolio_url" class="detail-row">
+                <label>Portfolio:</label>
+                <span>
+                  <a :href="selectedMessage.portfolio_url" target="_blank">{{ selectedMessage.portfolio_url }}</a>
+                </span>
+              </div>
+
+              <div v-if="selectedMessage.experience_summary" class="detail-row">
+                <label>Experience Summary:</label>
+                <div class="detail-text">{{ selectedMessage.experience_summary }}</div>
+              </div>
+
+              <div v-if="selectedMessage.availability" class="detail-row">
+                <label>Availability:</label>
+                <span>{{ formatAvailability(selectedMessage.availability) }}</span>
+              </div>
+
+              <div v-if="selectedMessage.salary_expectation" class="detail-row">
+                <label>Salary Expectation:</label>
+                <span>${{ Number(selectedMessage.salary_expectation).toLocaleString() }}</span>
+              </div>
+
+              <div v-if="selectedMessage.resume_file" class="detail-row">
+                <label>Resume:</label>
+                <span>
+                  <button @click="downloadResume(selectedMessage)" class="btn btn-sm btn-info">
+                    <i class="fas fa-download"></i>
+                    Download Resume
+                  </button>
+                </span>
+              </div>
+            </template>
+
+            <!-- General Inquiry Fields -->
+            <template v-else>
+              <div v-if="selectedMessage.service" class="detail-row">
+                <label>Service:</label>
+                <span>{{ formatService(selectedMessage.service) }}</span>
+              </div>
+
+              <div v-if="selectedMessage.budget" class="detail-row">
+                <label>Budget:</label>
+                <span>{{ formatBudget(selectedMessage.budget) }}</span>
+              </div>
+            </template>
 
             <div class="detail-row">
               <label>Date:</label>
@@ -236,13 +315,23 @@
             </div>
 
             <div class="detail-row message-content">
-              <label>Message:</label>
+              <label>{{ selectedMessage.message_type === 'job_application' ? 'Cover Letter:' : 'Message:' }}</label>
               <div class="message-text">{{ selectedMessage.message }}</div>
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
+          <button
+            v-if="selectedMessage.resume_file"
+            @click="downloadResume(selectedMessage)"
+            class="btn btn-info"
+            :disabled="processingIds.includes(selectedMessage.id)"
+          >
+            <i class="fas fa-download"></i>
+            Download Resume
+          </button>
+
           <button
             v-if="!selectedMessage.is_read"
             @click="markAsRead(selectedMessage)"
@@ -428,6 +517,29 @@ export default {
       }
     }
 
+    const downloadResume = async (message) => {
+      try {
+        processingIds.value.push(message.id)
+        window.open(`/api/admin/contact-messages/${message.id}/resume`, '_blank')
+      } catch (err) {
+        console.error('Error downloading resume:', err)
+        error.value = 'Failed to download resume'
+      } finally {
+        processingIds.value = processingIds.value.filter(id => id !== message.id)
+      }
+    }
+
+    const formatAvailability = (availability) => {
+      const availabilities = {
+        'immediate': 'Immediate',
+        '2weeks': '2 weeks',
+        '1month': '1 month',
+        '2months': '2 months',
+        'negotiable': 'Negotiable'
+      }
+      return availabilities[availability] || availability
+    }
+
     // Utility methods
     const formatService = (service) => {
       const services = {
@@ -497,8 +609,10 @@ export default {
       closeModal,
       markAsRead,
       deleteMessage,
+      downloadResume,
       formatService,
       formatBudget,
+      formatAvailability,
       formatDate,
       formatTime,
       formatFullDate,
@@ -744,6 +858,26 @@ export default {
     }
   }
 
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+
+    &.type-job {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+
+    &.type-general {
+      background: #f3e5f5;
+      color: #6a1b9a;
+    }
+  }
+
   .contact-info {
     .contact-name {
       font-weight: 500;
@@ -771,6 +905,11 @@ export default {
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 500;
+
+    &.job-position {
+      background: rgba(255, 193, 7, 0.1);
+      color: #f39c12;
+    }
   }
 
   .message-preview {

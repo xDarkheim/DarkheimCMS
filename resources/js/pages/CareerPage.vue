@@ -184,19 +184,6 @@
               </span>
             </div>
           </div>
-
-          <div class="job-modal__actions">
-            <router-link
-              :to="{ path: '/contact', query: { subject: `Application for ${selectedJob.title}` } }"
-              class="btn btn--primary btn--lg"
-            >
-              Apply Now
-              <i class="fas fa-paper-plane"></i>
-            </router-link>
-            <button class="btn btn--ghost btn--lg" @click="closeModal">
-              Close
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -229,6 +216,13 @@ export default {
     const careers = ref([])
     const selectedJob = ref(null)
     const loading = ref(false)
+    const statsLoading = ref(false)
+    const stats = ref({
+      team_members: 0,
+      open_positions: 0,
+      years_experience: 1,
+      projects_completed: 0
+    })
 
     const loadCareers = async () => {
       try {
@@ -243,6 +237,20 @@ export default {
       }
     }
 
+    const loadStats = async () => {
+      try {
+        statsLoading.value = true
+        const response = await axios.get('/api/stats')
+        if (response.data.success) {
+          stats.value = response.data.data
+        }
+      } catch (error) {
+        console.error('Failed to load stats:', error)
+      } finally {
+        statsLoading.value = false
+      }
+    }
+
     const showJobDetails = (job) => {
       selectedJob.value = job
       document.body.style.overflow = 'hidden'
@@ -253,11 +261,14 @@ export default {
       document.body.style.overflow = 'auto'
     }
 
-    const activePositions = computed(() => careers.value.length)
-    const teamSize = computed(() => 15) // This could come from API
+    const activePositions = computed(() => stats.value.open_positions || careers.value.length)
+    const teamSize = computed(() => stats.value.team_members || 0)
+    const yearsExperience = computed(() => stats.value.years_experience || 1)
+    const projectsCompleted = computed(() => stats.value.projects_completed || 0)
 
     onMounted(() => {
       loadCareers()
+      loadStats()
 
       // Handle escape key for modal
       document.addEventListener('keydown', (e) => {
@@ -271,8 +282,11 @@ export default {
       careers,
       selectedJob,
       loading,
+      statsLoading,
       activePositions,
       teamSize,
+      yearsExperience,
+      projectsCompleted,
       showJobDetails,
       closeModal
     }
