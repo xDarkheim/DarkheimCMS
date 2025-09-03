@@ -10,6 +10,9 @@ import NewsPage from '../pages/NewsPage.vue'
 import NewsArticle from '../pages/NewsArticle.vue'
 import CareerPage from '../pages/CareerPage.vue'
 import TeamPage from '../pages/TeamPage.vue'
+import PrivacyPolicyPage from '../pages/PrivacyPolicyPage.vue'
+import TermsOfServicePage from '../pages/TermsOfServicePage.vue'
+import CookiePolicyPage from '../pages/CookiePolicyPage.vue'
 
 const routes = [
   {
@@ -82,6 +85,30 @@ const routes = [
     component: TeamPage,
     meta: {
       title: 'Our Team - Meet the People Behind Darkheim'
+    }
+  },
+  {
+    path: '/privacy-policy',
+    name: 'privacy-policy',
+    component: PrivacyPolicyPage,
+    meta: {
+      title: 'Privacy Policy - Darkheim Development Studio'
+    }
+  },
+  {
+    path: '/terms-of-service',
+    name: 'terms-of-service',
+    component: TermsOfServicePage,
+    meta: {
+      title: 'Terms of Service - Darkheim Development Studio'
+    }
+  },
+  {
+    path: '/cookie-policy',
+    name: 'cookie-policy',
+    component: CookiePolicyPage,
+    meta: {
+      title: 'Cookie Policy - Darkheim Development Studio'
     }
   }
 ]

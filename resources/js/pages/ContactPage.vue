@@ -250,23 +250,39 @@
             </p>
 
             <div class="contact-methods">
-              <div class="contact-method">
+              <div
+                v-for="contact in contactInfo"
+                :key="contact.key"
+                class="contact-method"
+              >
                 <div class="contact-method__icon">
-                  <i class="fas fa-envelope"></i>
+                  <i :class="contact.icon"></i>
                 </div>
                 <div class="contact-method__content">
-                  <h3 class="contact-method__title">Email</h3>
-                  <p class="contact-method__text">darkheim.studio@gmail.com</p>
+                  <h3 class="contact-method__title">{{ contact.label }}</h3>
+                  <p class="contact-method__text">
+                    <a
+                      v-if="contact.type === 'email'"
+                      :href="`mailto:${contact.value}`"
+                    >
+                      {{ contact.value }}
+                    </a>
+                    <a
+                      v-else-if="contact.type === 'phone'"
+                      :href="`tel:${contact.value}`"
+                    >
+                      {{ contact.value }}
+                    </a>
+                    <span v-else>{{ contact.value }}</span>
+                  </p>
                 </div>
               </div>
-
             </div>
 
             <div class="response-time">
               <h3 class="response-time__title">Response Time</h3>
               <p class="response-time__text">
-                We typically respond within 24 hours during business days.
-                For urgent matters, please call us directly.
+                {{ responseTimeText || 'We typically respond within 24 hours during business days. For urgent matters, please call us directly.' }}
               </p>
             </div>
           </div>
@@ -324,6 +340,9 @@ export default {
       message: '',
       resume_file: ''
     })
+
+    const contactInfo = ref([])
+    const responseTimeText = ref('')
 
     const resetConditionalFields = () => {
       // Reset fields when switching between message types
@@ -482,6 +501,21 @@ export default {
         el.style.animationPlayState = 'paused'
         observer.observe(el)
       })
+
+      // Fetch contact information from API
+      const fetchContactInfo = async () => {
+        try {
+          const response = await contactService.getContactInfo()
+          if (response.success) {
+            contactInfo.value = response.data.contacts || []
+            responseTimeText.value = response.data.response_time_text || ''
+          }
+        } catch (error) {
+          console.error('Error fetching contact info:', error)
+        }
+      }
+
+      fetchContactInfo()
     })
 
     return {
@@ -490,6 +524,8 @@ export default {
       isSubmitting,
       showSuccess,
       submitError,
+      contactInfo,
+      responseTimeText,
       resetConditionalFields,
       handleFileUpload,
       validateForm,

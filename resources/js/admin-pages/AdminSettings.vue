@@ -92,58 +92,6 @@
           </div>
         </div>
 
-        <!-- Contact Settings -->
-        <div v-if="activeSection === 'contact'" class="settings-panel">
-          <div class="panel-header">
-            <h3>Contact & Communication</h3>
-            <p>Manage how visitors interact with your site</p>
-          </div>
-
-          <div class="settings-grid">
-            <div class="setting-card full-width">
-              <div class="card-header">
-                <div class="card-icon">
-                  <i class="fas fa-envelope-open"></i>
-                </div>
-                <h4>Email Notifications</h4>
-              </div>
-              <div class="card-content">
-                <div class="toggle-field">
-                  <div class="toggle-info">
-                    <h5>Contact Form Notifications</h5>
-                    <p>Receive email alerts when someone submits the contact form</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" v-model="settings.contact_notifications">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-
-                <div class="form-group">
-                  <label for="auto_reply_message">Auto-Reply Message</label>
-                  <textarea
-                    id="auto_reply_message"
-                    v-model="settings.auto_reply_message"
-                    placeholder="Thank you for contacting us..."
-                    rows="4"
-                  ></textarea>
-                </div>
-
-                <div class="toggle-field">
-                  <div class="toggle-info">
-                    <h5>Send Auto-Reply</h5>
-                    <p>Automatically send a response to contact form submissions</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" v-model="settings.auto_reply_enabled">
-                    <span class="slider"></span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Security Settings -->
         <div v-if="activeSection === 'security'" class="settings-panel">
           <div class="panel-header">
@@ -308,7 +256,6 @@ export default {
 
     const sections = [
       { id: 'general', title: 'General', icon: 'fas fa-cog' },
-      { id: 'contact', title: 'Contact', icon: 'fas fa-envelope' },
       { id: 'security', title: 'Security', icon: 'fas fa-shield-alt' },
       { id: 'performance', title: 'Performance', icon: 'fas fa-rocket' }
     ]

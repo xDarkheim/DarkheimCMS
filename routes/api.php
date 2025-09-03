@@ -55,6 +55,12 @@ Route::post('/contact', [ContactController::class, 'submit']);
 // Public Statistics
 Route::get('/stats', [App\Http\Controllers\Api\StatsController::class, 'public']);
 
+// Public Company Info
+Route::get('/company-info', [App\Http\Controllers\Admin\CompanyInfoController::class, 'public']);
+
+// New dedicated contact info endpoint
+Route::get('/contact-info', [App\Http\Controllers\Api\CompanyInfoController::class, 'index']);
+
 // Career routes
 Route::get('/careers', [CareerController::class, 'index']);
 Route::get('/careers/{career}', [CareerController::class, 'show']);
@@ -120,4 +126,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::post('/team', [TeamMemberController::class, 'store']);
     Route::put('/team/{teamMember}', [TeamMemberController::class, 'update']);
     Route::delete('/team/{teamMember}', [TeamMemberController::class, 'destroy']);
+
+    // Company Info Management
+    Route::prefix('company-info')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\CompanyInfoController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\Admin\CompanyInfoController::class, 'store']);
+        Route::get('/{companyInfo}', [App\Http\Controllers\Admin\CompanyInfoController::class, 'show']);
+        Route::put('/{companyInfo}', [App\Http\Controllers\Admin\CompanyInfoController::class, 'update']);
+        Route::delete('/{companyInfo}', [App\Http\Controllers\Admin\CompanyInfoController::class, 'destroy']);
+        Route::post('/update-order', [App\Http\Controllers\Admin\CompanyInfoController::class, 'updateOrder']);
+    });
 });

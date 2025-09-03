@@ -209,6 +209,10 @@ const contentRoutes = computed(() => [
     name: 'admin.contact-messages',
     meta: { title: 'Messages', icon: 'fas fa-envelope' },
     badge: unreadMessagesCount.value > 0 ? unreadMessagesCount.value.toString() : null
+  },
+  {
+    name: 'admin.contact-info',
+    meta: { title: 'Contact Info', icon: 'fas fa-address-book' }
   }
 ])
 

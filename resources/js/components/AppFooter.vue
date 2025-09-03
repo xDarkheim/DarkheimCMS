@@ -13,31 +13,24 @@
               <span class="footer__logo-text">Darkheim</span>
             </div>
             <p class="footer__description">
-              We create exceptional digital experiences that drive business growth and user engagement.
-              Our team combines creativity with technical expertise to deliver outstanding results.
+              {{ companyDescription || 'We create exceptional digital experiences that drive business growth and user engagement.' }}
             </p>
           </div>
 
           <div class="footer__social">
             <h4 class="footer__social-title">Follow Us</h4>
             <div class="footer__social-links">
-              <a href="#" class="footer__social-link" aria-label="GitHub" title="Follow us on GitHub">
-                <i class="fab fa-github"></i>
-              </a>
-              <a href="#" class="footer__social-link" aria-label="LinkedIn" title="Connect on LinkedIn">
-                <i class="fab fa-linkedin"></i>
-              </a>
-              <a href="#" class="footer__social-link" aria-label="Twitter" title="Follow us on Twitter">
-                <i class="fab fa-twitter"></i>
-              </a>
-              <a href="#" class="footer__social-link" aria-label="Instagram" title="Follow us on Instagram">
-                <i class="fab fa-instagram"></i>
-              </a>
-              <a href="#" class="footer__social-link" aria-label="Discord" title="Join our Discord">
-                <i class="fab fa-discord"></i>
-              </a>
-              <a href="#" class="footer__social-link" aria-label="YouTube" title="Subscribe to our YouTube">
-                <i class="fab fa-youtube"></i>
+              <a
+                v-for="social in socialLinks"
+                :key="social.key"
+                :href="social.value"
+                class="footer__social-link"
+                :aria-label="social.label"
+                :title="`Follow us on ${social.label}`"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i :class="social.icon"></i>
               </a>
             </div>
           </div>
@@ -170,17 +163,27 @@
             Get In Touch
           </h3>
           <div class="footer__contact">
-            <div class="footer__contact-item">
-              <i class="fas fa-envelope"></i>
-              <span>hello@darkheim.dev</span>
-            </div>
-            <div class="footer__contact-item">
-              <i class="fas fa-phone"></i>
-              <span>+1 (555) 123-4567</span>
-            </div>
-            <div class="footer__contact-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <span>San Francisco, CA</span>
+            <div
+              v-for="contact in contactInfo"
+              :key="contact.key"
+              class="footer__contact-item"
+            >
+              <i :class="contact.icon"></i>
+              <a
+                v-if="contact.type === 'email'"
+                :href="`mailto:${contact.value}`"
+                class="footer__contact-link"
+              >
+                {{ contact.value }}
+              </a>
+              <a
+                v-else-if="contact.type === 'phone'"
+                :href="`tel:${contact.value}`"
+                class="footer__contact-link"
+              >
+                {{ contact.value }}
+              </a>
+              <span v-else class="footer__contact-text">{{ contact.value }}</span>
             </div>
           </div>
 
@@ -189,32 +192,6 @@
             <i class="fas fa-arrow-right"></i>
           </router-link>
         </div>
-      </div>
-
-      <!-- Newsletter Section -->
-      <div class="footer__newsletter">
-        <div class="footer__newsletter-content">
-          <h3 class="footer__newsletter-title">Stay Updated</h3>
-          <p class="footer__newsletter-desc">
-            Subscribe to our newsletter and get the latest updates on web development trends and our projects.
-          </p>
-        </div>
-        <form class="footer__newsletter-form" @submit.prevent="subscribeNewsletter">
-          <div class="footer__newsletter-input">
-            <i class="fas fa-envelope"></i>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              v-model="newsletterEmail"
-              required
-            >
-          </div>
-          <button type="submit" class="footer__newsletter-btn" :disabled="isSubscribing">
-            <span v-if="!isSubscribing">Subscribe</span>
-            <span v-else>Subscribing...</span>
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </form>
       </div>
 
       <!-- Bottom Section -->
@@ -228,9 +205,9 @@
 
         <div class="footer__bottom-center">
           <div class="footer__legal-links">
-            <a href="#" class="footer__legal-link">Privacy Policy</a>
-            <a href="#" class="footer__legal-link">Terms of Service</a>
-            <a href="#" class="footer__legal-link">Cookie Policy</a>
+            <router-link to="/privacy-policy" class="footer__legal-link">Privacy Policy</router-link>
+            <router-link to="/terms-of-service" class="footer__legal-link">Terms of Service</router-link>
+            <router-link to="/cookie-policy" class="footer__legal-link">Cookie Policy</router-link>
           </div>
         </div>
 
@@ -246,12 +223,17 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'AppFooter',
   data() {
     return {
       newsletterEmail: '',
       isSubscribing: false,
+      contactInfo: [],
+      socialLinks: [],
+      companyDescription: ''
     }
   },
   computed: {
@@ -259,7 +241,60 @@ export default {
       return new Date().getFullYear()
     }
   },
+  async mounted() {
+    await this.loadCompanyInfo()
+  },
   methods: {
+    async loadCompanyInfo() {
+      try {
+        const response = await axios.get('/api/company-info')
+        if (response.data.success) {
+          this.contactInfo = response.data.data.contact_info || []
+          this.socialLinks = response.data.data.social_links || []
+
+          // Find company description
+          const description = this.contactInfo.find(item => item.key === 'company_description')
+          if (description) {
+            this.companyDescription = description.value
+          }
+        }
+      } catch (error) {
+        console.error('Error loading company info:', error)
+        // Fallback to default values if API fails
+        this.setDefaultValues()
+      }
+    },
+    setDefaultValues() {
+      this.contactInfo = [
+        {
+          key: 'company_email',
+          value: 'darkheim.studio@gmail.com',
+          type: 'email',
+          icon: 'fas fa-envelope'
+        },
+        {
+          key: 'company_phone',
+          value: '+1 (555) 123-4567',
+          type: 'phone',
+          icon: 'fas fa-phone'
+        },
+        {
+          key: 'company_address',
+          value: 'San Francisco, CA',
+          type: 'address',
+          icon: 'fas fa-map-marker-alt'
+        }
+      ]
+
+      this.socialLinks = [
+        { key: 'github', label: 'GitHub', value: '#', icon: 'fab fa-github' },
+        { key: 'linkedin', label: 'LinkedIn', value: '#', icon: 'fab fa-linkedin' },
+        { key: 'twitter', label: 'Twitter', value: '#', icon: 'fab fa-twitter' },
+        { key: 'instagram', label: 'Instagram', value: '#', icon: 'fab fa-instagram' },
+        { key: 'discord', label: 'Discord', value: '#', icon: 'fab fa-discord' },
+        { key: 'youtube', label: 'YouTube', value: '#', icon: 'fab fa-youtube' }
+      ]
+    },
     subscribeNewsletter() {
       this.isSubscribing = true;
       // Simulate an API call
@@ -612,6 +647,23 @@ $border-radius: 12px;
       font-size: 0.8rem;
     }
   }
+
+  &-link {
+    color: $text-light;
+    text-decoration: none;
+    transition: $transition;
+    font-weight: 500;
+
+    &:hover {
+      color: $primary-color;
+      text-decoration: underline;
+    }
+  }
+
+  &-text {
+    color: $text-light;
+    font-weight: 500;
+  }
 }
 
 .footer__cta-btn {
@@ -635,112 +687,6 @@ $border-radius: 12px;
 
   i {
     font-size: 0.9rem;
-  }
-}
-
-// Newsletter Section
-.footer__newsletter {
-  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
-  border-radius: $border-radius;
-  padding: 2.5rem;
-  margin: 2rem 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-
-  &-content {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  &-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    background: linear-gradient(135deg, $primary-color, #9b59b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  &-desc {
-    color: $text-muted;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  &-form {
-    display: flex;
-    gap: 1rem;
-    max-width: 500px;
-    margin: 0 auto;
-
-    @media (max-width: 480px) {
-      flex-direction: column;
-    }
-  }
-
-  &-input {
-    position: relative;
-    flex: 1;
-
-    i {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: $primary-color;
-      z-index: 2;
-    }
-
-    input {
-      width: 100%;
-      padding: 1rem 1rem 1rem 3rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      color: $text-light;
-      font-size: 0.95rem;
-      transition: $transition;
-
-      &::placeholder {
-        color: $text-muted;
-      }
-
-      &:focus {
-        outline: none;
-        border-color: $primary-color;
-        background: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-      }
-    }
-  }
-
-  &-btn {
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, $primary-color, $primary-hover);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: $transition;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, $primary-hover, $primary-color);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
   }
 }
 
@@ -823,11 +769,6 @@ $border-radius: 12px;
   .footer .container {
     padding: 0 1.5rem;
   }
-
-  .footer__newsletter {
-    padding: 2rem;
-    margin: 1.5rem 0;
-  }
 }
 
 @media (max-width: 768px) {
@@ -852,36 +793,11 @@ $border-radius: 12px;
   .footer__social-links {
     justify-content: center;
   }
-
-  .footer__newsletter {
-    padding: 1.5rem;
-    text-align: center;
-
-    &-title {
-      font-size: 1.25rem;
-    }
-  }
 }
 
 @media (max-width: 480px) {
   .footer__content {
     padding: 2rem 0;
-  }
-
-  .footer__newsletter {
-    padding: 1.25rem;
-
-    &-form {
-      gap: 0.75rem;
-    }
-
-    &-input input {
-      padding: 0.875rem 0.875rem 0.875rem 2.75rem;
-    }
-
-    &-btn {
-      padding: 0.875rem 1.5rem;
-    }
   }
 }
 

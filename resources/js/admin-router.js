@@ -6,6 +6,7 @@ import AdminPortfolio from './admin-pages/AdminPortfolio.vue'
 import AdminNews from './admin-pages/AdminNews.vue'
 import AdminUsers from './admin-pages/AdminUsers.vue'
 import AdminContactMessages from './admin-pages/AdminContactMessages.vue'
+import AdminContactInfo from './admin-pages/AdminContactInfo.vue'
 import AdminSettings from './admin-pages/AdminSettings.vue'
 import AdminCareers from './admin-pages/AdminCareers.vue'
 import AdminTeam from './admin-pages/AdminTeam.vue'
@@ -72,6 +73,15 @@ const routes = [
         meta: {
           title: 'Contact Messages - Admin Panel',
           icon: 'fas fa-envelope'
+        }
+      },
+      {
+        path: 'contact-info',
+        name: 'admin.contact-info',
+        component: AdminContactInfo,
+        meta: {
+          title: 'Contact Information - Admin Panel',
+          icon: 'fas fa-address-book'
         }
       },
       {
