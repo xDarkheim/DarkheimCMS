@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
+use App\Models\PortfolioCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -41,13 +42,16 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
-            'category' => 'required|string|max:100',
+            'portfolio_category_id' => 'required|exists:portfolio_categories,id',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
+
+        // Получаем категорию для заполнения legacy поля category
+        $category = PortfolioCategory::find($request->portfolio_category_id);
 
         $portfolio = Portfolio::create([
             'title' => $request->title,
@@ -59,7 +63,8 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies ?? [],
-            'category' => $request->category,
+            'portfolio_category_id' => $request->portfolio_category_id,
+            'category' => $category ? $category->name : 'Uncategorized', // Legacy поле для обратной совместимости
             'client' => $request->client,
             'completed_at' => $request->completed_at ?: now(),
             'is_featured' => $request->boolean('is_featured'),
@@ -67,7 +72,7 @@ class PortfolioController extends Controller
             'sort_order' => $request->sort_order ?? 0,
         ]);
 
-        return response()->json($portfolio, 201);
+        return response()->json($portfolio->load('portfolioCategory'), 201);
     }
 
     /**
@@ -101,13 +106,16 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
-            'category' => 'required|string|max:100',
+            'portfolio_category_id' => 'required|exists:portfolio_categories,id',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
+
+        // Получаем категорию для заполнения legacy поля category
+        $category = PortfolioCategory::find($request->portfolio_category_id);
 
         $updateData = [
             'title' => $request->title,
@@ -118,7 +126,8 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies ?? [],
-            'category' => $request->category,
+            'portfolio_category_id' => $request->portfolio_category_id,
+            'category' => $category ? $category->name : 'Uncategorized', // Legacy поле для обратной совместимости
             'client' => $request->client,
             'completed_at' => $request->completed_at,
             'is_featured' => $request->boolean('is_featured'),
@@ -132,7 +141,7 @@ class PortfolioController extends Controller
 
         $portfolio->update($updateData);
 
-        return response()->json($portfolio);
+        return response()->json($portfolio->load('portfolioCategory'));
     }
 
     /**
@@ -210,10 +219,19 @@ class PortfolioController extends Controller
         }
     }
 
+    /**
+     * Получить все категории портфолио (для админ-панели)
+     */
     public function categories()
     {
-        $categories = Portfolio::distinct('category')->pluck('category');
-        return response()->json($categories);
+        $categories = PortfolioCategory::active()
+            ->ordered()
+            ->get(['id', 'name', 'slug', 'icon', 'color']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
     }
 
     public function reorder(Request $request)

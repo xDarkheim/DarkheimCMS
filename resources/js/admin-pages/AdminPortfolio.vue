@@ -18,8 +18,8 @@
         <div class="table-controls">
           <select v-model="filterCategory" class="filter-select">
             <option value="">All Categories</option>
-            <option v-for="category in categories" :key="category" :value="category">
-              {{ category }}
+            <option v-for="category in categories" :key="category.id" :value="category.name">
+              {{ category.name }}
             </option>
           </select>
         </div>
@@ -159,38 +159,22 @@
                 <input id="title" v-model="form.title" type="text" required placeholder="Enter project title">
               </div>
               <div class="form-group">
-                <label for="category">
+                <label for="portfolio_category_id">
                   <i class="fas fa-folder"></i>
                   Category *
                 </label>
-                <div class="category-input-group">
-                  <select
-                    id="category"
-                    v-model="form.category"
-                    required
-                    class="category-select"
-                    @change="onCategoryChange"
-                  >
-                    <option value="">Select a category</option>
-                    <option v-for="category in categories" :key="category" :value="category">
-                      {{ category }}
-                    </option>
-                    <option value="__new__">+ Add New Category</option>
-                  </select>
-
-                  <!-- Поле для новой категории (показывается только при выборе "Add New Category") -->
-                  <input
-                    v-if="showNewCategoryInput"
-                    v-model="newCategoryName"
-                    type="text"
-                    placeholder="Enter new category name"
-                    class="new-category-input"
-                    @blur="addNewCategory"
-                    @keyup.enter="addNewCategory"
-                    ref="newCategoryInput"
-                  >
-                </div>
-                <small>Choose from existing categories or create a new one</small>
+                <select
+                  id="portfolio_category_id"
+                  v-model="form.portfolio_category_id"
+                  required
+                  class="category-select"
+                >
+                  <option value="">Select a category</option>
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
+                    {{ category.name }}
+                  </option>
+                </select>
+                <small>Choose from predefined categories</small>
               </div>
             </div>
 
@@ -420,8 +404,6 @@ const saving = ref(false)
 const error = ref('')
 const filterCategory = ref('')
 const isAuthenticated = ref(true)
-const showNewCategoryInput = ref(false)
-const newCategoryName = ref('')
 
 const form = ref({
   title: '',
@@ -432,7 +414,7 @@ const form = ref({
   project_url: '',
   github_url: '',
   technologies: [],
-  category: '',
+  portfolio_category_id: '',
   client: '',
   completed_at: '',
   is_featured: false,
@@ -476,13 +458,26 @@ const loadProjects = async (page = 1) => {
 
 const loadCategories = async () => {
   try {
-    const response = await adminApiService.getPortfolioCategories()
-    categories.value = response.data || []
+    // Используем новый API endpoint для получения активных категорий
+    const response = await adminApiService.get('/admin/portfolio-categories/active')
+    if (response.data && response.data.success) {
+      categories.value = response.data.data.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        icon: cat.icon,
+        color: cat.color
+      }))
+    } else {
+      // Fallback к старому методу если новый API не работает
+      const fallbackResponse = await adminApiService.getPortfolioCategories()
+      categories.value = fallbackResponse.data || []
+    }
   } catch (error) {
     console.error('Failed to load categories:', error)
     // Fallback: extract categories from existing projects
     const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.category).filter(Boolean))]
-    categories.value = uniqueCategories
+    categories.value = uniqueCategories.map(name => ({ id: name, name, slug: name.toLowerCase().replace(/\s+/g, '-') }))
   }
 }
 
@@ -497,7 +492,7 @@ const openCreateModal = () => {
     project_url: '',
     github_url: '',
     technologies: [],
-    category: '',
+    portfolio_category_id: '',
     client: '',
     completed_at: '',
     is_featured: false,
@@ -513,7 +508,8 @@ const editProject = (project) => {
   form.value = {
     ...project,
     gallery_images: project.gallery_images || [],
-    technologies: project.technologies || []
+    technologies: project.technologies || [],
+    portfolio_category_id: project.portfolio_category_id || ''
   }
   error.value = ''
   showModal.value = true
@@ -645,43 +641,6 @@ const formatDate = (dateString) => {
     month: 'short',
     day: 'numeric'
   })
-}
-
-// Методы для работы с категориями
-const onCategoryChange = () => {
-  if (form.value.category === '__new__') {
-    showNewCategoryInput.value = true
-    form.value.category = ''
-    newCategoryName.value = ''
-    // Фокусируемся на поле ввода новой категории
-    setTimeout(() => {
-      const input = document.querySelector('.new-category-input')
-      if (input) input.focus()
-    }, 100)
-  } else {
-    showNewCategoryInput.value = false
-    newCategoryName.value = ''
-  }
-}
-
-const addNewCategory = () => {
-  if (newCategoryName.value.trim()) {
-    const categoryName = newCategoryName.value.trim()
-
-    // Проверяем, что такой категории еще нет
-    if (!categories.value.includes(categoryName)) {
-      categories.value.push(categoryName)
-    }
-
-    // Устанавливаем новую категорию как выбранную
-    form.value.category = categoryName
-    showNewCategoryInput.value = false
-    newCategoryName.value = ''
-  } else {
-    // Если поле пустое, возвращаемся к выбору категории
-    showNewCategoryInput.value = false
-    form.value.category = ''
-  }
 }
 
 onMounted(() => {

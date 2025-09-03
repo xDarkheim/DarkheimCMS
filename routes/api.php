@@ -70,6 +70,17 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Admin Portfolio Management
     Route::apiResource('portfolios', AdminPortfolioController::class);
 
-    // Portfolio categories for admin
+    // Portfolio categories management
+    Route::prefix('portfolio-categories')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'store']);
+        Route::get('/active', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'active']);
+        Route::get('/{portfolioCategory}', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'show']);
+        Route::put('/{portfolioCategory}', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'update']);
+        Route::delete('/{portfolioCategory}', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'destroy']);
+        Route::post('/update-order', [App\Http\Controllers\Admin\PortfolioCategoryController::class, 'updateOrder']);
+    });
+
+    // Portfolio categories for admin (legacy endpoint)
     Route::get('/portfolios-categories', [AdminPortfolioController::class, 'categories']);
 });

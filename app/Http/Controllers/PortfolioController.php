@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
+use App\Models\PortfolioCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -84,25 +85,21 @@ class PortfolioController extends Controller
     public function categories(): JsonResponse
     {
         try {
-            // Получаем все уникальные категории из опубликованных проектов
-            $categories = Portfolio::where('is_published', true)
-                ->whereNotNull('category')
-                ->where('category', '!=', '')
-                ->select('category')
-                ->distinct()
-                ->orderBy('category')
-                ->pluck('category')
-                ->filter()
+            // Получаем активные категории с количеством проектов
+            $categories = PortfolioCategory::active()
+                ->ordered()
+                ->withCount(['portfolios' => function ($query) {
+                    $query->where('is_published', true);
+                }])
+                ->having('portfolios_count', '>', 0) // Только категории с проектами
+                ->get()
                 ->mapWithKeys(function ($category) {
-                    // Создаем slug из названия категории для ID
-                    $slug = strtolower(str_replace([' ', '_'], '-', $category));
-                    $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
-                    return [$slug => $category];
+                    return [$category->slug => $category->name];
                 });
 
             return response()->json([
                 'success' => true,
-                'data' => $categories->toArray()
+                'data' => $categories
             ]);
         } catch (\Exception $e) {
             return response()->json([

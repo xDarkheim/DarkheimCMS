@@ -21,6 +21,7 @@ class Portfolio extends Model
         'github_url',
         'technologies',
         'category',
+        'portfolio_category_id',
         'client',
         'completed_at',
         'is_featured',
@@ -56,6 +57,30 @@ class Portfolio extends Model
                 $portfolio->slug = Str::slug($portfolio->title);
             }
         });
+    }
+
+    /**
+     * Связь с категорией портфолио
+     */
+    public function portfolioCategory()
+    {
+        return $this->belongsTo(PortfolioCategory::class, 'portfolio_category_id');
+    }
+
+    /**
+     * Получить название категории (с обратной совместимостью)
+     */
+    public function getCategoryNameAttribute()
+    {
+        return $this->portfolioCategory ? $this->portfolioCategory->name : $this->category;
+    }
+
+    /**
+     * Получить slug категории (с обратной совместимостью)
+     */
+    public function getCategorySlugAttribute()
+    {
+        return $this->portfolioCategory ? $this->portfolioCategory->slug : \Illuminate\Support\Str::slug($this->category);
     }
 
     // Скопы для запросов

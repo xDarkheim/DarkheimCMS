@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         // Запускаем сидеры для создания тестовых данных
         $this->call([
             AdminSeeder::class,
+            PortfolioCategorySeeder::class, // Создаем категории перед проектами
             PortfolioSeeder::class,
             NewsSeeder::class,
         ]);

@@ -259,7 +259,7 @@ export default {
 
         const params = {
           page,
-          per_page: 6,
+          per_page: 12, // Увеличиваем до 12 проектов на странице, чтобы поместились все
           category: categoryName
         }
 
@@ -271,7 +271,7 @@ export default {
           portfolioMeta.value = response.meta || {
             current_page: page,
             last_page: 1,
-            per_page: 6,
+            per_page: 12,
             total: Array.isArray(response.data) ? response.data.length : 0
           }
           currentPage.value = page
@@ -281,7 +281,7 @@ export default {
           portfolioMeta.value = {
             current_page: page,
             last_page: 1,
-            per_page: 6,
+            per_page: 12,
             total: 0
           }
         }
@@ -293,7 +293,7 @@ export default {
         portfolioMeta.value = {
           current_page: page,
           last_page: 1,
-          per_page: 6,
+          per_page: 12,
           total: 0
         }
 
@@ -313,51 +313,41 @@ export default {
     // Load categories from API
     const loadCategories = async () => {
       try {
+        // Используем API endpoint для получения категорий портфолио
         const response = await portfolioService.getCategories()
         if (response && response.success && response.data) {
-          // Получаем все категории из API
-          const allCategories = Object.entries(response.data).map(([key, name]) => ({
-            id: key,
-            name
+          // Преобразуем ответ API в формат категорий
+          const allCategories = Object.entries(response.data).map(([slug, name]) => ({
+            id: slug,
+            name,
+            slug
           }))
 
-          // Проверяем каждую категорию на наличие проектов
-          const categoriesWithProjects = []
-
-          for (const category of allCategories) {
-            try {
-              const categoryResponse = await portfolioService.getAll({
-                page: 1,
-                per_page: 1,
-                category: category.id
-              })
-
-              // Если в категории есть проекты, добавляем её в список
-              if (categoryResponse && categoryResponse.success &&
-                  categoryResponse.data && categoryResponse.data.length > 0) {
-                categoriesWithProjects.push(category)
-              }
-            } catch (err) {
-              console.warn(`Failed to check category ${category.id}:`, err)
-              // В случае ошибки оставляем категорию (лучше показать лишнее, чем скрыть нужное)
-              categoriesWithProjects.push(category)
-            }
-          }
-
-          categories.value = categoriesWithProjects
+          categories.value = allCategories
+          console.log('Loaded portfolio categories:', allCategories)
         } else {
           // Fallback categories
           categories.value = [
-            { id: 'web', name: 'Web Development' },
-            { id: 'mobile', name: 'Mobile Apps' }
+            { id: 'web-development', name: 'Web Development', slug: 'web-development' },
+            { id: 'mobile-applications', name: 'Mobile Applications', slug: 'mobile-applications' },
+            { id: 'ecommerce-solutions', name: 'E-commerce Solutions', slug: 'ecommerce-solutions' },
+            { id: 'business-applications', name: 'Business Applications', slug: 'business-applications' },
+            { id: 'landing-pages', name: 'Landing Pages', slug: 'landing-pages' },
+            { id: 'portfolio-websites', name: 'Portfolio Websites', slug: 'portfolio-websites' },
+            { id: 'api-development', name: 'API Development', slug: 'api-development' }
           ]
         }
       } catch (err) {
         console.error('Categories loading error:', err)
-        // Fallback categories
+        // Fallback categories - все предопределенные категории
         categories.value = [
-          { id: 'web', name: 'Web Development' },
-          { id: 'mobile', name: 'Mobile Apps' }
+          { id: 'web-development', name: 'Web Development', slug: 'web-development' },
+          { id: 'mobile-applications', name: 'Mobile Applications', slug: 'mobile-applications' },
+          { id: 'ecommerce-solutions', name: 'E-commerce Solutions', slug: 'ecommerce-solutions' },
+          { id: 'business-applications', name: 'Business Applications', slug: 'business-applications' },
+          { id: 'landing-pages', name: 'Landing Pages', slug: 'landing-pages' },
+          { id: 'portfolio-websites', name: 'Portfolio Websites', slug: 'portfolio-websites' },
+          { id: 'api-development', name: 'API Development', slug: 'api-development' }
         ]
       }
     }
