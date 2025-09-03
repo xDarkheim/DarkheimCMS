@@ -7,6 +7,8 @@ import AdminNews from './admin-pages/AdminNews.vue'
 import AdminUsers from './admin-pages/AdminUsers.vue'
 import AdminContactMessages from './admin-pages/AdminContactMessages.vue'
 import AdminSettings from './admin-pages/AdminSettings.vue'
+import AdminCareers from './admin-pages/AdminCareers.vue'
+import AdminTeam from './admin-pages/AdminTeam.vue'
 
 const routes = [
   {
@@ -65,11 +67,29 @@ const routes = [
       },
       {
         path: 'contact-messages',
-        name: 'admin.contactMessages',
+        name: 'admin.contact-messages',
         component: AdminContactMessages,
         meta: {
           title: 'Contact Messages - Admin Panel',
           icon: 'fas fa-envelope'
+        }
+      },
+      {
+        path: 'careers',
+        name: 'admin.careers',
+        component: AdminCareers,
+        meta: {
+          title: 'Career Management - Admin Panel',
+          icon: 'fas fa-briefcase'
+        }
+      },
+      {
+        path: 'team',
+        name: 'admin.team',
+        component: AdminTeam,
+        meta: {
+          title: 'Team Management - Admin Panel',
+          icon: 'fas fa-users'
         }
       },
       {

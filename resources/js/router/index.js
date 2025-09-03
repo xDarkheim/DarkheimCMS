@@ -8,6 +8,8 @@ import PortfolioPage from '../pages/PortfolioPage.vue'
 import ContactPage from '../pages/ContactPage.vue'
 import NewsPage from '../pages/NewsPage.vue'
 import NewsArticle from '../pages/NewsArticle.vue'
+import CareerPage from '../pages/CareerPage.vue'
+import TeamPage from '../pages/TeamPage.vue'
 
 const routes = [
   {
@@ -64,6 +66,22 @@ const routes = [
     component: NewsArticle,
     meta: {
       title: 'News Article - Darkheim Development Studio'
+    }
+  },
+  {
+    path: '/careers',
+    name: 'careers',
+    component: CareerPage,
+    meta: {
+      title: 'Careers - Join Our Team'
+    }
+  },
+  {
+    path: '/team',
+    name: 'team',
+    component: TeamPage,
+    meta: {
+      title: 'Our Team - Meet the People Behind Darkheim'
     }
   }
 ]

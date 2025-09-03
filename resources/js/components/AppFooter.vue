@@ -30,28 +30,28 @@
           </h3>
           <ul class="footer__links">
             <li>
-              <a href="/services">
+              <router-link to="/services?filter=web-development">
                 <i class="fas fa-code"></i>
                 Web Development
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="/services">
+              <router-link to="/services?filter=ui-ux-design">
                 <i class="fas fa-palette"></i>
                 UI/UX Design
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="/services">
-                <i class="fas fa-mobile-screen"></i>
+              <router-link to="/services?filter=mobile-apps">
+                <i class="fas fa-mobile-alt"></i>
                 Mobile Apps
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="/services">
+              <router-link to="/services?filter=consulting">
                 <i class="fas fa-lightbulb"></i>
                 Consulting
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -69,6 +69,18 @@
               </router-link>
             </li>
             <li>
+              <router-link to="/team">
+                <i class="fas fa-users"></i>
+                Our Team
+              </router-link>
+            </li>
+            <li>
+              <router-link to="/careers">
+                <i class="fas fa-briefcase"></i>
+                Careers
+              </router-link>
+            </li>
+            <li>
               <router-link to="/news">
                 <i class="fas fa-newspaper"></i>
                 News
@@ -79,12 +91,6 @@
                 <i class="fas fa-briefcase"></i>
                 Portfolio
               </router-link>
-            </li>
-            <li>
-              <a href="#">
-                <i class="fas fa-users"></i>
-                Careers
-              </a>
             </li>
             <li>
               <router-link to="/contact">

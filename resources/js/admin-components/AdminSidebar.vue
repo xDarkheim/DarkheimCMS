@@ -182,8 +182,32 @@ const loadUnreadCount = async () => {
 const mainRoutes = computed(() => [
   {
     name: 'admin.dashboard',
-    meta: { title: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-    badge: null
+    meta: { title: 'Dashboard', icon: 'fas fa-tachometer-alt' }
+  },
+  {
+    name: 'admin.portfolio',
+    meta: { title: 'Portfolio', icon: 'fas fa-briefcase' }
+  },
+  {
+    name: 'admin.news',
+    meta: { title: 'News', icon: 'fas fa-newspaper' }
+  },
+  {
+    name: 'admin.careers',
+    meta: { title: 'Careers', icon: 'fas fa-user-tie' }
+  },
+  {
+    name: 'admin.team',
+    meta: { title: 'Team', icon: 'fas fa-users' }
+  },
+  {
+    name: 'admin.contact-messages',
+    meta: { title: 'Messages', icon: 'fas fa-envelope' },
+    badge: unreadMessagesCount.value > 0 ? unreadMessagesCount.value.toString() : null
+  },
+  {
+    name: 'admin.users',
+    meta: { title: 'Users', icon: 'fas fa-user-shield' }
   }
 ])
 

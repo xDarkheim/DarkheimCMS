@@ -327,6 +327,22 @@
 .fa-shield-alt::before { content: "\f3ed"; }
 .fa-mobile-alt::before { content: "\f3cd"; }
 
+/* Additional icons for ServicesPage and Footer */
+.fa-globe::before { content: "\f0ac"; }
+.fa-shopping-cart::before { content: "\f07a"; }
+.fa-cogs::before { content: "\f085"; }
+.fa-dollar-sign::before { content: "\f155"; }
+.fa-headset::before { content: "\f590"; }
+.fa-graduation-cap::before { content: "\f19d"; }
+.fa-arrow-right::before { content: "\f061"; }
+.fa-copyright::before { content: "\f1f9"; }
+.fa-mobile-screen::before { content: "\f3cf"; }
+
+/* New icons for updated ServicesPage */
+.fa-th::before { content: "\f00a"; }
+.fa-paint-brush::before { content: "\f1fc"; }
+.fa-comments::before { content: "\f086"; }
+
 /* Size modifiers */
 .fa-xs { font-size: 0.75em; }
 .fa-sm { font-size: 0.875em; }

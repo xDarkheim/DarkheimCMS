@@ -1,254 +1,173 @@
 <template>
   <div class="services-page page-with-header-offset">
-    <!-- Main Services Section -->
-    <section class="section">
+    <!-- Hero Section -->
+    <section class="services-hero">
       <div class="container">
-        <div class="section__header animate-fade-in">
-          <h1 class="section__title">Our Services</h1>
-          <p class="section__subtitle">
-            We create modern, reliable web solutions for small businesses and local companies.
-            Simple, effective, and affordable.
+        <div class="services-hero__content">
+          <h1 class="services-hero__title">Our Services</h1>
+          <p class="services-hero__subtitle">
+            Professional web solutions tailored for small businesses and local companies.
+            Modern, reliable, and affordable.
           </p>
         </div>
+      </div>
+    </section>
 
-        <div class="services-grid animate-slide-up">
-          <div class="service-card">
+    <!-- Services Filter Tabs -->
+    <section class="services-filter">
+      <div class="container">
+        <div class="filter-tabs">
+          <button
+            v-for="tab in filterTabs"
+            :key="tab.id"
+            :class="['filter-tab', { 'filter-tab--active': activeFilter === tab.id }]"
+            @click="setActiveFilter(tab.id)"
+          >
+            <i :class="tab.icon"></i>
+            <span>{{ tab.name }}</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Content -->
+    <section class="services-content">
+      <div class="container">
+        <div class="services-grid">
+          <div
+            v-for="service in filteredServices"
+            :key="service.id"
+            class="service-card"
+            :class="{ 'service-card--featured': service.featured }"
+          >
+            <div v-if="service.featured" class="service-card__badge">
+              <i class="fas fa-star"></i>
+              Most Popular
+            </div>
+
             <div class="service-card__header">
               <div class="service-card__icon">
-                <i class="fas fa-globe"></i>
+                <i :class="service.icon"></i>
               </div>
-              <h3 class="service-card__title">Business Websites</h3>
-              <div class="service-card__price">From $1,500</div>
+              <h3 class="service-card__title">{{ service.title }}</h3>
+              <div class="service-card__price">{{ service.price }}</div>
             </div>
-            <div class="service-card__content">
-              <p class="service-card__description">
-                Professional websites for local businesses. Clean design, mobile-friendly, and easy to maintain.
-              </p>
-              <ul class="service-card__features">
-                <li><i class="fas fa-check"></i> Responsive Design</li>
-                <li><i class="fas fa-check"></i> SEO Optimized</li>
-                <li><i class="fas fa-check"></i> Contact Forms</li>
-                <li><i class="fas fa-check"></i> Google Maps</li>
-                <li><i class="fas fa-check"></i> Social Media Links</li>
-              </ul>
-            </div>
-          </div>
 
-          <div class="service-card service-card--featured">
-            <div class="service-card__badge">Most Popular</div>
-            <div class="service-card__header">
-              <div class="service-card__icon">
-                <i class="fas fa-shopping-cart"></i>
+            <div class="service-card__content">
+              <p class="service-card__description">{{ service.description }}</p>
+
+              <ul class="service-card__features">
+                <li v-for="feature in service.features" :key="feature">
+                  <i class="fas fa-check"></i>
+                  {{ feature }}
+                </li>
+              </ul>
+
+              <div class="service-card__tags">
+                <span
+                  v-for="tech in service.technologies"
+                  :key="tech"
+                  class="service-tag"
+                >
+                  {{ tech }}
+                </span>
               </div>
-              <h3 class="service-card__title">Online Stores</h3>
-              <div class="service-card__price">From $2,500</div>
-            </div>
-            <div class="service-card__content">
-              <p class="service-card__description">
-                E-commerce solutions and online ordering systems for restaurants, bakeries, and retail businesses.
-              </p>
-              <ul class="service-card__features">
-                <li><i class="fas fa-check"></i> Product Catalog</li>
-                <li><i class="fas fa-check"></i> Shopping Cart</li>
-                <li><i class="fas fa-check"></i> Payment Processing</li>
-                <li><i class="fas fa-check"></i> Order Management</li>
-                <li><i class="fas fa-check"></i> Inventory Tracking</li>
-              </ul>
-            </div>
-          </div>
 
-          <div class="service-card">
-            <div class="service-card__header">
-              <div class="service-card__icon">
-                <i class="fas fa-cogs"></i>
+              <div class="service-card__actions">
+                <router-link to="/contact" class="btn btn--primary btn--sm">
+                  Get Quote
+                  <i class="fas fa-arrow-right"></i>
+                </router-link>
+                <button class="btn btn--ghost btn--sm" @click="showServiceDetails(service)">
+                  Learn More
+                </button>
               </div>
-              <h3 class="service-card__title">Custom Solutions</h3>
-              <div class="service-card__price">From $3,000</div>
-            </div>
-            <div class="service-card__content">
-              <p class="service-card__description">
-                Custom web applications and management systems tailored to your specific business needs.
-              </p>
-              <ul class="service-card__features">
-                <li><i class="fas fa-check"></i> Custom Features</li>
-                <li><i class="fas fa-check"></i> Database Integration</li>
-                <li><i class="fas fa-check"></i> User Management</li>
-                <li><i class="fas fa-check"></i> Reporting Tools</li>
-                <li><i class="fas fa-check"></i> API Integration</li>
-              </ul>
             </div>
           </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="filteredServices.length === 0" class="services-empty">
+          <div class="services-empty__icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h3 class="services-empty__title">No services found</h3>
+          <p class="services-empty__text">Try selecting a different category</p>
         </div>
       </div>
     </section>
 
-    <!-- Technology Stack Section -->
-    <section class="section section--alt">
-      <div class="container">
-        <div class="section__header animate-fade-in">
-          <h2 class="section__title">Technology We Use</h2>
-          <p class="section__subtitle">
-            Modern, reliable technologies that ensure your website is fast, secure, and future-proof.
-          </p>
+    <!-- Service Details Modal -->
+    <div v-if="selectedService" class="service-modal" @click="closeModal">
+      <div class="service-modal__content" @click.stop>
+        <button class="service-modal__close" @click="closeModal">
+          <i class="fas fa-times"></i>
+        </button>
+
+        <div class="service-modal__header">
+          <div class="service-modal__icon">
+            <i :class="selectedService.icon"></i>
+          </div>
+          <h2 class="service-modal__title">{{ selectedService.title }}</h2>
+          <div class="service-modal__price">{{ selectedService.price }}</div>
         </div>
 
-        <div class="tech-grid animate-slide-up">
-          <div class="tech-category">
-            <h3>Frontend</h3>
-            <div class="tech-tags">
-              <span class="tech-tag">Vue.js</span>
-              <span class="tech-tag">HTML5</span>
-              <span class="tech-tag">CSS3</span>
-              <span class="tech-tag">JavaScript</span>
-              <span class="tech-tag">Sass</span>
+        <div class="service-modal__body">
+          <p class="service-modal__description">{{ selectedService.detailedDescription }}</p>
+
+          <div class="service-modal__section">
+            <h4>What's Included:</h4>
+            <ul class="service-modal__features">
+              <li v-for="feature in selectedService.features" :key="feature">
+                <i class="fas fa-check"></i>
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="service-modal__section">
+            <h4>Technologies Used:</h4>
+            <div class="service-modal__technologies">
+              <span
+                v-for="tech in selectedService.technologies"
+                :key="tech"
+                class="service-modal__tech-tag"
+              >
+                {{ tech }}
+              </span>
             </div>
           </div>
 
-          <div class="tech-category">
-            <h3>Backend</h3>
-            <div class="tech-tags">
-              <span class="tech-tag">Laravel</span>
-              <span class="tech-tag">PHP</span>
-              <span class="tech-tag">MySQL</span>
-              <span class="tech-tag">Redis</span>
-              <span class="tech-tag">Node.js</span>
-            </div>
+          <div class="service-modal__section">
+            <h4>Timeline & Process:</h4>
+            <p>{{ selectedService.timeline }}</p>
           </div>
 
-          <div class="tech-category">
-            <h3>Tools</h3>
-            <div class="tech-tags">
-              <span class="tech-tag">Git</span>
-              <span class="tech-tag">Docker</span>
-              <span class="tech-tag">Linux</span>
-              <span class="tech-tag">Figma</span>
-              <span class="tech-tag">VS Code</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Process Section -->
-    <section class="section">
-      <div class="container">
-        <div class="section__header animate-fade-in">
-          <h2 class="section__title">How We Work</h2>
-          <p class="section__subtitle">
-            Simple, straightforward process from idea to launch.
-          </p>
-        </div>
-
-        <div class="process-steps animate-slide-up">
-          <div class="process-step">
-            <div class="process-step__number">1</div>
-            <div class="process-step__content">
-              <h3>Discussion</h3>
-              <p>We talk about your needs, goals, and budget to understand what you want to achieve.</p>
-            </div>
-          </div>
-
-          <div class="process-step">
-            <div class="process-step__number">2</div>
-            <div class="process-step__content">
-              <h3>Planning</h3>
-              <p>We create a plan and timeline for your project, including design mockups and feature list.</p>
-            </div>
-          </div>
-
-          <div class="process-step">
-            <div class="process-step__number">3</div>
-            <div class="process-step__content">
-              <h3>Development</h3>
-              <p>We build your website using modern technologies, keeping you updated on progress.</p>
-            </div>
-          </div>
-
-          <div class="process-step">
-            <div class="process-step__number">4</div>
-            <div class="process-step__content">
-              <h3>Launch</h3>
-              <p>We test everything, deploy your website, and provide training on how to use it.</p>
-            </div>
+          <div class="service-modal__actions">
+            <router-link to="/contact" class="btn btn--primary btn--lg">
+              Get Started
+              <i class="fas fa-rocket"></i>
+            </router-link>
+            <router-link to="/portfolio" class="btn btn--ghost btn--lg">
+              View Examples
+            </router-link>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Why Choose Us Section -->
-    <section class="section section--alt">
-      <div class="container">
-        <div class="section__header animate-fade-in">
-          <h2 class="section__title">Why Choose Us</h2>
-          <p class="section__subtitle">
-            We focus on what matters most for small businesses.
-          </p>
-        </div>
-
-        <div class="benefits-grid animate-slide-up">
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-dollar-sign"></i>
-            </div>
-            <h3>Fair Pricing</h3>
-            <p>No hidden fees, no ongoing subscriptions. You pay once and own your website.</p>
-          </div>
-
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-clock"></i>
-            </div>
-            <h3>Fast Delivery</h3>
-            <p>Most projects completed within 2-4 weeks. We work efficiently without compromising quality.</p>
-          </div>
-
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-mobile-alt"></i>
-            </div>
-            <h3>Mobile First</h3>
-            <p>All websites work perfectly on phones, tablets, and desktops. Responsive by default.</p>
-          </div>
-
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-headset"></i>
-            </div>
-            <h3>Local Support</h3>
-            <p>Direct communication with developers. No call centers, no middlemen.</p>
-          </div>
-
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-shield-alt"></i>
-            </div>
-            <h3>Secure & Reliable</h3>
-            <p>Built with security in mind. Regular updates and maintenance available.</p>
-          </div>
-
-          <div class="benefit">
-            <div class="benefit__icon">
-              <i class="fas fa-graduation-cap"></i>
-            </div>
-            <h3>Training Included</h3>
-            <p>We teach you how to update content, add photos, and manage your website.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
 
     <!-- CTA Section -->
-    <section class="section section--cta">
+    <section class="services-cta">
       <div class="container">
-        <div class="cta animate-fade-in">
-          <h2 class="cta__title">Ready to Get Started?</h2>
-          <p class="cta__subtitle">
-            Let's discuss your project and see how we can help your business grow online.
+        <div class="services-cta__content">
+          <h2 class="services-cta__title">Ready to Start Your Project?</h2>
+          <p class="services-cta__text">
+            Let's discuss your needs and create a custom solution that fits your business perfectly.
           </p>
-          <div class="cta__actions">
+          <div class="services-cta__actions">
             <router-link to="/contact" class="btn btn--primary btn--xl">
-              Get a Quote
-              <i class="fas fa-arrow-right"></i>
+              Get Free Consultation
+              <i class="fas fa-comments"></i>
             </router-link>
             <router-link to="/portfolio" class="btn btn--ghost btn--xl">
               View Our Work
@@ -262,7 +181,321 @@
 
 <script>
 export default {
-  name: 'ServicesPage'
+  name: 'ServicesPage',
+  data() {
+    return {
+      activeFilter: 'all',
+      selectedService: null,
+      filterTabs: [
+        { id: 'all', name: 'All Services', icon: 'fas fa-th' },
+        { id: 'web-development', name: 'Web Development', icon: 'fas fa-code' },
+        { id: 'ui-ux-design', name: 'UI/UX Design', icon: 'fas fa-palette' },
+        { id: 'mobile-apps', name: 'Mobile Apps', icon: 'fas fa-mobile-alt' },
+        { id: 'consulting', name: 'Consulting', icon: 'fas fa-lightbulb' }
+      ],
+      services: [
+        // Web Development Services
+        {
+          id: 1,
+          title: 'Custom Website Development',
+          category: 'web-development',
+          price: 'From $1,500',
+          icon: 'fas fa-code',
+          featured: false,
+          description: 'Professional custom websites built with modern technologies and tailored to your business needs.',
+          detailedDescription: 'We create fully custom websites from scratch using the latest web technologies. Each website is designed to reflect your brand identity and optimized for performance, SEO, and user experience. Perfect for businesses that need unique functionality or design.',
+          features: [
+            'Custom Design & Development',
+            'Responsive & Mobile-First',
+            'SEO Optimized Structure',
+            'Fast Loading Performance',
+            'Content Management System',
+            'Contact Forms & Analytics'
+          ],
+          technologies: ['Laravel', 'Vue.js', 'HTML5', 'CSS3', 'JavaScript'],
+          timeline: 'Typical timeline: 2-4 weeks. Includes planning, design, development, testing, and launch phases.'
+        },
+        {
+          id: 2,
+          title: 'E-commerce Development',
+          category: 'web-development',
+          price: 'From $3,000',
+          icon: 'fas fa-shopping-cart',
+          featured: true,
+          description: 'Complete online store solutions with shopping cart, payments, and inventory management.',
+          detailedDescription: 'Full-featured e-commerce platforms that enable you to sell products online effectively. Includes product catalog, shopping cart, secure payment processing, order management, and customer accounts. Ideal for retail businesses and online entrepreneurs.',
+          features: [
+            'Product Catalog Management',
+            'Shopping Cart & Checkout',
+            'Payment Gateway Integration',
+            'Order & Inventory Management',
+            'Customer Account System',
+            'Sales Reports & Analytics'
+          ],
+          technologies: ['Laravel', 'Stripe/PayPal', 'MySQL', 'Vue.js'],
+          timeline: 'Typical timeline: 4-6 weeks. Includes store setup, payment integration, testing, and training.'
+        },
+        {
+          id: 3,
+          title: 'Business Web Applications',
+          category: 'web-development',
+          price: 'From $2,500',
+          icon: 'fas fa-cogs',
+          featured: false,
+          description: 'Custom web applications and management systems for business automation and workflow optimization.',
+          detailedDescription: 'Tailored web applications that solve specific business challenges. From CRM systems to inventory management, we build tools that streamline your operations and improve efficiency.',
+          features: [
+            'Custom Business Logic',
+            'User Role Management',
+            'Database Design & Integration',
+            'Reporting & Analytics',
+            'API Development',
+            'Third-party Integrations'
+          ],
+          technologies: ['Laravel', 'MySQL', 'Vue.js', 'API Integration'],
+          timeline: 'Typical timeline: 3-8 weeks depending on complexity. Includes analysis, development, and training.'
+        },
+
+        // UI/UX Design Services
+        {
+          id: 4,
+          title: 'Website UI/UX Design',
+          category: 'ui-ux-design',
+          price: 'From $800',
+          icon: 'fas fa-palette',
+          featured: false,
+          description: 'User-centered design that creates intuitive and engaging web experiences for your visitors.',
+          detailedDescription: 'Complete design process from user research to final mockups. We focus on creating designs that not only look great but also guide users toward your business goals effectively.',
+          features: [
+            'User Research & Analysis',
+            'Wireframing & Prototyping',
+            'Visual Design & Branding',
+            'User Experience Optimization',
+            'Mobile-First Design Approach',
+            'Design System Creation'
+          ],
+          technologies: ['Figma', 'Adobe XD', 'Sketch', 'InVision'],
+          timeline: 'Typical timeline: 1-3 weeks. Includes research, wireframing, design, and revisions.'
+        },
+        {
+          id: 5,
+          title: 'Mobile App Design',
+          category: 'ui-ux-design',
+          price: 'From $1,200',
+          icon: 'fas fa-mobile-screen',
+          featured: false,
+          description: 'Native mobile app designs optimized for iOS and Android platforms with focus on usability.',
+          detailedDescription: 'Specialized mobile app design following platform-specific guidelines. We ensure your app feels native on each platform while maintaining consistent branding and user experience.',
+          features: [
+            'iOS & Android Design Guidelines',
+            'User Flow Optimization',
+            'Interactive Prototypes',
+            'Icon & Graphic Design',
+            'App Store Asset Creation',
+            'Usability Testing'
+          ],
+          technologies: ['Figma', 'Principle', 'After Effects', 'Sketch'],
+          timeline: 'Typical timeline: 2-4 weeks. Includes wireframes, high-fidelity designs, and prototypes.'
+        },
+        {
+          id: 6,
+          title: 'Brand Identity Design',
+          category: 'ui-ux-design',
+          price: 'From $600',
+          icon: 'fas fa-paint-brush',
+          featured: false,
+          description: 'Complete brand identity packages including logos, colors, typography, and brand guidelines.',
+          detailedDescription: 'Comprehensive brand identity that reflects your business values and appeals to your target audience. Includes logo design, color palette, typography, and brand application guidelines.',
+          features: [
+            'Logo Design & Variations',
+            'Color Palette Selection',
+            'Typography System',
+            'Brand Guidelines Document',
+            'Business Card Design',
+            'Social Media Templates'
+          ],
+          technologies: ['Illustrator', 'Photoshop', 'Figma', 'InDesign'],
+          timeline: 'Typical timeline: 1-2 weeks. Includes concept development, design, and brand guide creation.'
+        },
+
+        // Mobile Apps Services
+        {
+          id: 7,
+          title: 'Cross-Platform Mobile Apps',
+          category: 'mobile-apps',
+          price: 'From $3,500',
+          icon: 'fas fa-mobile-alt',
+          featured: false,
+          description: 'Native-quality mobile apps that work on both iOS and Android with single codebase.',
+          detailedDescription: 'Cost-effective mobile app development using modern cross-platform technologies. One codebase for both iOS and Android, maintaining native performance and user experience.',
+          features: [
+            'iOS & Android Compatible',
+            'Native Performance',
+            'App Store Deployment',
+            'Push Notifications',
+            'Offline Functionality',
+            'Device API Integration'
+          ],
+          technologies: ['React Native', 'Flutter', 'Firebase', 'Native APIs'],
+          timeline: 'Typical timeline: 6-12 weeks. Includes development, testing, and app store submission.'
+        },
+        {
+          id: 8,
+          title: 'Progressive Web Apps (PWA)',
+          category: 'mobile-apps',
+          price: 'From $2,000',
+          icon: 'fas fa-globe',
+          featured: false,
+          description: 'Web applications that work like native mobile apps with offline capabilities and push notifications.',
+          detailedDescription: 'Modern web applications that provide app-like experience without requiring app store downloads. Perfect for businesses wanting mobile presence without native app complexity.',
+          features: [
+            'App-like User Experience',
+            'Offline Functionality',
+            'Push Notifications',
+            'Home Screen Installation',
+            'Fast Loading Performance',
+            'Cross-Platform Compatibility'
+          ],
+          technologies: ['Vue.js', 'Service Workers', 'PWA APIs', 'Firebase'],
+          timeline: 'Typical timeline: 3-6 weeks. Includes development, testing, and optimization.'
+        },
+        {
+          id: 9,
+          title: 'Native Mobile Apps',
+          category: 'mobile-apps',
+          price: 'From $5,000',
+          icon: 'fas fa-rocket',
+          featured: false,
+          description: 'Platform-specific native mobile apps for maximum performance and platform integration.',
+          detailedDescription: 'True native mobile apps built specifically for iOS or Android. Provides best possible performance and access to all platform-specific features and APIs.',
+          features: [
+            'Maximum Performance',
+            'Full Platform API Access',
+            'Platform-Specific UI/UX',
+            'Advanced Device Features',
+            'App Store Optimization',
+            'Enterprise-Grade Security'
+          ],
+          technologies: ['Swift/iOS', 'Kotlin/Android', 'Xcode', 'Android Studio'],
+          timeline: 'Typical timeline: 8-16 weeks. Separate development for each platform.'
+        },
+
+        // Consulting Services
+        {
+          id: 10,
+          title: 'Technical Consulting',
+          category: 'consulting',
+          price: 'From $150/hour',
+          icon: 'fas fa-lightbulb',
+          featured: false,
+          description: 'Strategic technical advice to help you make the right technology decisions for your business.',
+          detailedDescription: 'Expert guidance on technology strategy, architecture decisions, and implementation planning. Perfect for businesses planning digital transformation or technical projects.',
+          features: [
+            'Technology Strategy Planning',
+            'Architecture Review & Design',
+            'Performance Optimization Audit',
+            'Security Assessment',
+            'Scalability Planning',
+            'Technology Stack Recommendations'
+          ],
+          technologies: ['Various based on needs'],
+          timeline: 'Flexible engagement: One-time consultations or ongoing advisory relationships.'
+        },
+        {
+          id: 11,
+          title: 'Code Review & Audit',
+          category: 'consulting',
+          price: 'From $500',
+          icon: 'fas fa-search',
+          featured: false,
+          description: 'Comprehensive analysis of existing code and systems to identify improvements and issues.',
+          detailedDescription: 'Detailed review of your existing codebase, infrastructure, and development practices. We provide actionable recommendations for improvement, security fixes, and optimization.',
+          features: [
+            'Code Quality Assessment',
+            'Security Vulnerability Analysis',
+            'Performance Bottleneck Identification',
+            'Best Practices Review',
+            'Documentation Assessment',
+            'Improvement Roadmap'
+          ],
+          technologies: ['PHP', 'JavaScript', 'Database', 'Server Configuration'],
+          timeline: 'Typical timeline: 3-5 days for comprehensive audit and report delivery.'
+        },
+        {
+          id: 12,
+          title: 'Team Training & Mentoring',
+          category: 'consulting',
+          price: 'From $200/hour',
+          icon: 'fas fa-graduation-cap',
+          featured: false,
+          description: 'Training sessions and mentoring for development teams on modern technologies and practices.',
+          detailedDescription: 'Hands-on training and mentoring to level up your development team. Covers modern development practices, specific technologies, and project management approaches.',
+          features: [
+            'Technology-Specific Training',
+            'Best Practices Workshops',
+            'Code Review Sessions',
+            'Agile Methodology Training',
+            'Tool & Workflow Optimization',
+            'One-on-One Mentoring'
+          ],
+          technologies: ['Laravel', 'Vue.js', 'Modern PHP', 'Git', 'Development Tools'],
+          timeline: 'Flexible: Workshop sessions, ongoing mentoring, or intensive boot camps.'
+        }
+      ]
+    }
+  },
+  computed: {
+    filteredServices() {
+      if (this.activeFilter === 'all') {
+        return this.services
+      }
+      return this.services.filter(service => service.category === this.activeFilter)
+    }
+  },
+  methods: {
+    setActiveFilter(filterId) {
+      this.activeFilter = filterId
+    },
+    showServiceDetails(service) {
+      this.selectedService = service
+      document.body.style.overflow = 'hidden'
+    },
+    closeModal() {
+      this.selectedService = null
+      document.body.style.overflow = 'auto'
+    },
+    // Метод для обработки изменений URL параметров
+    handleRouteChange() {
+      const urlParams = new URLSearchParams(window.location.search)
+      const filterParam = urlParams.get('filter')
+
+      if (filterParam && this.filterTabs.some(tab => tab.id === filterParam)) {
+        this.activeFilter = filterParam
+      } else {
+        this.activeFilter = 'all'
+      }
+    }
+  },
+  // Добавляем watch для отслеживания изменений маршрута
+  watch: {
+    '$route'() {
+      this.handleRouteChange()
+    }
+  },
+  mounted() {
+    // Handle escape key for modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.selectedService) {
+        this.closeModal()
+      }
+    })
+
+    // Check for filter parameter in URL
+    this.handleRouteChange()
+  },
+  beforeUnmount() {
+    document.body.style.overflow = 'auto'
+  }
 }
 </script>
 

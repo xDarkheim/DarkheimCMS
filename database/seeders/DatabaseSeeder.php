@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             PortfolioCategorySeeder::class, // Создаем категории перед проектами
             PortfolioSeeder::class,
             NewsSeeder::class,
+            CareersSeeder::class,
+            TeamSeeder::class,
         ]);
     }
 }
