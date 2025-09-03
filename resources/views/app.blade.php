@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="Darkheim Web Development - Crafting exceptional digital experiences through innovative web development solutions">
-        <meta name="keywords" content="web development, laravel, vue.js, responsive design, digital solutions">
-        <meta name="author" content="Darkheim Web Development">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Darkheim Web Development - Crafting exceptional digital experiences">
+    <meta name="keywords" content="web development, laravel, vue.js, responsive design">
+    <meta name="author" content="Darkheim Web Development">
 
-        <title>Darkheim Web Development - Innovative Digital Solutions</title>
+    <title>{{ config('app.name', 'Darkheim') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Styles / Scripts -->
-        @vite(['resources/css/app.scss', 'resources/js/app.js'])
-    </head>
-    <body class="antialiased">
-        <!-- Vue.js SPA будет монтироваться в этот div -->
-        <div id="app"></div>
-    </body>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+
+    <!-- Main App Styles -->
+    @vite(['resources/css/app.scss', 'resources/js/app.js'])
+</head>
+<body class="antialiased">
+    <div id="app"></div>
+</body>
 </html>

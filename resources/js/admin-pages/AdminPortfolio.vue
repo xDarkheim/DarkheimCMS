@@ -1,0 +1,692 @@
+<template>
+  <div class="admin-portfolio">
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-briefcase"></i> Portfolio Management</h1>
+        <p>Manage your portfolio projects and showcase your work</p>
+      </div>
+      <button @click="openCreateModal" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Add New Project
+      </button>
+    </div>
+
+    <!-- Portfolio Grid -->
+    <div class="content-card">
+      <div class="table-header">
+        <h3>All Projects</h3>
+        <div class="table-controls">
+          <select v-model="filterCategory" class="filter-select">
+            <option value="">All Categories</option>
+            <option v-for="category in categories" :key="category" :value="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="portfolio-grid">
+        <div v-for="project in filteredProjects" :key="project.id" class="portfolio-card">
+          <div class="project-image">
+            <img v-if="project.image_url" :src="project.image_url" :alt="project.title">
+            <div v-else class="no-image">
+              <i class="fas fa-image"></i>
+            </div>
+            <div class="project-overlay">
+              <div class="project-actions">
+                <button @click="editProject(project)" class="btn btn-sm btn-primary">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button @click="deleteProject(project, $event)" class="btn btn-sm btn-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-content">
+            <div class="project-header">
+              <h3>{{ project.title }}</h3>
+              <div class="project-badges">
+                <span v-if="project.is_featured" class="badge featured">
+                  <i class="fas fa-star"></i> Featured
+                </span>
+                <span :class="['badge', project.is_published ? 'published' : 'draft']">
+                  {{ project.is_published ? 'Published' : 'Draft' }}
+                </span>
+              </div>
+            </div>
+
+            <p class="project-description">{{ project.short_description || 'No description' }}</p>
+
+            <div class="project-meta">
+              <div class="meta-item">
+                <i class="fas fa-folder"></i>
+                <span>{{ project.category }}</span>
+              </div>
+              <div v-if="project.client" class="meta-item">
+                <i class="fas fa-user"></i>
+                <span>{{ project.client }}</span>
+              </div>
+              <div v-if="project.completed_at" class="meta-item">
+                <i class="fas fa-calendar"></i>
+                <span>{{ formatDate(project.completed_at) }}</span>
+              </div>
+            </div>
+
+            <div v-if="project.technologies && project.technologies.length" class="project-tags">
+              <span v-for="tech in project.technologies.slice(0, 3)" :key="tech" class="tech-tag">
+                {{ tech }}
+              </span>
+              <span v-if="project.technologies.length > 3" class="tech-more">
+                +{{ project.technologies.length - 3 }} more
+              </span>
+            </div>
+
+            <div class="project-links">
+              <a v-if="project.project_url" :href="project.project_url" target="_blank" class="link-btn">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
+              <a v-if="project.github_url" :href="project.github_url" target="_blank" class="link-btn">
+                <i class="fab fa-github"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="filteredProjects.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-folder-open"></i>
+          </div>
+          <h3>No Projects Found</h3>
+          <p>{{ filterCategory ? 'No projects found in this category.' : 'Start by creating your first portfolio project.' }}</p>
+          <button @click="openCreateModal" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Create Your First Project
+          </button>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="portfolios.last_page > 1" class="pagination">
+        <button
+          @click="loadProjects(portfolios.current_page - 1)"
+          :disabled="portfolios.current_page === 1"
+          class="btn btn-secondary"
+        >
+          <i class="fas fa-chevron-left"></i>
+          Previous
+        </button>
+        <span class="page-info">
+          Page {{ portfolios.current_page }} of {{ portfolios.last_page }}
+        </span>
+        <button
+          @click="loadProjects(portfolios.current_page + 1)"
+          :disabled="portfolios.current_page === portfolios.last_page"
+          class="btn btn-secondary"
+        >
+          Next
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div class="modal modal-large" @click.stop>
+        <div class="modal-header">
+          <h2>
+            <i :class="editingProject ? 'fas fa-edit' : 'fas fa-plus'"></i>
+            {{ editingProject ? 'Edit Project' : 'Add New Project' }}
+          </h2>
+          <button @click="closeModal" class="close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form @submit.prevent="saveProject" class="modal-form">
+          <!-- Basic Information -->
+          <div class="form-section">
+            <h3><i class="fas fa-info-circle"></i> Basic Information</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="title">
+                  <i class="fas fa-heading"></i>
+                  Project Title *
+                </label>
+                <input id="title" v-model="form.title" type="text" required placeholder="Enter project title">
+              </div>
+              <div class="form-group">
+                <label for="category">
+                  <i class="fas fa-folder"></i>
+                  Category *
+                </label>
+                <div class="category-input-group">
+                  <select
+                    id="category"
+                    v-model="form.category"
+                    required
+                    class="category-select"
+                    @change="onCategoryChange"
+                  >
+                    <option value="">Select a category</option>
+                    <option v-for="category in categories" :key="category" :value="category">
+                      {{ category }}
+                    </option>
+                    <option value="__new__">+ Add New Category</option>
+                  </select>
+
+                  <!-- Поле для новой категории (показывается только при выборе "Add New Category") -->
+                  <input
+                    v-if="showNewCategoryInput"
+                    v-model="newCategoryName"
+                    type="text"
+                    placeholder="Enter new category name"
+                    class="new-category-input"
+                    @blur="addNewCategory"
+                    @keyup.enter="addNewCategory"
+                    ref="newCategoryInput"
+                  >
+                </div>
+                <small>Choose from existing categories or create a new one</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="short_description">
+                <i class="fas fa-align-left"></i>
+                Short Description
+              </label>
+              <textarea
+                id="short_description"
+                v-model="form.short_description"
+                rows="2"
+                placeholder="Brief description for cards and previews"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="description">
+                <i class="fas fa-file-text"></i>
+                Full Description *
+              </label>
+              <textarea
+                id="description"
+                v-model="form.description"
+                rows="4"
+                required
+                placeholder="Detailed project description"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Images & Media -->
+          <div class="form-section">
+            <h3><i class="fas fa-images"></i> Images & Media</h3>
+
+            <div class="form-group">
+              <label for="image_url">
+                <i class="fas fa-image"></i>
+                Main Project Image
+              </label>
+              <input
+                id="image_url"
+                v-model="form.image_url"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+              >
+              <small>Main image displayed in portfolio grid</small>
+            </div>
+
+            <div class="form-group">
+              <label for="gallery_images">
+                <i class="fas fa-images"></i>
+                Gallery Images
+              </label>
+              <div class="gallery-input">
+                <div v-for="(image, index) in form.gallery_images" :key="index" class="gallery-item">
+                  <input
+                    v-model="form.gallery_images[index]"
+                    type="url"
+                    placeholder="https://example.com/gallery-image.jpg"
+                  >
+                  <button type="button" @click="removeGalleryImage(index)" class="remove-btn">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <button type="button" @click="addGalleryImage" class="add-btn">
+                  <i class="fas fa-plus"></i> Add Gallery Image
+                </button>
+              </div>
+              <small>Additional images for project gallery</small>
+            </div>
+          </div>
+
+          <!-- Project Links -->
+          <div class="form-section">
+            <h3><i class="fas fa-link"></i> Project Links</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="project_url">
+                  <i class="fas fa-external-link-alt"></i>
+                  Live Demo URL
+                </label>
+                <input
+                  id="project_url"
+                  v-model="form.project_url"
+                  type="url"
+                  placeholder="https://project-demo.com"
+                >
+              </div>
+              <div class="form-group">
+                <label for="github_url">
+                  <i class="fab fa-github"></i>
+                  GitHub Repository
+                </label>
+                <input
+                  id="github_url"
+                  v-model="form.github_url"
+                  type="url"
+                  placeholder="https://github.com/username/repo"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Details -->
+          <div class="form-section">
+            <h3><i class="fas fa-code"></i> Technical Details</h3>
+
+            <div class="form-group">
+              <label for="technologies">
+                <i class="fas fa-code"></i>
+                Technologies Used
+              </label>
+              <input
+                id="technologies"
+                v-model="technologiesString"
+                type="text"
+                placeholder="React, Laravel, MySQL, Docker, AWS"
+              >
+              <small>Separate technologies with commas</small>
+            </div>
+          </div>
+
+          <!-- Client & Timeline -->
+          <div class="form-section">
+            <h3><i class="fas fa-business-time"></i> Project Details</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="client">
+                  <i class="fas fa-user-tie"></i>
+                  Client Name
+                </label>
+                <input
+                  id="client"
+                  v-model="form.client"
+                  type="text"
+                  placeholder="Company Name or Client"
+                >
+              </div>
+              <div class="form-group">
+                <label for="completed_at">
+                  <i class="fas fa-calendar-check"></i>
+                  Completion Date
+                </label>
+                <input
+                  id="completed_at"
+                  v-model="form.completed_at"
+                  type="date"
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="sort_order">
+                <i class="fas fa-sort"></i>
+                Display Order
+              </label>
+              <input
+                id="sort_order"
+                v-model.number="form.sort_order"
+                type="number"
+                placeholder="0"
+                min="0"
+              >
+              <small>Lower numbers appear first</small>
+            </div>
+          </div>
+
+          <!-- Status & Visibility -->
+          <div class="form-section">
+            <h3><i class="fas fa-eye"></i> Status & Visibility</h3>
+
+            <div class="form-checkboxes">
+              <label class="checkbox-label">
+                <input v-model="form.is_published" type="checkbox">
+                <span class="checkmark"></span>
+                <div class="checkbox-content">
+                  <strong>Published</strong>
+                  <small>Show this project on the public portfolio</small>
+                </div>
+              </label>
+
+              <label class="checkbox-label">
+                <input v-model="form.is_featured" type="checkbox">
+                <span class="checkmark"></span>
+                <div class="checkbox-content">
+                  <strong>Featured Project</strong>
+                  <small>Highlight this project on the homepage</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div v-if="error" class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" @click="closeModal" class="btn btn-secondary">
+              <i class="fas fa-times"></i>
+              Cancel
+            </button>
+            <button type="submit" :disabled="saving" class="btn btn-primary">
+              <div v-if="saving" class="loading-spinner"></div>
+              <i v-else :class="editingProject ? 'fas fa-save' : 'fas fa-plus'"></i>
+              {{ saving ? 'Saving...' : (editingProject ? 'Update Project' : 'Create Project') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { adminApiService } from '../admin-services/adminApi'
+
+const portfolios = ref({ data: [], current_page: 1, last_page: 1 })
+const categories = ref([])
+const showModal = ref(false)
+const editingProject = ref(null)
+const saving = ref(false)
+const error = ref('')
+const filterCategory = ref('')
+const isAuthenticated = ref(true)
+const showNewCategoryInput = ref(false)
+const newCategoryName = ref('')
+
+const form = ref({
+  title: '',
+  description: '',
+  short_description: '',
+  image_url: '',
+  gallery_images: [],
+  project_url: '',
+  github_url: '',
+  technologies: [],
+  category: '',
+  client: '',
+  completed_at: '',
+  is_featured: false,
+  is_published: false,
+  sort_order: 0
+})
+
+const technologiesString = computed({
+  get: () => form.value.technologies?.join(', ') || '',
+  set: (value) => {
+    form.value.technologies = value ? value.split(',').map(tech => tech.trim()).filter(tech => tech) : []
+  }
+})
+
+const filteredProjects = computed(() => {
+  if (!filterCategory.value) return portfolios.value.data
+  return portfolios.value.data.filter(project => project.category === filterCategory.value)
+})
+
+const loadProjects = async (page = 1) => {
+  try {
+    // Validate authentication before making the request
+    const user = await adminApiService.validateToken()
+    if (!user) {
+      isAuthenticated.value = false
+      return
+    }
+
+    const response = await adminApiService.getPortfolios(page)
+    portfolios.value = response.data
+
+    // Load categories from dedicated API endpoint instead of extracting from projects
+    await loadCategories()
+  } catch (error) {
+    console.error('Failed to load projects:', error)
+    if (error.response?.status === 401) {
+      isAuthenticated.value = false
+    }
+  }
+}
+
+const loadCategories = async () => {
+  try {
+    const response = await adminApiService.getPortfolioCategories()
+    categories.value = response.data || []
+  } catch (error) {
+    console.error('Failed to load categories:', error)
+    // Fallback: extract categories from existing projects
+    const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.category).filter(Boolean))]
+    categories.value = uniqueCategories
+  }
+}
+
+const openCreateModal = () => {
+  editingProject.value = null
+  form.value = {
+    title: '',
+    description: '',
+    short_description: '',
+    image_url: '',
+    gallery_images: [],
+    project_url: '',
+    github_url: '',
+    technologies: [],
+    category: '',
+    client: '',
+    completed_at: '',
+    is_featured: false,
+    is_published: false,
+    sort_order: 0
+  }
+  error.value = ''
+  showModal.value = true
+}
+
+const editProject = (project) => {
+  editingProject.value = project
+  form.value = {
+    ...project,
+    gallery_images: project.gallery_images || [],
+    technologies: project.technologies || []
+  }
+  error.value = ''
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  editingProject.value = null
+  error.value = ''
+}
+
+const addGalleryImage = () => {
+  form.value.gallery_images.push('')
+}
+
+const removeGalleryImage = (index) => {
+  form.value.gallery_images.splice(index, 1)
+}
+
+const saveProject = async () => {
+  try {
+    saving.value = true
+    error.value = ''
+
+    // Filter out empty gallery images
+    const cleanedForm = {
+      ...form.value,
+      gallery_images: form.value.gallery_images.filter(img => img.trim())
+    }
+
+    if (editingProject.value) {
+      await adminApiService.updatePortfolio(editingProject.value.id, cleanedForm)
+    } else {
+      await adminApiService.createPortfolio(cleanedForm)
+    }
+
+    closeModal()
+    loadProjects(portfolios.value.current_page)
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to save project'
+    console.error('Failed to save project:', err)
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteProject = async (project, $event) => {
+  if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
+    let deleteButton = null
+
+    try {
+      // Validate authentication before attempting delete
+      const user = await adminApiService.validateToken()
+      if (!user) {
+        alert('Your session has expired. Please log in again.')
+        isAuthenticated.value = false
+        return
+      }
+
+      // Show loading state by disabling the delete button temporarily
+      if ($event && $event.target) {
+        deleteButton = $event.target.closest('button')
+        if (deleteButton) {
+          deleteButton.disabled = true
+          deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'
+        }
+      }
+
+      const response = await adminApiService.deletePortfolio(project.id)
+
+      // Show success message
+      console.log(`Project "${project.title}" deleted successfully`)
+
+      // Reload projects on current page, or go to previous page if current page becomes empty
+      const currentPage = portfolios.value.current_page
+      const projectsOnCurrentPage = portfolios.value.data.length
+
+      if (projectsOnCurrentPage === 1 && currentPage > 1) {
+        // If this was the last project on a page > 1, go to previous page
+        await loadProjects(currentPage - 1)
+      } else {
+        await loadProjects(currentPage)
+      }
+
+    } catch (error) {
+      console.error('Failed to delete project:', error)
+
+      // Provide more specific error messages
+      let errorMessage = 'Failed to delete project'
+
+      if (error.response?.status === 401) {
+        errorMessage = 'Your session has expired. Please log in again.'
+        isAuthenticated.value = false
+        // Очищаем токены при ошибке аутентификации
+        localStorage.removeItem('admin_token')
+        localStorage.removeItem('admin_user')
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to delete this project.'
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Project not found. It may have already been deleted.'
+        // Refresh the list since the item doesn't exist
+        await loadProjects(portfolios.value.current_page)
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error occurred while deleting the project. Please try again.'
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error
+      } else if (!navigator.onLine) {
+        errorMessage = 'No internet connection. Please check your network and try again.'
+      } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
+        errorMessage = 'Network error. Please check your connection and try again.'
+      }
+
+      alert(errorMessage)
+    } finally {
+      // Re-enable the delete button
+      if (deleteButton) {
+        deleteButton.disabled = false
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>'
+      }
+    }
+  }
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Методы для работы с категориями
+const onCategoryChange = () => {
+  if (form.value.category === '__new__') {
+    showNewCategoryInput.value = true
+    form.value.category = ''
+    newCategoryName.value = ''
+    // Фокусируемся на поле ввода новой категории
+    setTimeout(() => {
+      const input = document.querySelector('.new-category-input')
+      if (input) input.focus()
+    }, 100)
+  } else {
+    showNewCategoryInput.value = false
+    newCategoryName.value = ''
+  }
+}
+
+const addNewCategory = () => {
+  if (newCategoryName.value.trim()) {
+    const categoryName = newCategoryName.value.trim()
+
+    // Проверяем, что такой категории еще нет
+    if (!categories.value.includes(categoryName)) {
+      categories.value.push(categoryName)
+    }
+
+    // Устанавливаем новую категорию как выбранную
+    form.value.category = categoryName
+    showNewCategoryInput.value = false
+    newCategoryName.value = ''
+  } else {
+    // Если поле пустое, возвращаемся к выбору категории
+    showNewCategoryInput.value = false
+    form.value.category = ''
+  }
+}
+
+onMounted(() => {
+  loadProjects()
+})
+</script>
+
+<!-- Стили находятся в отдельном файле admin-portfolio.scss -->

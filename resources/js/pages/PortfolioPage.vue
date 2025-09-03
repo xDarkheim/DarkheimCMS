@@ -72,13 +72,13 @@
                 <div v-else class="portfolio-placeholder">{{ project.category }}</div>
                 <div class="portfolio-item__overlay">
                   <div class="portfolio-item__actions">
-                    <button class="portfolio-action-btn">
+                    <button class="portfolio-action-btn eye-btn" title="View Details">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <a :href="project.project_url" target="_blank" class="portfolio-action-btn" v-if="project.project_url" @click.stop>
+                    <a :href="project.project_url" target="_blank" class="portfolio-action-btn external-btn" v-if="project.project_url" @click.stop title="View Live Project">
                       <i class="fas fa-external-link-alt"></i>
                     </a>
-                    <a :href="project.github_url" target="_blank" class="portfolio-action-btn" v-if="project.github_url" @click.stop>
+                    <a :href="project.github_url" target="_blank" class="portfolio-action-btn github-btn" v-if="project.github_url" @click.stop title="View Source Code">
                       <i class="fab fa-github"></i>
                     </a>
                   </div>
@@ -249,7 +249,7 @@ export default {
     const isInitialLoad = ref(true)
 
     // Load portfolios from API
-    const loadPortfolios = async (page = 1) => {
+    const loadPortfolios = async (page = 1, categoryName = undefined) => {
       try {
         // Показываем loading только при первичной загрузке страницы
         if (isInitialLoad.value) {
@@ -260,7 +260,7 @@ export default {
         const params = {
           page,
           per_page: 6,
-          category: activeCategory.value !== 'all' ? activeCategory.value : undefined
+          category: categoryName
         }
 
         const response = await portfolioService.getAll(params)
@@ -374,7 +374,18 @@ export default {
     const setActiveCategory = async (categoryId) => {
       activeCategory.value = categoryId
       currentPage.value = 1
-      await loadPortfolios(1)
+
+      // Для API запроса используем название категории, а не ID
+      let categoryForApi = undefined
+      if (categoryId !== 'all') {
+        // Находим категорию по ID и используем её название для API
+        const selectedCategory = categories.value.find(cat => cat.id === categoryId)
+        if (selectedCategory) {
+          categoryForApi = selectedCategory.name
+        }
+      }
+
+      await loadPortfolios(1, categoryForApi)
     }
 
     const openProjectModal = (project) => {

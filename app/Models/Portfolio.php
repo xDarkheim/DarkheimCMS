@@ -82,6 +82,10 @@ class Portfolio extends Model
     // Аксессоры
     public function getRouteKeyName()
     {
+        // Для admin API используем ID, для публичных маршрутов - slug
+        if (request()->is('api/admin/*')) {
+            return 'id';
+        }
         return 'slug';
     }
 

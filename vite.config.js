@@ -6,7 +6,12 @@ import { resolve } from 'path';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.scss', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.scss',
+                'resources/css/admin.scss',
+                'resources/js/app.js',
+                'resources/js/admin.js'
+            ],
             refresh: true,
         }),
         vue(),
@@ -16,31 +21,18 @@ export default defineConfig({
             '@': resolve(__dirname, 'resources'),
         },
     },
-    server: {
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8000',
-                changeOrigin: true,
-                secure: false,
-            },
-        },
-    },
     build: {
         rollupOptions: {
-            external: [],
-        },
-        assetsDir: 'assets',
-        copyPublicDir: true,
-    },
-    publicDir: 'public',
-    assetsInclude: ['**/*.woff', '**/*.woff2', '**/*.ttf', '**/*.eot', '**/*.svg'],
-    css: {
-        preprocessorOptions: {
-            scss: {
-                additionalData: `
-                    $fa-font-path: '/fonts' !default;
-                `
+            output: {
+                assetFileNames: (assetInfo) => {
+                    if (assetInfo.name && assetInfo.name.endsWith('.woff2')) {
+                        return 'fonts/[name][extname]';
+                    }
+                    return 'assets/[name]-[hash][extname]';
+                }
             }
         }
-    }
+    },
+    assetsInclude: ['**/*.woff2', '**/*.woff', '**/*.ttf'],
+    publicDir: false, // Disable Vite's public directory feature for Laravel
 });

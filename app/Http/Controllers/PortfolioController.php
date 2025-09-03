@@ -5,180 +5,167 @@ namespace App\Http\Controllers;
 use App\Models\Portfolio;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\Rule;
 
 class PortfolioController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Получить все опубликованные портфолио с фильтрацией и пагинацией
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Portfolio::published()->ordered();
+        try {
+            $query = Portfolio::where('is_published', true)
+                ->orderBy('sort_order')
+                ->orderBy('created_at', 'desc');
 
-        // Фильтрация по категории
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->byCategory($request->category);
-        }
+            // Фильтрация по категории
+            if ($request->has('category') && $request->category) {
+                $query->where('category', $request->category);
+            }
 
-        // Только избранные проекты
-        if ($request->boolean('featured')) {
-            $query->featured();
-        }
+            // Поиск по названию
+            if ($request->has('search') && $request->search) {
+                $query->where('title', 'like', '%' . $request->search . '%');
+            }
 
-        // Поиск
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('short_description', 'like', "%{$search}%")
-                  ->orWhereJsonContains('technologies', $search);
-            });
-        }
+            $perPage = $request->get('per_page', 10);
+            $portfolios = $query->paginate($perPage);
 
-        // Пагинация
-        $portfolios = $query->paginate($request->get('per_page', 12));
-
-        return response()->json([
-            'success' => true,
-            'data' => $portfolios->items(),
-            'meta' => [
-                'current_page' => $portfolios->currentPage(),
-                'last_page' => $portfolios->lastPage(),
-                'per_page' => $portfolios->perPage(),
-                'total' => $portfolios->total(),
-            ],
-        ]);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Portfolio $portfolio): JsonResponse
-    {
-        if (!$portfolio->is_published) {
+            return response()->json([
+                'success' => true,
+                'data' => $portfolios->items(),
+                'meta' => [
+                    'current_page' => $portfolios->currentPage(),
+                    'last_page' => $portfolios->lastPage(),
+                    'per_page' => $portfolios->perPage(),
+                    'total' => $portfolios->total(),
+                    'from' => $portfolios->firstItem(),
+                    'to' => $portfolios->lastItem()
+                ]
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Portfolio not found'
-            ], 404);
+                'message' => 'Failed to fetch portfolios',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $portfolio->load(''),
-        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|unique:portfolios,slug',
-            'description' => 'required|string',
-            'short_description' => 'required|string|max:500',
-            'image_url' => 'nullable|url',
-            'gallery_images' => 'nullable|array',
-            'gallery_images.*' => 'url',
-            'project_url' => 'nullable|url',
-            'github_url' => 'nullable|url',
-            'technologies' => 'required|array',
-            'technologies.*' => 'string',
-            'category' => 'required|string|in:web,mobile,desktop,design',
-            'client' => 'nullable|string|max:255',
-            'completed_at' => 'required|date',
-            'is_featured' => 'boolean',
-            'is_published' => 'boolean',
-            'sort_order' => 'integer|min:0',
-        ]);
-
-        $portfolio = Portfolio::create($validated);
-
-        return response()->json([
-            'success' => true,
-            'data' => $portfolio,
-            'message' => 'Portfolio created successfully'
-        ], 201);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Portfolio $portfolio): JsonResponse
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => ['nullable', 'string', Rule::unique('portfolios', 'slug')->ignore($portfolio->id)],
-            'description' => 'required|string',
-            'short_description' => 'required|string|max:500',
-            'image_url' => 'nullable|url',
-            'gallery_images' => 'nullable|array',
-            'gallery_images.*' => 'url',
-            'project_url' => 'nullable|url',
-            'github_url' => 'nullable|url',
-            'technologies' => 'required|array',
-            'technologies.*' => 'string',
-            'category' => 'required|string|in:web,mobile,desktop,design',
-            'client' => 'nullable|string|max:255',
-            'completed_at' => 'required|date',
-            'is_featured' => 'boolean',
-            'is_published' => 'boolean',
-            'sort_order' => 'integer|min:0',
-        ]);
-
-        $portfolio->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'data' => $portfolio,
-            'message' => 'Portfolio updated successfully'
-        ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Portfolio $portfolio): JsonResponse
-    {
-        $portfolio->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Portfolio deleted successfully'
-        ]);
-    }
-
-    /**
-     * Get portfolio categories
-     */
-    public function categories(): JsonResponse
-    {
-        $categories = [
-            'web' => 'Web Development',
-            'mobile' => 'Mobile Apps',
-            'desktop' => 'Desktop Applications',
-            'design' => 'UI/UX Design',
-        ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $categories
-        ]);
-    }
-
-    /**
-     * Get featured portfolios
+     * Получить избранные портфолио
      */
     public function featured(): JsonResponse
     {
-        $portfolios = Portfolio::published()->featured()->ordered()->take(6)->get();
+        try {
+            $portfolios = Portfolio::where('is_published', true)
+                ->where('is_featured', true)
+                ->orderBy('sort_order')
+                ->orderBy('created_at', 'desc')
+                ->take(6)
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $portfolios
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $portfolios
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch featured portfolios',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Получить доступные категории портфолио
+     */
+    public function categories(): JsonResponse
+    {
+        try {
+            // Получаем все уникальные категории из опубликованных проектов
+            $categories = Portfolio::where('is_published', true)
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->select('category')
+                ->distinct()
+                ->orderBy('category')
+                ->pluck('category')
+                ->filter()
+                ->mapWithKeys(function ($category) {
+                    // Создаем slug из названия категории для ID
+                    $slug = strtolower(str_replace([' ', '_'], '-', $category));
+                    $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
+                    return [$slug => $category];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $categories->toArray()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch categories',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Получить статистику портфолио
+     */
+    public function stats(): JsonResponse
+    {
+        try {
+            $totalProjects = Portfolio::where('is_published', true)->count();
+            $featuredProjects = Portfolio::where('is_published', true)
+                ->where('is_featured', true)
+                ->count();
+            $categoriesCount = Portfolio::where('is_published', true)
+                ->whereNotNull('category')
+                ->where('category', '!=', '')
+                ->distinct('category')
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_projects' => $totalProjects,
+                    'featured_projects' => $featuredProjects,
+                    'categories_count' => $categoriesCount,
+                    'completion_rate' => 98 // Статическое значение
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch portfolio statistics',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Показать детали проекта по ID
+     */
+    public function show($id): JsonResponse
+    {
+        try {
+            $portfolio = Portfolio::where('is_published', true)
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $portfolio
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Portfolio not found',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 404);
+        }
     }
 }

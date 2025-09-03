@@ -1,25 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PortfolioController;
 
-// API маршруты для портфолио
-Route::prefix('api')->group(function () {
-    // Публичные API маршруты для портфолио
-    Route::get('/portfolios', [PortfolioController::class, 'index']);
-    Route::get('/portfolios/featured', [PortfolioController::class, 'featured']);
-    Route::get('/portfolios/categories', [PortfolioController::class, 'categories']);
-    Route::get('/portfolios/{portfolio}', [PortfolioController::class, 'show']);
-
-    // Админские маршруты (требуют аутентификации)
-    Route::middleware(['auth'])->group(function () {
-        Route::post('/portfolios', [PortfolioController::class, 'store']);
-        Route::put('/portfolios/{portfolio}', [PortfolioController::class, 'update']);
-        Route::delete('/portfolios/{portfolio}', [PortfolioController::class, 'destroy']);
-    });
+Route::get('/', function () {
+    return view('welcome');
 });
 
-// SPA route - все маршруты обрабатываются Vue Router
+// Admin routes - completely isolated
+Route::prefix('admin')->group(function () {
+    // Admin login and dashboard routes (serve admin.blade.php template)
+    Route::get('/login', function () {
+        return view('admin');
+    });
+
+    Route::get('/{any?}', function () {
+        return view('admin');
+    })->where('any', '.*');
+});
+
+// Main site SPA route - all other routes handled by main Vue Router
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');

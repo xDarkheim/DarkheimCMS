@@ -2,9 +2,6 @@
 // MODERN DESIGN SYSTEM - MAIN SCSS FILE
 // =====================================================
 
-// FontAwesome configuration - must be before imports
-$fa-font-path: '/fonts';
-
 // 1. ABSTRACTS - Variables, mixins, functions (must be first)
 @use 'abstracts/variables';
 @use 'abstracts/mixins';
@@ -34,11 +31,9 @@ $fa-font-path: '/fonts';
 @use 'pages/contact-page';
 @use 'pages/portfolio-page';
 
-// 6. FONT AWESOME - Using modern @use syntax with correct font path
-@use '@fortawesome/fontawesome-free/scss/fontawesome';
-@use '@fortawesome/fontawesome-free/scss/solid';
-@use '@fortawesome/fontawesome-free/scss/regular';
-@use '@fortawesome/fontawesome-free/scss/brands';
+// 6. FONT AWESOME - Using only custom font configuration
+// Note: Removed FontAwesome SCSS imports to avoid conflicting font paths
+// Using only our custom fontawesome-fix.scss with proper font references
 
 // 7. FONT AWESOME FIXES - Using modern @use syntax
 @use 'fontawesome-fix';
