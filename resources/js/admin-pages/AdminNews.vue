@@ -16,7 +16,7 @@
       <div class="table-header">
         <h3>All Articles</h3>
         <div class="table-controls">
-          <select v-model="filterStatus" class="filter-select">
+          <select v-model="filterStatus" @change="loadNews(1)" class="filter-select">
             <option value="">All Status</option>
             <option value="published">Published</option>
             <option value="draft">Draft</option>
@@ -26,7 +26,41 @@
       </div>
 
       <div class="news-list">
-        <div v-for="article in filteredNews" :key="article.id" class="news-card">
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading news articles...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error && !loading" class="error-state">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3>Failed to Load News</h3>
+          <p>{{ error }}</p>
+          <button @click="loadNews()" class="btn btn-primary">
+            <i class="fas fa-redo"></i>
+            Retry
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="!loading && filteredNews.length === 0" class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-newspaper"></i>
+          </div>
+          <h3>No Articles Found</h3>
+          <p v-if="filterStatus">No articles found with the selected status filter.</p>
+          <p v-else>No news articles have been created yet.</p>
+          <button @click="openCreateModal" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Create First Article
+          </button>
+        </div>
+
+        <!-- News Cards -->
+        <div v-else v-for="article in filteredNews" :key="article.id" class="news-card">
           <div class="news-image">
             <img v-if="article.image_url" :src="article.image_url" :alt="article.title">
             <div v-else class="no-image">
@@ -66,7 +100,7 @@
               </div>
               <div class="meta-item">
                 <i class="fas fa-folder"></i>
-                <span>{{ article.category }}</span>
+                <span>{{ getCategoryDisplayName(article.category) }}</span>
               </div>
               <div class="meta-item">
                 <i class="fas fa-eye"></i>
@@ -142,7 +176,16 @@
                 <i class="fas fa-folder"></i>
                 Category
               </label>
-              <input id="category" v-model="form.category" type="text" required>
+              <select id="category" v-model="form.category" required>
+                <option value="">Select a category</option>
+                <option
+                  v-for="(displayName, key) in categories"
+                  :key="key"
+                  :value="key"
+                >
+                  {{ displayName }}
+                </option>
+              </select>
             </div>
             <div class="form-group">
               <label for="image_url">
@@ -177,17 +220,29 @@
               </label>
               <input id="published_at" v-model="form.published_at" type="datetime-local">
             </div>
-            <div class="form-checkboxes">
-              <label class="checkbox-label">
-                <input v-model="form.is_published" type="checkbox">
-                <i class="checkbox-icon"></i>
-                Published
+            <div class="form-group">
+              <label>
+                <i class="fas fa-cog"></i>
+                Article Status
               </label>
-              <label class="checkbox-label">
-                <input v-model="form.is_featured" type="checkbox">
-                <i class="checkbox-icon"></i>
-                Featured
-              </label>
+              <div class="status-controls">
+                <label class="checkbox-label">
+                  <input v-model="form.is_published" type="checkbox">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-text">
+                    <i class="fas fa-globe"></i>
+                    Published
+                  </span>
+                </label>
+                <label class="checkbox-label">
+                  <input v-model="form.is_featured" type="checkbox">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-text">
+                    <i class="fas fa-star"></i>
+                    Featured
+                  </span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -200,6 +255,11 @@
             <button type="button" @click="closeModal" class="btn btn-secondary">
               <i class="fas fa-times"></i>
               Cancel
+            </button>
+            <button type="button" @click="saveDraft" :disabled="saving" class="btn btn-draft">
+              <div v-if="saving" class="loading-spinner"></div>
+              <i v-else class="fas fa-file-alt"></i>
+              {{ saving ? 'Saving...' : 'Save as Draft' }}
             </button>
             <button type="submit" :disabled="saving" class="btn btn-primary">
               <div v-if="saving" class="loading-spinner"></div>
@@ -221,6 +281,7 @@ const news = ref({ data: [], current_page: 1, last_page: 1 })
 const showModal = ref(false)
 const editingArticle = ref(null)
 const saving = ref(false)
+const loading = ref(false)
 const error = ref('')
 const filterStatus = ref('')
 
@@ -229,34 +290,93 @@ const form = ref({
   content: '',
   excerpt: '',
   image_url: '',
-  author: '',
+  author: 'Darkheim Team', // Default author
   category: '',
   is_published: false,
   is_featured: false,
   published_at: ''
 })
 
-const filteredNews = computed(() => {
-  if (!filterStatus.value) return news.value.data
+const categories = ref({})
 
-  switch (filterStatus.value) {
-    case 'published':
-      return news.value.data.filter(article => article.is_published)
-    case 'draft':
-      return news.value.data.filter(article => !article.is_published)
-    case 'featured':
-      return news.value.data.filter(article => article.is_featured)
-    default:
-      return news.value.data
-  }
+const filteredNews = computed(() => {
+  // Убираем клиентскую фильтрацию, так как фильтрация происходит на сервере
+  return news.value.data || []
 })
 
 const loadNews = async (page = 1) => {
   try {
-    const response = await adminApiService.getNews(page)
-    news.value = response.data
+    loading.value = true
+    error.value = ''
+
+    // Проверяем наличие токена перед запросом
+    const token = localStorage.getItem('admin_token')
+    console.log('Loading news - Token check:', {
+      hasToken: !!token,
+      tokenLength: token ? token.length : 0,
+      page: page
+    })
+
+    if (!token) {
+      error.value = 'No authentication token found. Please log in again.'
+      return
+    }
+
+    const params = {}
+    if (filterStatus.value) {
+      params.status = filterStatus.value
+    }
+
+    const response = await adminApiService.getNews(page, params)
+
+    if (response.data.success) {
+      news.value = response.data.data
+    } else {
+      news.value = response.data
+    }
+
+    console.log('Loaded news successfully:', {
+      articlesCount: news.value.data?.length || 0,
+      currentPage: news.value.current_page,
+      totalPages: news.value.last_page
+    })
+  } catch (err) {
+    console.error('Failed to load news:', {
+      error: err.message,
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data
+    })
+
+    error.value = 'Failed to load news articles'
+
+    // Show user-friendly error based on status
+    if (err.response?.status === 401) {
+      error.value = 'Authentication required. Please log in again.'
+      // Автоматически перенаправляем на страницу входа
+      setTimeout(() => {
+        window.location.href = '/admin/login'
+      }, 2000)
+    } else if (err.response?.status === 403) {
+      error.value = 'Access denied. You do not have permission to view news.'
+    } else if (err.response?.status === 500) {
+      error.value = 'Server error. Please try again later.'
+    } else if (err.response?.status === 404) {
+      error.value = 'News API endpoint not found.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadCategories = async () => {
+  try {
+    const response = await adminApiService.getNewsCategories()
+    categories.value = response.data.data || {}
+    console.log('Loaded categories:', categories.value)
   } catch (error) {
-    console.error('Failed to load news:', error)
+    console.error('Failed to load categories:', error)
+    categories.value = {}
   }
 }
 
@@ -267,8 +387,8 @@ const openCreateModal = () => {
     content: '',
     excerpt: '',
     image_url: '',
-    author: '',
-    category: '',
+    author: 'Darkheim Team',
+    category: 'general', // Default to general category
     is_published: false,
     is_featured: false,
     published_at: ''
@@ -298,17 +418,94 @@ const saveArticle = async () => {
     saving.value = true
     error.value = ''
 
+    // Prepare form data
+    const formData = { ...form.value }
+
+    // Convert empty strings to null for optional fields
+    if (!formData.excerpt) formData.excerpt = null
+    if (!formData.image_url) formData.image_url = null
+    if (!formData.published_at) formData.published_at = null
+
+    let response
     if (editingArticle.value) {
-      await adminApiService.updateNews(editingArticle.value.id, form.value)
+      response = await adminApiService.updateNews(editingArticle.value.id, formData)
     } else {
-      await adminApiService.createNews(form.value)
+      response = await adminApiService.createNews(formData)
     }
 
+    console.log('Save response:', response.data)
+
     closeModal()
-    loadNews(news.value.current_page)
+    await loadNews(news.value.current_page)
+
+    // Show success message
+    const action = editingArticle.value ? 'updated' : 'created'
+    alert(`Article ${action} successfully!`)
+
   } catch (err) {
-    error.value = err.response?.data?.message || 'Failed to save article'
     console.error('Failed to save article:', err)
+
+    if (err.response?.data?.errors) {
+      // Validation errors
+      const errors = err.response.data.errors
+      const errorMessages = Object.values(errors).flat()
+      error.value = errorMessages.join(', ')
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else {
+      error.value = 'Failed to save article. Please check your input and try again.'
+    }
+  } finally {
+    saving.value = false
+  }
+}
+
+const saveDraft = async () => {
+  try {
+    saving.value = true
+    error.value = ''
+
+    // Prepare form data for draft
+    const formData = {
+      ...form.value,
+      is_published: false,  // Принудительно устанавливаем как неопубликованный
+      is_featured: false    // Черновики не могут быть избранными
+    }
+
+    // Convert empty strings to null for optional fields
+    if (!formData.excerpt) formData.excerpt = null
+    if (!formData.image_url) formData.image_url = null
+    if (!formData.published_at) formData.published_at = null
+
+    let response
+    if (editingArticle.value) {
+      response = await adminApiService.updateNews(editingArticle.value.id, formData)
+    } else {
+      response = await adminApiService.createNews(formData)
+    }
+
+    console.log('Save draft response:', response.data)
+
+    closeModal()
+    await loadNews(news.value.current_page)
+
+    // Show success message
+    const action = editingArticle.value ? 'updated' : 'created'
+    alert(`Article ${action} as draft successfully!`)
+
+  } catch (err) {
+    console.error('Failed to save draft:', err)
+
+    if (err.response?.data?.errors) {
+      // Validation errors
+      const errors = err.response.data.errors
+      const errorMessages = Object.values(errors).flat()
+      error.value = errorMessages.join(', ')
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else {
+      error.value = 'Failed to save draft. Please check your input and try again.'
+    }
   } finally {
     saving.value = false
   }
@@ -318,15 +515,17 @@ const deleteArticle = async (article) => {
   if (confirm(`Are you sure you want to delete "${article.title}"? This action cannot be undone.`)) {
     try {
       await adminApiService.deleteNews(article.id)
-      loadNews(news.value.current_page)
+      await loadNews(news.value.current_page)
+      alert('Article deleted successfully!')
     } catch (error) {
       console.error('Failed to delete article:', error)
-      alert('Failed to delete article')
+      alert('Failed to delete article. Please try again.')
     }
   }
 }
 
 const formatDate = (dateString) => {
+  if (!dateString) return 'Not set'
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -339,8 +538,14 @@ const truncateText = (text, length) => {
   return text.length > length ? text.substring(0, length) + '...' : text
 }
 
+const getCategoryDisplayName = (categoryKey) => {
+  return categories.value[categoryKey] || categoryKey
+}
+
 onMounted(() => {
+  console.log('AdminNews component mounted')
   loadNews()
+  loadCategories()
 })
 </script>
 
@@ -689,13 +894,15 @@ onMounted(() => {
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   padding: 0.875rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.9rem;
   transition: border-color 0.2s;
   font-family: inherit;
+  background: white;
 }
 
 .form-group textarea {
@@ -703,31 +910,15 @@ onMounted(() => {
 }
 
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-checkboxes {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-  color: #2c3e50;
+.form-group select {
   cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: auto;
-  margin: 0;
 }
 
 .error-message {
@@ -759,28 +950,54 @@ onMounted(() => {
   border-top: 1px solid #f1f3f4;
 }
 
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
+/* Loading, Error, and Empty States */
+.loading-state,
+.error-state,
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.loading-state .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.error-state .error-icon,
+.empty-state .empty-icon {
+  font-size: 4rem;
+  color: #dee2e6;
+  margin-bottom: 1rem;
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.error-state .error-icon {
+  color: #dc3545;
+}
+
+.loading-state h3,
+.error-state h3,
+.empty-state h3 {
+  margin-bottom: 1rem;
+  color: #6c757d;
+  font-size: 1.5rem;
+}
+
+.loading-state p,
+.error-state p,
+.empty-state p {
+  color: #6c757d;
+  margin-bottom: 2rem;
+  max-width: 400px;
 }
 
 /* Mobile Styles */

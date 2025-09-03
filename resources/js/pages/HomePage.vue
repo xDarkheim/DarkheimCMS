@@ -87,212 +87,222 @@
           <p>Stay up to date with our latest projects, technologies, and studio news</p>
         </div>
 
-        <!-- Featured News -->
-        <div class="featured-news">
-          <article class="news-card featured">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="New Laravel Project" loading="lazy">
-              <div class="news-category">Development</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  December 15, 2024
-                </span>
-                <span class="news-author">
-                  <i class="fas fa-user"></i>
-                  Darkheim Team
-                </span>
-              </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  Completed Advanced E-Commerce Platform with Vue.js Integration
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                We successfully delivered a complex e-commerce solution for a local retail business, featuring real-time inventory management, payment processing, and a modern Vue.js frontend. The project showcases our growing expertise in full-stack development.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Laravel</span>
-                <span class="tag">Vue.js</span>
-                <span class="tag">E-Commerce</span>
-              </div>
-            </div>
-          </article>
+        <div v-if="newsLoading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading latest news...</p>
         </div>
 
-        <!-- News Grid -->
-        <div class="news-grid">
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="New Technology" loading="lazy">
-              <div class="news-category">Technology</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  December 10, 2024
-                </span>
+        <div v-else-if="featuredNews.length > 0">
+          <!-- Featured News -->
+          <div class="featured-news" v-if="featuredNews[0]">
+            <article class="news-card featured">
+              <div class="news-image">
+                <img
+                  v-if="featuredNews[0].image_url"
+                  :src="featuredNews[0].image_url"
+                  :alt="featuredNews[0].title"
+                  loading="lazy"
+                >
+                <div v-else class="no-image">
+                  <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="news-category">{{ getCategoryDisplayName(featuredNews[0].category) }}</div>
               </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  Adopting Docker for All New Projects
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                Starting this month, we're implementing Docker containerization for all new development projects to ensure consistent environments and easier deployment.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Docker</span>
-                <span class="tag">DevOps</span>
+              <div class="news-content">
+                <div class="news-meta">
+                  <span class="news-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ formatDate(featuredNews[0].published_at) }}
+                  </span>
+                  <span class="news-author">
+                    <i class="fas fa-user"></i>
+                    {{ featuredNews[0].author }}
+                  </span>
+                </div>
+                <h3 class="news-title">
+                  <router-link :to="`/news/${featuredNews[0].slug}`" class="news-link">
+                    {{ featuredNews[0].title }}
+                  </router-link>
+                </h3>
+                <p class="news-excerpt">
+                  {{ featuredNews[0].excerpt || featuredNews[0].content?.substring(0, 200) + '...' }}
+                </p>
+                <div class="news-tags">
+                  <span class="tag">{{ getCategoryDisplayName(featuredNews[0].category) }}</span>
+                  <span v-if="featuredNews[0].views" class="tag">{{ featuredNews[0].views }} views</span>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          </div>
 
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Team Growth" loading="lazy">
-              <div class="news-category">Studio</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  December 5, 2024
-                </span>
+          <!-- News Grid -->
+          <div class="news-grid" v-if="featuredNews.length > 1">
+            <article
+              v-for="article in featuredNews.slice(1, 7)"
+              :key="article.id"
+              class="news-card"
+            >
+              <div class="news-image">
+                <img
+                  v-if="article.image_url"
+                  :src="article.image_url"
+                  :alt="article.title"
+                  loading="lazy"
+                >
+                <div v-else class="no-image">
+                  <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="news-category">{{ getCategoryDisplayName(article.category) }}</div>
               </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  10 Months of Darkheim Development Studio
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                Reflecting on our first 10 months in business - from our first client to building a reputation for quality web development in the local community.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Milestone</span>
-                <span class="tag">Studio News</span>
+              <div class="news-content">
+                <div class="news-meta">
+                  <span class="news-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ formatDate(article.published_at) }}
+                  </span>
+                </div>
+                <h3 class="news-title">
+                  <router-link :to="`/news/${article.slug}`" class="news-link">
+                    {{ article.title }}
+                  </router-link>
+                </h3>
+                <p class="news-excerpt">
+                  {{ article.excerpt || article.content?.substring(0, 150) + '...' }}
+                </p>
+                <div class="news-tags">
+                  <span class="tag">{{ getCategoryDisplayName(article.category) }}</span>
+                </div>
               </div>
-            </div>
-          </article>
-
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Client Success" loading="lazy">
-              <div class="news-category">Success Story</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  November 28, 2024
-                </span>
-              </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  Client Spotlight: Sunrise Bakery's Online Success
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                How we helped Sunrise Bakery increase their online orders by 300% with a custom Laravel-powered website and ordering system.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Case Study</span>
-                <span class="tag">Laravel</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Learning" loading="lazy">
-              <div class="news-category">Learning</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  November 20, 2024
-                </span>
-              </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  Mastering Sass: Advanced CSS Techniques
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                Our deep dive into advanced Sass features and how they're helping us create more maintainable and scalable stylesheets for client projects.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Sass</span>
-                <span class="tag">CSS</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Tools Update" loading="lazy">
-              <div class="news-category">Tools</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  November 15, 2024
-                </span>
-              </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  Upgrading Our Development Workflow
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                New tools and processes we've added to our development workflow to improve code quality and project delivery times.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Workflow</span>
-                <span class="tag">Git</span>
-              </div>
-            </div>
-          </article>
-
-          <article class="news-card">
-            <div class="news-image">
-              <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Future Plans" loading="lazy">
-              <div class="news-category">Future</div>
-            </div>
-            <div class="news-content">
-              <div class="news-meta">
-                <span class="news-date">
-                  <i class="fas fa-calendar"></i>
-                  November 10, 2024
-                </span>
-              </div>
-              <h3 class="news-title">
-                <a href="#" class="news-link">
-                  2025 Goals: Expanding Our Services
-                </a>
-              </h3>
-              <p class="news-excerpt">
-                Looking ahead to 2025, we're planning to expand our service offerings and take on more complex projects while maintaining our commitment to quality.
-              </p>
-              <div class="news-tags">
-                <span class="tag">Planning</span>
-                <span class="tag">Growth</span>
-              </div>
-            </div>
-          </article>
+            </article>
+          </div>
         </div>
 
-        <!-- Load More Button -->
+        <div v-else class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-newspaper"></i>
+          </div>
+          <h3>No News Available</h3>
+          <p>Check back soon for our latest updates and announcements.</p>
+        </div>
+
+        <!-- View All News Button -->
         <div class="text-center news-load-more">
-          <button class="btn btn-outline btn-large" @click="loadMoreNews">
-            <i class="fas fa-plus"></i>
-            Load More News
-          </button>
+          <router-link to="/news" class="btn btn-outline btn-large">
+            <i class="fas fa-newspaper"></i>
+            View All News
+          </router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Projects Section -->
+    <section class="featured-projects-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Featured Projects</h2>
+          <p>Showcase of our most impressive and successful projects</p>
+        </div>
+
+        <div v-if="loading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Loading featured projects...</p>
+        </div>
+
+        <div v-else-if="featuredProjects.length > 0" class="projects-grid">
+          <div
+            v-for="project in featuredProjects"
+            :key="project.id"
+            class="project-card"
+          >
+            <div class="project-image">
+              <img
+                v-if="project.image_url"
+                :src="project.image_url"
+                :alt="project.title"
+                loading="lazy"
+              >
+              <div v-else class="no-image">
+                <i class="fas fa-image"></i>
+              </div>
+              <div class="project-overlay">
+                <div class="project-actions">
+                  <a
+                    v-if="project.project_url"
+                    :href="project.project_url"
+                    target="_blank"
+                    class="btn btn-primary btn-sm"
+                  >
+                    <i class="fas fa-external-link-alt"></i>
+                    Live Demo
+                  </a>
+                  <a
+                    v-if="project.github_url"
+                    :href="project.github_url"
+                    target="_blank"
+                    class="btn btn-secondary btn-sm"
+                  >
+                    <i class="fab fa-github"></i>
+                    Code
+                  </a>
+                </div>
+              </div>
+              <div class="featured-badge">
+                <i class="fas fa-star"></i>
+                Featured
+              </div>
+            </div>
+
+            <div class="project-content">
+              <div class="project-header">
+                <h3 class="project-title">{{ project.title }}</h3>
+                <div class="project-category">{{ project.category }}</div>
+              </div>
+
+              <p class="project-description">
+                {{ project.short_description || project.description?.substring(0, 120) + '...' }}
+              </p>
+
+              <div v-if="project.technologies && project.technologies.length" class="project-tech">
+                <span
+                  v-for="tech in project.technologies.slice(0, 4)"
+                  :key="tech"
+                  class="tech-tag"
+                >
+                  {{ tech }}
+                </span>
+                <span v-if="project.technologies.length > 4" class="tech-more">
+                  +{{ project.technologies.length - 4 }}
+                </span>
+              </div>
+
+              <div class="project-meta">
+                <div v-if="project.client" class="meta-item">
+                  <i class="fas fa-user"></i>
+                  <span>{{ project.client }}</span>
+                </div>
+                <div v-if="project.completed_at" class="meta-item">
+                  <i class="fas fa-calendar"></i>
+                  <span>{{ formatDate(project.completed_at) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-folder-open"></i>
+          </div>
+          <h3>No Featured Projects Yet</h3>
+          <p>Check back soon for our highlighted work and successful projects.</p>
+        </div>
+
+        <!-- View All Projects Button -->
+        <div class="text-center projects-cta">
+          <router-link to="/portfolio" class="btn btn-outline btn-large">
+            <i class="fas fa-folder-open"></i>
+            View All Projects
+          </router-link>
         </div>
       </div>
     </section>
@@ -314,12 +324,89 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
 export default {
   name: 'HomePage',
-  methods: {
-    loadMoreNews() {
+  setup() {
+    const featuredProjects = ref([])
+    const featuredNews = ref([])
+    const categories = ref({})
+    const loading = ref(false)
+    const newsLoading = ref(false)
+
+    const loadFeaturedProjects = async () => {
+      try {
+        loading.value = true
+        const response = await axios.get('/api/portfolios/featured')
+        // API возвращает {success: true, data: [projects]}, поэтому берем data
+        featuredProjects.value = response.data.data || response.data
+      } catch (error) {
+        console.error('Failed to load featured projects:', error)
+        featuredProjects.value = []
+      } finally {
+        loading.value = false
+      }
+    }
+
+    const loadFeaturedNews = async () => {
+      try {
+        newsLoading.value = true
+        const response = await axios.get('/api/news/featured')
+        featuredNews.value = response.data.data || response.data
+      } catch (error) {
+        console.error('Failed to load featured news:', error)
+        featuredNews.value = []
+      } finally {
+        newsLoading.value = false
+      }
+    }
+
+    const loadCategories = async () => {
+      try {
+        const response = await axios.get('/api/news/all-categories')
+        categories.value = response.data.data || response.data
+        console.log('Loaded categories for HomePage:', categories.value)
+      } catch (error) {
+        console.error('Failed to load categories:', error)
+        categories.value = {}
+      }
+    }
+
+    const getCategoryDisplayName = (categoryKey) => {
+      return categories.value[categoryKey] || categoryKey
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return ''
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    }
+
+    const loadMoreNews = () => {
       // Заглушка для загрузки новостей
       console.log('Loading more news...')
+    }
+
+    onMounted(() => {
+      loadFeaturedProjects()
+      loadFeaturedNews()
+      loadCategories()
+    })
+
+    return {
+      featuredProjects,
+      featuredNews,
+      categories,
+      loading,
+      newsLoading,
+      formatDate,
+      loadMoreNews,
+      getCategoryDisplayName
     }
   }
 }

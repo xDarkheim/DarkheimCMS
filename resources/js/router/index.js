@@ -6,6 +6,8 @@ import AboutPage from '../pages/AboutPage.vue'
 import ServicesPage from '../pages/ServicesPage.vue'
 import PortfolioPage from '../pages/PortfolioPage.vue'
 import ContactPage from '../pages/ContactPage.vue'
+import NewsPage from '../pages/NewsPage.vue'
+import NewsArticle from '../pages/NewsArticle.vue'
 
 const routes = [
   {
@@ -32,6 +34,16 @@ const routes = [
     path: '/contact',
     name: 'contact',
     component: ContactPage
+  },
+  {
+    path: '/news',
+    name: 'news',
+    component: NewsPage
+  },
+  {
+    path: '/news/:slug',
+    name: 'news-article',
+    component: NewsArticle
   }
 ]
 

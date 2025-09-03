@@ -20,6 +20,16 @@
           </li>
           <li class="nav__item">
             <router-link
+              to="/news"
+              class="nav__link"
+              :class="{ 'nav__link--active': $route.name === 'News' }"
+            >
+              <i class="fas fa-newspaper"></i>
+              News
+            </router-link>
+          </li>
+          <li class="nav__item">
+            <router-link
               to="/about"
               class="nav__link"
               :class="{ 'nav__link--active': $route.name === 'About' }"

@@ -16,6 +16,12 @@ adminApi.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
 
+  // Add CSRF token if available
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')
+  if (csrfToken) {
+    config.headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content')
+  }
+
   // Add debug logging for authentication issues
   console.log('API Request:', {
     url: config.url,
@@ -143,11 +149,19 @@ export const adminApiService = {
   getPortfolioCategories: () => adminApi.get('/admin/portfolios-categories'),
 
   // News management
-  getNews: (page = 1) => adminApi.get(`/admin/news?page=${page}`),
+  getNews: (page = 1, params = {}) => {
+    let url = `/admin/news?page=${page}`
+    if (params.status) url += `&status=${params.status}`
+    if (params.search) url += `&search=${encodeURIComponent(params.search)}`
+    return adminApi.get(url)
+  },
   createNews: (data) => adminApi.post('/admin/news', data),
   updateNews: (id, data) => adminApi.put(`/admin/news/${id}`, data),
   deleteNews: (id) => adminApi.delete(`/admin/news/${id}`),
-  getNewsCategories: () => adminApi.get('/admin/news-categories'),
+  toggleNewsPublished: (id) => adminApi.post(`/admin/news/${id}/toggle-published`),
+  toggleNewsFeatured: (id) => adminApi.post(`/admin/news/${id}/toggle-featured`),
+  bulkNewsAction: (data) => adminApi.post('/admin/news/bulk-action', data),
+  getNewsCategories: () => adminApi.get('/admin/news/categories'),
 }
 
 export default adminApi

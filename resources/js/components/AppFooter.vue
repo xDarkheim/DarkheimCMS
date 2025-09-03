@@ -69,6 +69,12 @@
               </router-link>
             </li>
             <li>
+              <router-link to="/news">
+                <i class="fas fa-newspaper"></i>
+                News
+              </router-link>
+            </li>
+            <li>
               <router-link to="/portfolio">
                 <i class="fas fa-briefcase"></i>
                 Portfolio

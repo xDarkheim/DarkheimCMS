@@ -10,6 +10,20 @@ class News extends Model
 {
     use HasFactory;
 
+    // Предопределенные категории новостей
+    const CATEGORIES = [
+        'announcements' => 'Announcements',
+        'updates' => 'Updates',
+        'releases' => 'Releases',
+        'development' => 'Development',
+        'community' => 'Community',
+        'events' => 'Events',
+        'tutorials' => 'Tutorials',
+        'behind-scenes' => 'Behind the Scenes',
+        'partnerships' => 'Partnerships',
+        'general' => 'General'
+    ];
+
     protected $fillable = [
         'title',
         'slug',
@@ -49,9 +63,49 @@ class News extends Model
 
     public function getRouteKeyName()
     {
+        // Используем slug только для публичных маршрутов
+        // Для админских маршрутов (API) используем ID
+        if (request()->is('api/admin/*')) {
+            return 'id';
+        }
         return 'slug';
     }
 
+    /**
+     * Получить все доступные категории
+     */
+    public static function getCategories()
+    {
+        return self::CATEGORIES;
+    }
+
+    /**
+     * Получить отображаемое название категории
+     */
+    public function getCategoryDisplayNameAttribute()
+    {
+        return self::CATEGORIES[$this->category] ?? $this->category;
+    }
+
+    /**
+     * Проверить валидность категории
+     */
+    public static function isValidCategory($category)
+    {
+        return array_key_exists($category, self::CATEGORIES);
+    }
+
+    /**
+     * Скоп для фильтрации по категории
+     */
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    /**
+     * Скоп для получения опубликованных новостей
+     */
     public function scopePublished($query)
     {
         return $query->where('is_published', true)
@@ -59,6 +113,9 @@ class News extends Model
                     ->where('published_at', '<=', now());
     }
 
+    /**
+     * Скоп для получения избранных новостей
+     */
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);

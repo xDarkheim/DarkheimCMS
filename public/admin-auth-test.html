@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Auth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        #output { background: #f8f9fa; padding: 15px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Admin Authentication Test</h1>
+
+    <div class="test-section">
+        <h3>Current Auth Status</h3>
+        <p>Token in localStorage: <span id="tokenStatus"></span></p>
+        <p>User in localStorage: <span id="userStatus"></span></p>
+        <button onclick="checkCurrentAuth()">Check Current Auth</button>
+        <button onclick="clearAuth()">Clear Auth Data</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Login Test</h3>
+        <input type="email" id="email" placeholder="Email" value="admin@example.com">
+        <input type="password" id="password" placeholder="Password" value="password">
+        <button onclick="testLogin()">Test Login</button>
+    </div>
+
+    <div class="test-section">
+        <h3>API Test</h3>
+        <button onclick="testNewsAPI()">Test News API</button>
+        <button onclick="testValidateToken()">Test Validate Token</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Output</h3>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function checkCurrentAuth() {
+            const token = localStorage.getItem('admin_token');
+            const user = localStorage.getItem('admin_user');
+
+            document.getElementById('tokenStatus').textContent = token ? `Present (${token.length} chars)` : 'Not found';
+            document.getElementById('userStatus').textContent = user ? 'Present' : 'Not found';
+
+            log(`Token: ${token ? 'Present' : 'Missing'}`, token ? 'success' : 'error');
+            log(`User: ${user ? 'Present' : 'Missing'}`, user ? 'success' : 'error');
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            log('Auth data cleared', 'info');
+            checkCurrentAuth();
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            log(`Attempting login with ${email}...`, 'info');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('admin_token', data.token);
+                    localStorage.setItem('admin_user', JSON.stringify(data.user));
+                    log(`Login successful! Token: ${data.token.substring(0, 20)}...`, 'success');
+                    checkCurrentAuth();
+                } else {
+                    log(`Login failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testValidateToken() {
+            const token = localStorage.getItem('admin_token');
+
+            if (!token) {
+                log('No token found to validate', 'error');
+                return;
+            }
+
+            log('Testing token validation...', 'info');
+
+            try {
+                const response = await fetch('/api/validate-token', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`Token validation successful: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`Token validation failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`Token validation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testNewsAPI() {
+            const token = localStorage.getItem('admin_token');
+
+            if (!token) {
+                log('No token found for API test', 'error');
+                return;
+            }
+
+            log('Testing News API...', 'info');
+
+            try {
+                const response = await fetch('/api/admin/news', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`News API successful: ${data.data?.data?.length || 0} articles found`, 'success');
+                } else {
+                    log(`News API failed: ${data.message || 'Unknown error'} (Status: ${response.status})`, 'error');
+                }
+            } catch (error) {
+                log(`News API error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check auth status on page load
+        window.onload = checkCurrentAuth;
+    </script>
+</body>
+</html>
+

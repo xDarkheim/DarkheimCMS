@@ -3,9 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\AuthController;
 
@@ -35,6 +36,16 @@ Route::prefix('portfolios')->group(function () {
     Route::get('/{id}', [PortfolioController::class, 'show']);
 });
 
+// Public News Routes
+Route::prefix('news')->group(function () {
+    Route::get('/', [NewsController::class, 'index']);
+    Route::get('/featured', [NewsController::class, 'featured']);
+    Route::get('/latest', [NewsController::class, 'latest']);
+    Route::get('/categories', [NewsController::class, 'categories']);
+    Route::get('/all-categories', [NewsController::class, 'allCategories']);
+    Route::get('/{slug}', [NewsController::class, 'show']);
+});
+
 // Admin Routes (protected by Sanctum)
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // Dashboard stats
@@ -43,9 +54,18 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // User Management
     Route::apiResource('users', AdminUserController::class);
 
-    // News Management
-    Route::apiResource('news', AdminNewsController::class);
-    Route::get('/news-categories', [AdminNewsController::class, 'categories']);
+    // News management
+    Route::prefix('news')->group(function () {
+        Route::get('/', [AdminNewsController::class, 'index']);
+        Route::post('/', [AdminNewsController::class, 'store']);
+        Route::get('/categories', [AdminNewsController::class, 'categories']);
+        Route::get('/{news}', [AdminNewsController::class, 'show']);
+        Route::put('/{news}', [AdminNewsController::class, 'update']);
+        Route::delete('/{news}', [AdminNewsController::class, 'destroy']);
+        Route::post('/{news}/toggle-published', [AdminNewsController::class, 'togglePublished']);
+        Route::post('/{news}/toggle-featured', [AdminNewsController::class, 'toggleFeatured']);
+        Route::post('/bulk-action', [AdminNewsController::class, 'bulkAction']);
+    });
 
     // Admin Portfolio Management
     Route::apiResource('portfolios', AdminPortfolioController::class);
