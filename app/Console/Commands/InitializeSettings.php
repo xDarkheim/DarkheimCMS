@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Setting;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class InitializeSettings extends Command
 {
@@ -24,7 +25,7 @@ class InitializeSettings extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('Initializing default settings...');
 
@@ -68,11 +69,11 @@ class InitializeSettings extends Command
             if ($existing) {
                 $existing->update($config);
                 $updated++;
-                $this->line("Updated: {$key}");
+                $this->line("Updated: $key");
             } else {
                 Setting::create(array_merge(['key' => $key], $config));
                 $created++;
-                $this->line("Created: {$key}");
+                $this->line("Created: $key");
             }
         }
 
@@ -85,6 +86,6 @@ class InitializeSettings extends Command
             ['Skipped', $skipped],
         ]);
 
-        return Command::SUCCESS;
+        return CommandAlias::SUCCESS;
     }
 }

@@ -139,7 +139,7 @@ class ActivityLogController extends Controller
     /**
      * Export activity logs (for compliance/auditing)
      */
-    public function export(Request $request): JsonResponse
+    public function export(Request $request)
     {
         $request->validate([
             'format' => 'required|in:csv,json',

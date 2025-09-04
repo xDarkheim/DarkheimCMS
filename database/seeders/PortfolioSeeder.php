@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Portfolio;
 use App\Models\PortfolioCategory;
-use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class PortfolioSeeder extends Seeder
 {
@@ -14,150 +13,102 @@ class PortfolioSeeder extends Seeder
      */
     public function run(): void
     {
-        // Очищаем таблицу перед заполнением
-        Portfolio::truncate();
+        // Get existing categories
+        $categories = PortfolioCategory::all();
 
-        // Получаем все категории
-        $categories = PortfolioCategory::all()->keyBy('slug');
+        if ($categories->isEmpty()) {
+            $this->command->error('No portfolio categories found. Please seed portfolio categories first.');
+            return;
+        }
 
         $portfolios = [
-            // Web Development
             [
-                'title' => 'Modern E-commerce Platform',
-                'slug' => 'modern-ecommerce-platform',
-                'short_description' => 'Comprehensive online store with advanced features and responsive design.',
-                'description' => 'A fully-featured e-commerce platform built with modern technologies. Features include user authentication, product catalog with advanced filtering, shopping cart functionality, secure payment processing, order management system, and comprehensive admin dashboard. The platform supports multiple payment methods, real-time inventory tracking, and provides detailed analytics for business insights.',
-                'category_slug' => 'web-development',
-                'client' => 'RetailTech Solutions',
-                'image_url' => 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1556742111-a301076d9d18?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'technologies' => ['Vue.js', 'Laravel', 'MySQL', 'Tailwind CSS', 'Stripe API', 'Redis'],
-                'completed_at' => Carbon::create(2025, 8, 15),
+                'title' => 'E-commerce Website',
+                'slug' => 'e-commerce-website',
+                'description' => 'A modern e-commerce platform built with Laravel and Vue.js. Features include product catalog, shopping cart, payment integration, order management, and admin dashboard.',
+                'short_description' => 'Modern e-commerce platform with full shopping functionality',
+                'image_url' => 'https://via.placeholder.com/800x600/667eea/ffffff?text=E-commerce+Website',
+                'project_url' => 'https://example-ecommerce.com',
+                'github_url' => 'https://github.com/example/ecommerce',
+                'technologies' => ['Laravel', 'Vue.js', 'MySQL', 'Stripe API', 'Tailwind CSS'],
+                'client' => 'Tech Startup Inc.',
+                'completed_at' => now()->subMonths(2),
                 'is_featured' => true,
-                'is_published' => true
+                'is_published' => true,
+                'sort_order' => 1,
+                'portfolio_category_id' => $categories->random()->id,
             ],
-
-            // Mobile Applications
             [
-                'title' => 'HealthTracker Mobile App',
-                'slug' => 'healthtracker-mobile-app',
-                'short_description' => 'Comprehensive health and fitness tracking application.',
-                'description' => 'A comprehensive mobile application for health and fitness tracking. Features include workout planning, nutrition tracking, progress monitoring, goal setting, and social features to connect with other users. The app includes integration with wearable devices, personalized recommendations, and detailed analytics to help users achieve their health goals.',
-                'category_slug' => 'mobile-applications',
-                'client' => 'FitLife Inc.',
-                'image_url' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'technologies' => ['React Native', 'Firebase', 'Node.js', 'MongoDB', 'Health APIs'],
-                'completed_at' => Carbon::create(2025, 8, 22),
+                'title' => 'Mobile App Dashboard',
+                'slug' => 'mobile-app-dashboard',
+                'description' => 'React Native mobile application with comprehensive dashboard for business analytics. Includes real-time data visualization, user management, and push notifications.',
+                'short_description' => 'Business analytics mobile app with real-time dashboard',
+                'image_url' => 'https://via.placeholder.com/800x600/4facfe/ffffff?text=Mobile+Dashboard',
+                'project_url' => 'https://example-mobile.com',
+                'github_url' => 'https://github.com/example/mobile-dashboard',
+                'technologies' => ['React Native', 'Node.js', 'MongoDB', 'Socket.io', 'Chart.js'],
+                'client' => 'Business Solutions LLC',
+                'completed_at' => now()->subMonths(1),
                 'is_featured' => true,
-                'is_published' => true
+                'is_published' => true,
+                'sort_order' => 2,
+                'portfolio_category_id' => $categories->random()->id,
             ],
-
-            // E-commerce Solutions
             [
-                'title' => 'Luxury Fashion Boutique',
-                'slug' => 'luxury-fashion-boutique',
-                'short_description' => 'Premium fashion e-commerce with advanced styling features.',
-                'description' => 'An elegant e-commerce solution for luxury fashion brands. Features include high-quality product galleries, virtual styling consultations, size recommendation engine, wishlist functionality, and premium customer service integration. The platform emphasizes visual storytelling and brand experience while maintaining excellent performance and user experience.',
-                'category_slug' => 'ecommerce-solutions',
-                'client' => 'Elegance Fashion House',
-                'image_url' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'technologies' => ['Shopify Plus', 'JavaScript', 'CSS3', 'Payment APIs', 'CDN'],
-                'completed_at' => Carbon::create(2025, 8, 28),
+                'title' => 'Corporate Website Redesign',
+                'slug' => 'corporate-website-redesign',
+                'description' => 'Complete redesign and development of corporate website with modern design principles. Features responsive design, CMS integration, and SEO optimization.',
+                'short_description' => 'Modern corporate website with responsive design',
+                'image_url' => 'https://via.placeholder.com/800x600/43e97b/ffffff?text=Corporate+Website',
+                'project_url' => 'https://example-corporate.com',
+                'github_url' => null,
+                'technologies' => ['HTML5', 'CSS3', 'JavaScript', 'PHP', 'WordPress'],
+                'client' => 'Corporate Enterprises',
+                'completed_at' => now()->subWeeks(3),
                 'is_featured' => false,
-                'is_published' => true
+                'is_published' => true,
+                'sort_order' => 3,
+                'portfolio_category_id' => $categories->random()->id,
             ],
-
-            // Business Applications
             [
-                'title' => 'Enterprise CRM System',
-                'slug' => 'enterprise-crm-system',
-                'short_description' => 'Comprehensive customer relationship management platform.',
-                'description' => 'A powerful CRM solution designed for enterprise-level sales teams. Includes lead management, contact organization, deal pipeline tracking, email integration, automated workflows, and comprehensive reporting dashboards. The system provides detailed insights into sales performance, customer interactions, and helps optimize sales processes for maximum efficiency.',
-                'category_slug' => 'business-applications',
-                'client' => 'SalesForce Pro',
-                'image_url' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'technologies' => ['Laravel', 'Vue.js', 'PostgreSQL', 'Chart.js', 'Email APIs'],
-                'completed_at' => Carbon::create(2025, 9, 1),
-                'is_featured' => true,
-                'is_published' => true
-            ],
-
-            // Landing Pages
-            [
-                'title' => 'SaaS Product Launch Page',
-                'slug' => 'saas-product-launch-page',
-                'short_description' => 'High-converting landing page with modern design.',
-                'description' => 'A conversion-optimized landing page designed for a SaaS product launch. Features compelling copywriting, interactive product demos, social proof elements, email capture forms, and detailed analytics tracking. The page is optimized for maximum conversion rates with A/B testing capabilities and mobile-first responsive design.',
-                'category_slug' => 'landing-pages',
-                'client' => 'CloudTech Startup',
-                'image_url' => 'https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'technologies' => ['HTML5', 'CSS3', 'JavaScript', 'Google Analytics', 'Optimization Tools'],
-                'completed_at' => Carbon::create(2025, 8, 12),
+                'title' => 'API Development Project',
+                'slug' => 'api-development-project',
+                'description' => 'RESTful API development for third-party integrations. Includes authentication, rate limiting, documentation, and comprehensive testing suite.',
+                'short_description' => 'RESTful API with comprehensive documentation',
+                'image_url' => 'https://via.placeholder.com/800x600/fa709a/ffffff?text=API+Development',
+                'project_url' => null,
+                'github_url' => 'https://github.com/example/api-project',
+                'technologies' => ['Laravel', 'MySQL', 'Redis', 'Docker', 'Postman'],
+                'client' => null,
+                'completed_at' => now()->subWeeks(2),
                 'is_featured' => false,
-                'is_published' => true
+                'is_published' => true,
+                'sort_order' => 4,
+                'portfolio_category_id' => $categories->random()->id,
             ],
-
-            // Portfolio Websites
             [
-                'title' => 'Creative Artist Portfolio',
-                'slug' => 'creative-artist-portfolio',
-                'short_description' => 'Stunning portfolio website showcasing artistic works.',
-                'description' => 'A visually striking portfolio website for a creative artist featuring an interactive gallery, project showcases, artist biography, exhibition history, and contact functionality. The design emphasizes visual impact and storytelling while maintaining excellent user experience across all devices. Features include image optimization and smooth animations.',
-                'category_slug' => 'portfolio-websites',
-                'client' => 'Marina Art Studio',
-                'image_url' => 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'gallery_images' => [
-                    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                    'https://images.unsplash.com/photo-1551739440-5dd934d3a94a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-                ],
-                'technologies' => ['Next.js', 'React', 'CSS3', 'Image Optimization', 'Animation Libraries'],
-                'completed_at' => Carbon::create(2025, 8, 20),
+                'title' => 'SaaS Platform MVP',
+                'slug' => 'saas-platform-mvp',
+                'description' => 'Minimum Viable Product for a SaaS platform including user authentication, subscription management, team collaboration features, and admin panel.',
+                'short_description' => 'SaaS platform MVP with subscription management',
+                'image_url' => 'https://via.placeholder.com/800x600/fee140/333333?text=SaaS+Platform',
+                'project_url' => 'https://example-saas.com',
+                'github_url' => null,
+                'technologies' => ['Next.js', 'TypeScript', 'PostgreSQL', 'Stripe', 'Tailwind CSS'],
+                'client' => 'Startup Ventures',
+                'completed_at' => now()->subDays(10),
                 'is_featured' => true,
-                'is_published' => true
+                'is_published' => true,
+                'sort_order' => 5,
+                'portfolio_category_id' => $categories->random()->id,
             ],
-
-            // API Development
-            [
-                'title' => 'RESTful API Service',
-                'slug' => 'restful-api-service',
-                'short_description' => 'Scalable API with comprehensive documentation.',
-                'description' => 'A robust and scalable RESTful API service designed for high performance and reliability. Features include JWT authentication, rate limiting, comprehensive API documentation, versioning support, error handling, and monitoring capabilities. The API supports multiple data formats and includes automated testing suite for reliability.',
-                'category_slug' => 'api-development',
-                'client' => 'DataFlow Technologies',
-                'image_url' => 'https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-                'technologies' => ['Node.js', 'Express', 'MongoDB', 'JWT', 'Swagger', 'Docker'],
-                'completed_at' => Carbon::create(2025, 8, 25),
-                'is_featured' => false,
-                'is_published' => true
-            ]
         ];
 
         foreach ($portfolios as $portfolioData) {
-            $categorySlug = $portfolioData['category_slug'];
-            unset($portfolioData['category_slug']);
-
-            if (isset($categories[$categorySlug])) {
-                $portfolioData['portfolio_category_id'] = $categories[$categorySlug]->id;
-                $portfolioData['category'] = $categories[$categorySlug]->name;
-
-                Portfolio::create($portfolioData);
-                echo "Created portfolio: {$portfolioData['title']}\n";
-            }
+            Portfolio::create($portfolioData);
         }
 
-        echo "Portfolio seeding completed successfully!\n";
+        $this->command->info('Portfolio seeder completed successfully!');
+        $this->command->info('Created ' . count($portfolios) . ' portfolio items.');
     }
 }

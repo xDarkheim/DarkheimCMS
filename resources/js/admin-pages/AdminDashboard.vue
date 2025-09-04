@@ -453,18 +453,51 @@ const loadDashboardData = async (showLoading = true, retryCount = 0) => {
 
     // Load stats with fallback data
     try {
-      const statsResponse = await Promise.race([
-        adminApiService.getStats(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 10000)
-        )
-      ])
+      // Try to load full dashboard data first, fall back to stats only
+      let statsResponse;
+      try {
+        statsResponse = await Promise.race([
+          adminApiService.getDashboard(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 10000)
+          )
+        ])
 
-      if (statsResponse?.data?.data) {
-        const newStats = statsResponse.data.data
-        stats.value = { ...stats.value, ...newStats }
-      } else {
-        throw new Error('Invalid stats response')
+        // If we get full dashboard data, extract stats and activity
+        if (statsResponse?.data?.data) {
+          const dashboardData = statsResponse.data.data;
+          if (dashboardData.stats) {
+            stats.value = { ...stats.value, ...dashboardData.stats };
+          }
+          if (dashboardData.recent_activity) {
+            recentActivity.value = dashboardData.recent_activity.map(activity => ({
+              ...activity,
+              formattedTime: formatTimeAgo(activity.time),
+              icon: activity.icon || getActivityIcon(activity.type),
+              iconClass: activity.color || getActivityIconClass(activity.type)
+            }));
+          }
+          if (dashboardData.notifications) {
+            notifications.value = dashboardData.notifications;
+          }
+        }
+      } catch (dashboardError) {
+        // Fall back to stats-only endpoint
+        console.warn('Full dashboard API failed, trying stats only:', dashboardError);
+        statsResponse = await Promise.race([
+          adminApiService.getStats(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), 10000)
+          )
+        ]);
+
+        if (statsResponse?.data?.data) {
+          stats.value = { ...stats.value, ...statsResponse.data.data };
+        }
+      }
+
+      if (!statsResponse?.data?.data) {
+        throw new Error('Invalid stats response');
       }
     } catch (statsError) {
       console.warn('Stats API failed, using fallback data:', statsError)

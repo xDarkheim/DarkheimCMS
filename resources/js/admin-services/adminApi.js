@@ -117,8 +117,10 @@ export const adminApiService = {
   getUser: () => adminApi.get('/user'),
   validateToken,
 
-  // Dashboard stats
-  getStats: () => adminApi.get('/admin/stats'),
+  // Dashboard stats - updated to use new AdminDashboardController
+  getStats: () => adminApi.get('/admin/dashboard/stats'),
+  getDashboard: () => adminApi.get('/admin/dashboard'),
+  getRecentActivity: () => adminApi.get('/admin/dashboard/recent-activity'),
 
   // User management
   getUsers: (page = 1) => adminApi.get(`/admin/users?page=${page}`),
@@ -161,7 +163,7 @@ export const adminApiService = {
   // Contact Messages management
   getContactMessages: (page = 1) => adminApi.get(`/admin/contact-messages?page=${page}`),
   getContactMessage: (id) => adminApi.get(`/admin/contact-messages/${id}`),
-  markContactMessageRead: (id) => adminApi.patch(`/admin/contact-messages/${id}/mark-read`),
+  markContactMessageRead: (id) => adminApi.post(`/admin/contact-messages/${id}/mark-as-read`),
   deleteContactMessage: (id) => adminApi.delete(`/admin/contact-messages/${id}`),
   getContactMessageStats: () => adminApi.get('/admin/contact-messages/stats'),
 

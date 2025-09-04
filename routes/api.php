@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\NewsController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\TeamMemberController;
+use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,7 +71,12 @@ Route::get('/team/{teamMember}', [TeamMemberController::class, 'show']);
 
 // Admin Routes (protected by Sanctum)
 Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
-    // Dashboard stats
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+    Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
+    Route::get('/dashboard/recent-activity', [AdminDashboardController::class, 'recentActivity']);
+
+    // Legacy stats endpoint (keep for backward compatibility)
     Route::get('/stats', [App\Http\Controllers\Api\StatsController::class, 'admin']);
 
     // User Management
@@ -109,12 +114,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     // Contact Messages Management
     Route::prefix('contact-messages')->group(function () {
-        Route::get('/', [ContactController::class, 'index']);
-        Route::get('/stats', [ContactController::class, 'stats']);
-        Route::get('/{contactMessage}', [ContactController::class, 'show']);
-        Route::patch('/{contactMessage}/mark-read', [ContactController::class, 'markAsRead']);
-        Route::delete('/{contactMessage}', [ContactController::class, 'destroy']);
-        Route::get('/{contactMessage}/resume', [ContactController::class, 'downloadResume']);
+        Route::get('/', [AdminContactMessageController::class, 'index']);
+        Route::get('/stats', [AdminContactMessageController::class, 'stats']);
+        Route::get('/{contactMessage}', [AdminContactMessageController::class, 'show']);
+        Route::post('/{contactMessage}/mark-as-read', [AdminContactMessageController::class, 'markAsRead']);
+        Route::delete('/{contactMessage}', [AdminContactMessageController::class, 'destroy']);
+        Route::get('/{contactMessage}/resume', [AdminContactMessageController::class, 'downloadResume']);
+        Route::post('/bulk-mark-as-read', [AdminContactMessageController::class, 'bulkMarkAsRead']);
+        Route::post('/bulk-delete', [AdminContactMessageController::class, 'bulkDelete']);
     });
 
     // Career management

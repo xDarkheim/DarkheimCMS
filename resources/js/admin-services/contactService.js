@@ -1,4 +1,4 @@
-import api from '../services/api.js'
+import adminApi from './adminApi.js'
 
 export const adminContactService = {
   /**
@@ -6,7 +6,7 @@ export const adminContactService = {
    */
   async getMessages(params = {}) {
     try {
-      const response = await api.get('/admin/contact-messages', { params })
+      const response = await adminApi.get('/admin/contact-messages', { params })
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -18,7 +18,7 @@ export const adminContactService = {
    */
   async getStats() {
     try {
-      const response = await api.get('/admin/contact-messages/stats')
+      const response = await adminApi.get('/admin/contact-messages/stats')
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -30,7 +30,7 @@ export const adminContactService = {
    */
   async getMessage(id) {
     try {
-      const response = await api.get(`/admin/contact-messages/${id}`)
+      const response = await adminApi.get(`/admin/contact-messages/${id}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -42,7 +42,7 @@ export const adminContactService = {
    */
   async markAsRead(id) {
     try {
-      const response = await api.post(`/admin/contact-messages/${id}/mark-as-read`)
+      const response = await adminApi.post(`/admin/contact-messages/${id}/mark-as-read`)
       return response.data
     } catch (error) {
       throw error.response?.data || error
@@ -54,7 +54,7 @@ export const adminContactService = {
    */
   async deleteMessage(id) {
     try {
-      const response = await api.delete(`/admin/contact-messages/${id}`)
+      const response = await adminApi.delete(`/admin/contact-messages/${id}`)
       return response.data
     } catch (error) {
       throw error.response?.data || error

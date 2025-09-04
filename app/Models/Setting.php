@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @method static create(array|string $array_merge)
+ * @method static where(string $string, string $key)
+ */
 class Setting extends Model
 {
     protected $fillable = [
