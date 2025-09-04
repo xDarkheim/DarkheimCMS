@@ -37,10 +37,8 @@ class NewsControllerTest extends TestCase
         $response = $this->getJson('/api/news/test-news');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'title' => 'Test News',
-                    'content' => 'Test Content'
-                ]);
+                ->assertJsonPath('data.title', 'Test News')
+                ->assertJsonPath('data.content', 'Test Content');
     }
 
     #[Test]

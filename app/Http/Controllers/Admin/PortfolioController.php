@@ -41,6 +41,9 @@ class PortfolioController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Get available category slugs for validation
+        $categorySlugs = PortfolioCategory::where('is_active', true)->pluck('slug')->toArray();
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -51,10 +54,12 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
+            'category' => 'required|string|in:' . implode(',', $categorySlugs), // Исправлена валидация
             'portfolio_category_id' => 'required|exists:portfolio_categories,id',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
+            'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
@@ -68,10 +73,12 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies,
+            'category' => $request->category,
             'portfolio_category_id' => $request->portfolio_category_id,
             'client' => $request->client,
             'completed_at' => $request->completed_at,
-            'is_featured' => $request->boolean('is_featured'),
+            'is_featured' => $request->boolean('is_featured', false),
+            'is_published' => $request->boolean('is_published', true),
             'sort_order' => $request->sort_order ?? 0,
         ]);
 
@@ -121,6 +128,10 @@ class PortfolioController extends Controller
         // Store original data for logging
         $originalData = $portfolio->toArray();
 
+        // Get available category slugs for validation
+        $categoryIds = PortfolioCategory::where('is_active', true)->pluck('id')->toArray();
+        $categorySlugs = PortfolioCategory::where('is_active', true)->pluck('slug')->toArray();
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -131,10 +142,12 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
+            'category' => 'required|string|in:' . implode(',', $categorySlugs), // Исправлена валидация категорий
             'portfolio_category_id' => 'required|exists:portfolio_categories,id',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
+            'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
@@ -148,10 +161,12 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies,
+            'category' => $request->category, // Теперь принимает правильные slug'и
             'portfolio_category_id' => $request->portfolio_category_id,
             'client' => $request->client,
             'completed_at' => $request->completed_at,
-            'is_featured' => $request->boolean('is_featured'),
+            'is_featured' => $request->boolean('is_featured', false),
+            'is_published' => $request->boolean('is_published', true),
             'sort_order' => $request->sort_order ?? 0,
         ]);
 

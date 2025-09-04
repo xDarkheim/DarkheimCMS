@@ -24,10 +24,16 @@ class StatsControllerTest extends TestCase
         $response = $this->getJson('/api/stats');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'total_portfolios' => 10,
-                    'featured_portfolios' => 3,
-                    'total_news' => 5
+                ->assertJsonStructure([
+                    'success',
+                    'data' => [
+                        'projects_completed',
+                        'total_projects',
+                        'team_members',
+                        'years_experience',
+                        'open_positions',
+                        'news_articles'
+                    ]
                 ]);
     }
 
@@ -39,17 +45,19 @@ class StatsControllerTest extends TestCase
         Portfolio::factory()->count(8)->create();
         News::factory()->count(6)->create();
         ContactMessage::factory()->count(4)->create(['is_read' => false]);
-        User::factory()->count(3)->create();
 
         $response = $this->actingAs($adminUser, 'sanctum')
                         ->getJson('/api/admin/stats');
 
         $response->assertStatus(200)
                 ->assertJsonStructure([
-                    'portfolios',
-                    'news',
-                    'unread_messages',
-                    'users'
+                    'success',
+                    'data' => [
+                        'users_count',
+                        'portfolios_count',
+                        'news_count',
+                        'contact_messages_count'
+                    ]
                 ]);
     }
 

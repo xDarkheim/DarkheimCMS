@@ -1,214 +1,225 @@
 <template>
   <header class="header" :class="{ 'header--scrolled': isScrolled }">
-    <div class="container">
-      <router-link to="/" class="logo">
-        <div class="logo__icon">
-          <i class="fas fa-terminal"></i>
-        </div>
-        <span class="logo__text text-gradient">Darkheim</span>
-      </router-link>
+    <div class="header__container">
+      <!-- Logo section - левая сторона -->
+      <div class="header__left">
+        <router-link to="/" class="logo">
+          <div class="logo__icon">
+            <i class="fas fa-terminal"></i>
+          </div>
+          <span class="logo__text text-gradient">Darkheim</span>
+        </router-link>
+      </div>
 
-      <nav class="nav" @mouseleave="closeAllDropdowns">
-        <ul class="nav__list">
-          <li class="nav__item">
-            <router-link
-              to="/"
-              class="nav__link"
-              :class="{ 'nav__link--active': $route.name === 'Home' }"
-            >
-              <i class="fas fa-home"></i>
-              <span>Home</span>
-            </router-link>
-          </li>
+      <!-- Navigation section - правая сторона -->
+      <div class="header__right">
+        <nav class="nav" @mouseleave="closeAllDropdowns">
+          <ul class="nav__list">
+            <li class="nav__item">
+              <router-link
+                to="/"
+                class="nav__link"
+                :class="{ 'nav__link--active': $route.name === 'Home' }"
+              >
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+              </router-link>
+            </li>
 
-          <!-- Services with dropdown -->
-          <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('services')" @mouseleave="hideDropdown('services')">
-            <router-link
-              to="/services"
-              class="nav__link"
-              :class="{ 'nav__link--active': $route.name === 'Services' }"
-            >
-              <i class="fas fa-laptop-code"></i>
-              <span>Services</span>
-              <i class="fas fa-chevron-down nav__dropdown-icon"></i>
-            </router-link>
-            <div class="nav__dropdown" :class="{ 'nav__dropdown--visible': dropdowns.services }">
-              <div class="nav__dropdown-content">
-                <router-link to="/services?filter=web-development" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-code"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Web Development</span>
-                    <span class="nav__dropdown-desc">Custom websites & web applications</span>
-                  </div>
-                </router-link>
-                <router-link to="/services?filter=ui-ux-design" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-palette"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">UI/UX Design</span>
-                    <span class="nav__dropdown-desc">User interface & experience design</span>
-                  </div>
-                </router-link>
-                <router-link to="/services?filter=mobile-apps" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Mobile Apps</span>
-                    <span class="nav__dropdown-desc">iOS & Android applications</span>
-                  </div>
-                </router-link>
-                <router-link to="/services?filter=consulting" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-lightbulb"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Consulting</span>
-                    <span class="nav__dropdown-desc">Technical consulting & strategy</span>
-                  </div>
-                </router-link>
+            <!-- Services with dropdown -->
+            <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('services')" @mouseleave="hideDropdown('services')">
+              <router-link
+                to="/services"
+                class="nav__link"
+                :class="{ 'nav__link--active': $route.name === 'Services' }"
+              >
+                <i class="fas fa-laptop-code"></i>
+                <span>Services</span>
+                <i class="fas fa-chevron-down nav__dropdown-icon"></i>
+              </router-link>
+              <div class="nav__dropdown" :class="{ 'nav__dropdown--visible': dropdowns.services }" @mouseenter="handleDropdownEnter('services')" @mouseleave="handleDropdownLeave('services')">
+                <div class="nav__dropdown-content">
+                  <router-link to="/services?filter=web-development" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-code"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Web Development</span>
+                      <span class="nav__dropdown-desc">Custom websites & web applications</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/services?filter=ui-ux-design" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">UI/UX Design</span>
+                      <span class="nav__dropdown-desc">User interface & experience design</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/services?filter=mobile-apps" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Mobile Apps</span>
+                      <span class="nav__dropdown-desc">iOS & Android applications</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/services?filter=consulting" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Consulting</span>
+                      <span class="nav__dropdown-desc">Technical consulting & strategy</span>
+                    </div>
+                  </router-link>
+                </div>
               </div>
-            </div>
-          </li>
+            </li>
 
-          <!-- Portfolio with dropdown -->
-          <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('portfolio')" @mouseleave="hideDropdown('portfolio')">
-            <router-link
-              to="/portfolio"
-              class="nav__link"
-              :class="{ 'nav__link--active': $route.name === 'Portfolio' }"
-            >
-              <i class="fas fa-folder-open"></i>
-              <span>Portfolio</span>
-              <i class="fas fa-chevron-down nav__dropdown-icon"></i>
-            </router-link>
-            <div class="nav__dropdown" :class="{ 'nav__dropdown--visible': dropdowns.portfolio }">
-              <div class="nav__dropdown-content">
-                <router-link to="/portfolio?category=web-development" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-code"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Web Development</span>
-                    <span class="nav__dropdown-desc">Websites & web applications</span>
-                  </div>
-                </router-link>
-                <router-link to="/portfolio?category=mobile-applications" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Mobile Applications</span>
-                    <span class="nav__dropdown-desc">iOS & Android apps</span>
-                  </div>
-                </router-link>
-                <router-link to="/portfolio?category=ecommerce-solutions" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">E-commerce Solutions</span>
-                    <span class="nav__dropdown-desc">Online stores & marketplaces</span>
-                  </div>
-                </router-link>
-                <router-link to="/portfolio?category=business-applications" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-briefcase"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Business Applications</span>
-                    <span class="nav__dropdown-desc">Enterprise & business solutions</span>
-                  </div>
-                </router-link>
-                <router-link to="/portfolio?category=landing-pages" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-rocket"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Landing Pages</span>
-                    <span class="nav__dropdown-desc">Marketing & promotional pages</span>
-                  </div>
-                </router-link>
+            <!-- Portfolio with dropdown -->
+            <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('portfolio')" @mouseleave="hideDropdown('portfolio')">
+              <router-link
+                to="/portfolio"
+                class="nav__link"
+                :class="{ 'nav__link--active': $route.name === 'Portfolio' }"
+              >
+                <i class="fas fa-folder-open"></i>
+                <span>Portfolio</span>
+                <i class="fas fa-chevron-down nav__dropdown-icon"></i>
+              </router-link>
+              <div
+                class="nav__dropdown"
+                :class="{ 'nav__dropdown--visible': dropdowns.portfolio }"
+                @mouseenter="handleDropdownEnter('portfolio')"
+                @mouseleave="handleDropdownLeave('portfolio')"
+              >
+                <div class="nav__dropdown-content">
+                  <router-link to="/portfolio?category=web-development" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-code"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Web Development</span>
+                      <span class="nav__dropdown-desc">Websites & web applications</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/portfolio?category=mobile-applications" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Mobile Applications</span>
+                      <span class="nav__dropdown-desc">iOS & Android apps</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/portfolio?category=ecommerce-solutions" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">E-commerce Solutions</span>
+                      <span class="nav__dropdown-desc">Online stores & marketplaces</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/portfolio?category=business-applications" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Business Applications</span>
+                      <span class="nav__dropdown-desc">Enterprise & business solutions</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/portfolio?category=landing-pages" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Landing Pages</span>
+                      <span class="nav__dropdown-desc">Marketing & promotional pages</span>
+                    </div>
+                  </router-link>
+                </div>
               </div>
-            </div>
-          </li>
+            </li>
 
-          <!-- Company with dropdown -->
-          <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('company')" @mouseleave="hideDropdown('company')">
-            <a href="#" class="nav__link" @click.prevent>
-              <i class="fas fa-building"></i>
-              <span>Company</span>
-              <i class="fas fa-chevron-down nav__dropdown-icon"></i>
-            </a>
-            <div class="nav__dropdown" :class="{ 'nav__dropdown--visible': dropdowns.company }">
-              <div class="nav__dropdown-content">
-                <router-link to="/about" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-info-circle"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">About Us</span>
-                    <span class="nav__dropdown-desc">Our story & mission</span>
-                  </div>
-                </router-link>
-                <router-link to="/team" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-users"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Our Team</span>
-                    <span class="nav__dropdown-desc">Meet the talented people</span>
-                  </div>
-                </router-link>
-                <router-link to="/careers" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-briefcase"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">Careers</span>
-                    <span class="nav__dropdown-desc">Join our growing team</span>
-                  </div>
-                </router-link>
-                <router-link to="/news" class="nav__dropdown-item">
-                  <div class="nav__dropdown-icon">
-                    <i class="fas fa-newspaper"></i>
-                  </div>
-                  <div class="nav__dropdown-text">
-                    <span class="nav__dropdown-title">News & Blog</span>
-                    <span class="nav__dropdown-desc">Latest updates & insights</span>
-                  </div>
-                </router-link>
+            <!-- Company with dropdown -->
+            <li class="nav__item nav__item--dropdown" @mouseenter="showDropdown('company')" @mouseleave="hideDropdown('company')">
+              <a href="#" class="nav__link" @click.prevent>
+                <i class="fas fa-building"></i>
+                <span>Company</span>
+                <i class="fas fa-chevron-down nav__dropdown-icon"></i>
+              </a>
+              <div class="nav__dropdown" :class="{ 'nav__dropdown--visible': dropdowns.company }" @mouseenter="handleDropdownEnter('company')" @mouseleave="handleDropdownLeave('company')">
+                <div class="nav__dropdown-content">
+                  <router-link to="/about" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">About Us</span>
+                      <span class="nav__dropdown-desc">Our story & mission</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/team" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-users"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Our Team</span>
+                      <span class="nav__dropdown-desc">Meet the talented people</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/careers" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">Careers</span>
+                      <span class="nav__dropdown-desc">Join our growing team</span>
+                    </div>
+                  </router-link>
+                  <router-link to="/news" class="nav__dropdown-item">
+                    <div class="nav__dropdown-icon">
+                      <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="nav__dropdown-text">
+                      <span class="nav__dropdown-title">News & Blog</span>
+                      <span class="nav__dropdown-desc">Latest updates & insights</span>
+                    </div>
+                  </router-link>
+                </div>
               </div>
-            </div>
-          </li>
+            </li>
 
-          <li class="nav__item">
-            <router-link
-              to="/contact"
-              class="nav__link nav__link--cta"
-              :class="{ 'nav__link--active': $route.name === 'Contact' }"
-            >
-              <i class="fas fa-paper-plane"></i>
-              <span>Contact</span>
-            </router-link>
-          </li>
-        </ul>
-      </nav>
+            <li class="nav__item">
+              <router-link
+                to="/contact"
+                class="nav__link nav__link--cta"
+                :class="{ 'nav__link--active': $route.name === 'Contact' }"
+              >
+                <i class="fas fa-paper-plane"></i>
+                <span>Contact</span>
+              </router-link>
+            </li>
+          </ul>
+        </nav>
 
-      <!-- Mobile menu button -->
-      <button
-        class="mobile-menu-toggle"
-        @click="toggleMobileMenu"
-        :class="{ 'mobile-menu-toggle--active': isMobileMenuOpen }"
-        aria-label="Toggle mobile menu"
-      >
-        <span class="mobile-menu-toggle__line"></span>
-        <span class="mobile-menu-toggle__line"></span>
-        <span class="mobile-menu-toggle__line"></span>
-      </button>
+        <!-- Mobile menu button -->
+        <button
+          class="mobile-menu-toggle"
+          @click="toggleMobileMenu"
+          :class="{ 'mobile-menu-toggle--active': isMobileMenuOpen }"
+          aria-label="Toggle mobile menu"
+        >
+          <span class="mobile-menu-toggle__line"></span>
+          <span class="mobile-menu-toggle__line"></span>
+          <span class="mobile-menu-toggle__line"></span>
+        </button>
+      </div>
 
       <!-- Mobile menu overlay -->
       <div class="mobile-menu" :class="{ 'mobile-menu--open': isMobileMenuOpen }">
@@ -267,12 +278,23 @@ export default {
       company: false
     })
 
+    // Add timeout refs for better dropdown control
+    const dropdownTimeouts = ref({
+      services: null,
+      portfolio: null,
+      company: null
+    })
+
     const handleScroll = () => {
       isScrolled.value = window.scrollY > 50
     }
 
     const toggleMobileMenu = () => {
       isMobileMenuOpen.value = !isMobileMenuOpen.value
+      // Close all dropdowns when mobile menu opens
+      if (isMobileMenuOpen.value) {
+        closeAllDropdowns()
+      }
     }
 
     const closeMobileMenu = () => {
@@ -280,33 +302,100 @@ export default {
     }
 
     const closeAllDropdowns = () => {
-      Object.keys(dropdowns.value).forEach(k => (dropdowns.value[k] = false))
+      // Clear all timeouts
+      Object.keys(dropdownTimeouts.value).forEach(key => {
+        if (dropdownTimeouts.value[key]) {
+          clearTimeout(dropdownTimeouts.value[key])
+          dropdownTimeouts.value[key] = null
+        }
+      })
+      // Close all dropdowns
+      Object.keys(dropdowns.value).forEach(key => {
+        dropdowns.value[key] = false
+      })
     }
 
     const showDropdown = (menu) => {
-      // ensure only one dropdown is open at a time
-      closeAllDropdowns()
+      // Немедленно закрываем все другие dropdown'ы
+      Object.keys(dropdowns.value).forEach(key => {
+        if (key !== menu) {
+          dropdowns.value[key] = false
+          if (dropdownTimeouts.value[key]) {
+            clearTimeout(dropdownTimeouts.value[key])
+            dropdownTimeouts.value[key] = null
+          }
+        }
+      })
+
+      // Очищаем таймер для текущего меню если есть
+      if (dropdownTimeouts.value[menu]) {
+        clearTimeout(dropdownTimeouts.value[menu])
+        dropdownTimeouts.value[menu] = null
+      }
+
+      // Открываем нужное меню
       dropdowns.value[menu] = true
     }
 
     const hideDropdown = (menu) => {
-      dropdowns.value[menu] = false
+      // Очищаем существующий таймер
+      if (dropdownTimeouts.value[menu]) {
+        clearTimeout(dropdownTimeouts.value[menu])
+        dropdownTimeouts.value[menu] = null
+      }
+
+      // Устанавливаем задержку перед закрытием
+      dropdownTimeouts.value[menu] = setTimeout(() => {
+        dropdowns.value[menu] = false
+        dropdownTimeouts.value[menu] = null
+      }, 150)
+    }
+
+    const handleDropdownEnter = (menu) => {
+      // Отменяем закрытие если пользователь вернулся в область dropdown'а
+      if (dropdownTimeouts.value[menu]) {
+        clearTimeout(dropdownTimeouts.value[menu])
+        dropdownTimeouts.value[menu] = null
+      }
+    }
+
+    const handleDropdownLeave = (menu) => {
+      hideDropdown(menu)
+    }
+
+    // Enhanced outside click handler
+    const handleOutsideClick = (e) => {
+      const headerEl = document.querySelector('.header')
+      if (headerEl && !headerEl.contains(e.target)) {
+        closeAllDropdowns()
+      }
+    }
+
+    // Handle escape key
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closeAllDropdowns()
+        if (isMobileMenuOpen.value) {
+          closeMobileMenu()
+        }
+      }
     }
 
     onMounted(() => {
       window.addEventListener('scroll', handleScroll)
-      // close dropdowns when clicking outside header
-      document.addEventListener('click', (e) => {
-        const headerEl = document.querySelector('.header')
-        if (headerEl && !headerEl.contains(e.target)) {
-          closeAllDropdowns()
-        }
-      })
+      document.addEventListener('click', handleOutsideClick)
+      document.addEventListener('keydown', handleKeyDown)
     })
 
     onUnmounted(() => {
       window.removeEventListener('scroll', handleScroll)
-      document.removeEventListener('click', () => {})
+      document.removeEventListener('click', handleOutsideClick)
+      document.removeEventListener('keydown', handleKeyDown)
+
+      // Clear all timeouts on unmount
+      Object.values(dropdownTimeouts.value).forEach(timeout => {
+        if (timeout) clearTimeout(timeout)
+      })
     })
 
     return {
@@ -317,6 +406,8 @@ export default {
       closeMobileMenu,
       showDropdown,
       hideDropdown,
+      handleDropdownEnter,
+      handleDropdownLeave,
       closeAllDropdowns
     }
   }
@@ -354,13 +445,25 @@ $border-radius: 12px;
     box-shadow: 0 8px 32px $shadow-dark;
   }
 
-  .container {
+  .header__container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1rem 2rem;
     max-width: 1400px;
     margin: 0 auto;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 }
 
@@ -706,7 +809,7 @@ $border-radius: 12px;
     display: block;
   }
 
-  .header .container {
+  .header .header__container {
     padding: 1rem;
   }
 
@@ -722,7 +825,7 @@ $border-radius: 12px;
 }
 
 @media (max-width: 480px) {
-  .header .container {
+  .header .header__container {
     padding: 0.75rem;
   }
 

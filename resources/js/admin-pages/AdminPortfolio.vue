@@ -597,9 +597,14 @@ const saveProject = async () => {
     saving.value = true
     error.value = ''
 
+    // Находим выбранную категорию для получения её slug
+    const selectedCategory = categories.value.find(cat => cat.id == form.value.portfolio_category_id)
+
     // Подготавливаем данные для отправки с правильной обработкой всех типов
     const cleanedForm = {
       ...form.value,
+      // ВАЖНО: поле category должно содержать slug категории, а не ID
+      category: selectedCategory ? selectedCategory.slug : '',
       // Очищаем пустые изображения галереи
       gallery_images: form.value.gallery_images.filter(img => img && img.trim()),
       // Убеждаемся что массив технологий корректно обработан

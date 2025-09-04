@@ -400,7 +400,7 @@
             <div class="project-content">
               <div class="project-header">
                 <h3 class="project-title">{{ project.title }}</h3>
-                <div class="project-category">{{ project.category }}</div>
+                <div class="project-category">{{ project.category_name || project.category || 'Uncategorized' }}</div>
               </div>
 
               <p class="project-description">

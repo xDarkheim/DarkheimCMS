@@ -71,7 +71,7 @@
                   <div class="portfolio-placeholder__icon">
                     <i :class="getPlaceholderIcon(project.categoryId)"></i>
                   </div>
-                  <span class="portfolio-placeholder__text">{{ project.category }}</span>
+                  <span class="portfolio-placeholder__text">{{ project.category_name || project.category || 'Uncategorized' }}</span>
                 </div>
                 <div class="portfolio-item__overlay">
                   <div class="portfolio-item__actions">
@@ -197,7 +197,7 @@
 
         <div class="project-modal__header">
           <h2 class="project-modal__title">{{ selectedProject.title }}</h2>
-          <div class="project-modal__category">{{ selectedProject.category }}</div>
+          <div class="project-modal__category">{{ selectedProject.category_name || selectedProject.category || 'Uncategorized' }}</div>
           <div class="project-modal__client" v-if="selectedProject.client">
             Client: {{ selectedProject.client }}
           </div>
@@ -293,14 +293,9 @@ export default {
         return realProjects
       }
 
-      // Для конкретной категории
-      const selectedCategory = categories.value.find(cat => cat.id === activeCategory.value)
-      if (!selectedCategory) {
-        return []
-      }
-
-      // Фильтруем реальные проекты по выбранной категории
-      return realProjects.filter(p => p.category === selectedCategory.name)
+      // Для конкретной категории - ИСПРАВЛЕНО: убираем клиентскую фильтрацию
+      // так как API уже возвращает отфильтрованные данные
+      return realProjects
     })
 
     // Load portfolios from API
@@ -420,13 +415,13 @@ export default {
       activeCategory.value = categoryId
       currentPage.value = 1
 
-      // Для API запроса используем название категории, а не ID
+      // Для API запроса используем slug категории, а не название
       let categoryForApi = undefined
       if (categoryId !== 'all') {
-        // Находим категорию по ID и используем её название для API
+        // Находим категорию по ID и используем её slug для API (НЕ name!)
         const selectedCategory = categories.value.find(cat => cat.id === categoryId)
         if (selectedCategory) {
-          categoryForApi = selectedCategory.name
+          categoryForApi = selectedCategory.slug // Исправлено: используем slug вместо name
         }
       }
 

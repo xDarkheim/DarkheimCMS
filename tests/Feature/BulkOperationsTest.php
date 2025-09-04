@@ -53,7 +53,7 @@ class BulkOperationsTest extends TestCase
         $response = $this->actingAs($this->adminUser, 'sanctum')
                         ->postJson('/api/admin/news/bulk-action', [
                             'action' => 'delete',
-                            'items' => $newsIds
+                            'ids' => $newsIds  // Changed from 'items' to 'ids'
                         ]);
 
         $response->assertStatus(200);

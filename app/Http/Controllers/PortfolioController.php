@@ -15,13 +15,20 @@ class PortfolioController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Portfolio::where('is_published', true)
+            $query = Portfolio::with('portfolioCategory')
+                ->where('is_published', true)
                 ->orderBy('sort_order')
                 ->orderBy('created_at', 'desc');
 
             // Фильтрация по категории
             if ($request->has('category') && $request->category) {
-                $query->where('category', $request->category);
+                if ($request->category !== 'all') {
+                    $query->where(function($q) use ($request) {
+                        $q->whereHas('portfolioCategory', function($categoryQuery) use ($request) {
+                            $categoryQuery->where('slug', $request->category);
+                        })->orWhere('category', $request->category);
+                    });
+                }
             }
 
             // Поиск по названию
@@ -31,6 +38,12 @@ class PortfolioController extends Controller
 
             $perPage = $request->get('per_page', 10);
             $portfolios = $query->paginate($perPage);
+
+            // Добавляем category_name в каждый элемент
+            $portfolios->getCollection()->transform(function ($portfolio) {
+                $portfolio->category_name = $portfolio->category_name;
+                return $portfolio;
+            });
 
             return response()->json([
                 'success' => true,
@@ -59,12 +72,19 @@ class PortfolioController extends Controller
     public function featured(): JsonResponse
     {
         try {
-            $portfolios = Portfolio::where('is_published', true)
+            $portfolios = Portfolio::with('portfolioCategory')
+                ->where('is_published', true)
                 ->where('is_featured', true)
                 ->orderBy('sort_order')
                 ->orderBy('created_at', 'desc')
                 ->take(6)
                 ->get();
+
+            // Добавляем category_name в каждый элемент
+            $portfolios->transform(function ($portfolio) {
+                $portfolio->category_name = $portfolio->category_name;
+                return $portfolio;
+            });
 
             return response()->json([
                 'success' => true,

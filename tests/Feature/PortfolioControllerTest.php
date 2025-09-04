@@ -37,10 +37,8 @@ class PortfolioControllerTest extends TestCase
         $response = $this->getJson("/api/portfolios/{$portfolio->id}");
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'title' => 'Test Portfolio',
-                    'description' => 'Test Description'
-                ]);
+                ->assertJsonPath('data.title', 'Test Portfolio')
+                ->assertJsonPath('data.description', 'Test Description');
     }
 
     #[Test]

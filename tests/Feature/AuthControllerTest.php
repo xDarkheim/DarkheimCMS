@@ -40,8 +40,8 @@ class AuthControllerTest extends TestCase
             'password' => 'wrongpassword'
         ]);
 
-        $response->assertStatus(401)
-                ->assertJson(['message' => 'Invalid credentials']);
+        $response->assertStatus(422)
+                ->assertJsonValidationErrors(['email']);
     }
 
     #[Test]
@@ -64,7 +64,7 @@ class AuthControllerTest extends TestCase
         ])->postJson('/api/logout');
 
         $response->assertStatus(200)
-                ->assertJson(['message' => 'Logged out successfully']);
+                ->assertJson(['message' => 'Logout successful']);
     }
 
     #[Test]

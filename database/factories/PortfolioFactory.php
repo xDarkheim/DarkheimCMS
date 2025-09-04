@@ -30,6 +30,7 @@ class PortfolioFactory extends Factory
             'github_url' => fake()->url(),
             'technologies' => fake()->randomElements(['PHP', 'Laravel', 'Vue.js', 'React', 'MySQL', 'JavaScript'], 3),
             'category' => fake()->randomElement(['web', 'mobile', 'desktop']),
+            'portfolio_category_id' => null, // Will be set in tests
             'client' => fake()->company(),
             'completed_at' => fake()->dateTimeBetween('-1 year', 'now'),
             'is_featured' => fake()->boolean(20),

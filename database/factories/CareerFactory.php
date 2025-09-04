@@ -30,7 +30,7 @@ class CareerFactory extends Factory
             'requirements' => fake()->randomElements(['PHP', 'Laravel', 'Vue.js', 'MySQL', 'Git', 'REST APIs'], 4),
             'benefits' => fake()->randomElements(['Health Insurance', 'Remote Work', 'Flexible Hours', '401k', 'Stock Options'], 3),
             'salary_range' => fake()->randomElement(['$50,000 - $70,000', '$70,000 - $90,000', '$90,000 - $120,000']),
-            'experience_level' => fake()->randomElement(['junior', 'mid', 'senior', 'lead']), // Исправлено: убрал 'entry', оставил только разрешенные значения
+            'experience_level' => fake()->randomElement(['junior', 'mid', 'senior', 'lead']),
             'skills' => fake()->randomElements(['Communication', 'Leadership', 'Problem Solving', 'Teamwork'], 2),
             'is_active' => fake()->boolean(80),
             'priority' => fake()->numberBetween(1, 10),

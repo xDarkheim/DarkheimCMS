@@ -13,11 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Запускаем сидеры для создания тестовых данных
         $this->call([
             AdminSeeder::class,
-            PortfolioCategorySeeder::class, // Создаем категории перед проектами
+            PortfolioCategorySeeder::class,
             PortfolioSeeder::class,
+            CompanyInfoSeeder::class,
             NewsSeeder::class,
             CareersSeeder::class,
             TeamSeeder::class,

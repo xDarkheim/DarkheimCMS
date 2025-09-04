@@ -79,11 +79,31 @@ class PortfolioCategorySeeder extends Seeder
             ]
         ];
 
+        $created = 0;
+        $updated = 0;
+
         foreach ($categories as $categoryData) {
-            PortfolioCategory::firstOrCreate(
-                ['slug' => $categoryData['slug']],
-                $categoryData
+            $category = PortfolioCategory::firstOrCreate(
+                ['slug' => $categoryData['slug']], // Поиск по slug
+                $categoryData // Данные для создания
             );
+
+            if ($category->wasRecentlyCreated) {
+                $created++;
+                $this->command->info('Created category: ' . $categoryData['name'] . ' (' . $categoryData['slug'] . ')');
+            } else {
+                // Обновляем существующую категорию, кроме slug
+                $updateData = $categoryData;
+                unset($updateData['slug']); // Не обновляем slug
+                $category->update($updateData);
+                $updated++;
+                $this->command->info('Updated category: ' . $categoryData['name'] . ' (' . $categoryData['slug'] . ')');
+            }
         }
+
+        $this->command->info('Portfolio categories seeder completed successfully!');
+        $this->command->info('Created ' . $created . ' new categories.');
+        $this->command->info('Updated ' . $updated . ' existing categories.');
+        $this->command->info('All portfolio data remains intact.');
     }
 }

@@ -29,8 +29,8 @@ class ContactControllerTest extends TestCase
 
         $response = $this->postJson('/api/contact', $data);
 
-        $response->assertStatus(200)
-                ->assertJson(['message' => 'Message sent successfully']);
+        $response->assertStatus(201)
+                ->assertJson(['message' => 'Your message has been sent successfully! We will get back to you within 24 hours.']);
 
         $this->assertDatabaseHas('contact_messages', [
             'name' => 'John Doe',
@@ -61,7 +61,7 @@ class ContactControllerTest extends TestCase
 
         $response = $this->postJson('/api/contact', $data);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
 
         $this->assertDatabaseHas('contact_messages', [
             'name' => 'Jane Smith',
