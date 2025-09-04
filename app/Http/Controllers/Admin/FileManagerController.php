@@ -13,14 +13,17 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class FileManagerController extends Controller
 {
-    protected $allowedExtensions = [
+    /**
+     * @var array<string, array<string>>
+     */
+    protected array $allowedExtensions = [
         'images' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
         'documents' => ['pdf', 'doc', 'docx', 'txt', 'rtf'],
         'archives' => ['zip', 'rar', '7z'],
         'videos' => ['mp4', 'avi', 'mov', 'wmv', 'webm'],
     ];
 
-    protected $maxFileSize = 10240; // 10MB in KB
+    protected int $maxFileSize = 10240; // 10MB in KB
 
     /**
      * Get files and folders

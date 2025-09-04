@@ -13,17 +13,7 @@ class CompanyInfoController extends Controller
      */
     public function index(): JsonResponse
     {
-        $contactInfo = CompanyInfo::getContactInfo()->map(function ($info) {
-            return [
-                'key' => $info->key,
-                'label' => $info->label,
-                'value' => $info->value,
-                'type' => $info->type,
-                'icon' => $info->icon,
-                'formatted_value' => $info->formatted_value,
-                'metadata' => $info->metadata
-            ];
-        });
+        $contactInfo = CompanyInfo::getContactInfo();
 
         $responseTime = CompanyInfo::getByKey('response_time');
 

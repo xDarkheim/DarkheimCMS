@@ -7,10 +7,14 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
 
 class AdminNewsController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request): JsonResponse
     {
         $query = News::query();
 
@@ -47,7 +51,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -94,7 +101,10 @@ class AdminNewsController extends Controller
         ], 201);
     }
 
-    public function show(News $news)
+    /**
+     * Display the specified resource.
+     */
+    public function show(News $news): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -102,7 +112,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function update(Request $request, News $news)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, News $news): JsonResponse
     {
         // Store original data for logging
         $originalData = $news->toArray();
@@ -165,7 +178,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function destroy(News $news)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(News $news): JsonResponse
     {
         $newsData = $news->toArray();
         $newsTitle = $news->title;
@@ -192,7 +208,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function togglePublished(News $news)
+    /**
+     * Toggle published status
+     */
+    public function togglePublished(News $news): JsonResponse
     {
         $oldStatus = $news->is_published;
         $news->update(['is_published' => !$news->is_published]);
@@ -222,7 +241,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function toggleFeatured(News $news)
+    /**
+     * Toggle featured status
+     */
+    public function toggleFeatured(News $news): JsonResponse
     {
         $oldStatus = $news->is_featured;
         $news->update(['is_featured' => !$news->is_featured]);
@@ -252,7 +274,10 @@ class AdminNewsController extends Controller
         ]);
     }
 
-    public function bulkAction(Request $request)
+    /**
+     * Bulk action for multiple news items
+     */
+    public function bulkAction(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'action' => 'required|in:publish,unpublish,feature,unfeature,delete',
@@ -306,7 +331,7 @@ class AdminNewsController extends Controller
     /**
      * Получить список доступных категорий
      */
-    public function categories()
+    public function categories(): JsonResponse
     {
         return response()->json([
             'success' => true,

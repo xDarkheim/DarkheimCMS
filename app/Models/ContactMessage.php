@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class ContactMessage extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'email',
@@ -32,20 +36,20 @@ class ContactMessage extends Model
     ];
 
     // Accessors
-    public function getFormattedSalaryExpectationAttribute()
+    public function getFormattedSalaryExpectationAttribute(): ?string
     {
         if ($this->salary_expectation) {
-            return '$' . number_format($this->salary_expectation, 0);
+            return '$' . number_format((float) $this->salary_expectation, 0);
         }
         return null;
     }
 
-    public function getIsJobApplicationAttribute()
+    public function getIsJobApplicationAttribute(): bool
     {
         return $this->message_type === 'job_application';
     }
 
-    public function getResumeUrlAttribute()
+    public function getResumeUrlAttribute(): ?string
     {
         if ($this->resume_file) {
             return asset('storage/' . $this->resume_file);
@@ -54,38 +58,38 @@ class ContactMessage extends Model
     }
 
     // Existing methods
-    public function markAsRead()
+    public function markAsRead(): void
     {
         $this->update(['is_read' => true]);
     }
 
-    public function scopeUnread($query)
+    public function scopeUnread(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_read', false);
     }
 
-    public function scopeRead($query)
+    public function scopeRead(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_read', true);
     }
 
-    public function scopeRecent($query)
+    public function scopeRecent(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->orderBy('created_at', 'desc');
     }
 
     // New scopes
-    public function scopeJobApplications($query)
+    public function scopeJobApplications(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('message_type', 'job_application');
     }
 
-    public function scopeGeneralMessages($query)
+    public function scopeGeneralMessages(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('message_type', 'general');
     }
 
-    public function scopeByMessageType($query, $type)
+    public function scopeByMessageType(\Illuminate\Database\Eloquent\Builder $query, string $type): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('message_type', $type);
     }

@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
+/**
+ * @template TFactory of \Illuminate\Database\Eloquent\Factories\Factory
+ */
 class Portfolio extends Model
 {
+    /** @use HasFactory<TFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -37,7 +44,10 @@ class Portfolio extends Model
         'is_published' => 'boolean',
     ];
 
-    protected $dates = [
+    /**
+     * @var array<string>
+     */
+    protected array $dates = [
         'completed_at',
     ];
 
@@ -53,7 +63,7 @@ class Portfolio extends Model
         });
 
         static::updating(function ($portfolio) {
-            if ($portfolio->isDirty('title') && empty($portfolio->slug)) {
+            if ($portfolio->isDirty('title')) { // Убираем проверку empty($portfolio->slug)
                 $portfolio->slug = Str::slug($portfolio->title);
             }
         });
@@ -62,44 +72,50 @@ class Portfolio extends Model
     /**
      * Связь с категорией портфолио
      */
-    public function portfolioCategory()
+    public function portfolioCategory(): BelongsTo
     {
-        return $this->belongsTo(PortfolioCategory::class, 'portfolio_category_id');
+        return $this->belongsTo(PortfolioCategory::class);
     }
 
     /**
      * Получить название категории (с обратной совместимостью)
      */
-    public function getCategoryNameAttribute()
+    public function getCategoryNameAttribute(): ?string
     {
-        return $this->portfolioCategory ? $this->portfolioCategory->name : $this->category;
+        if ($this->portfolioCategory && isset($this->portfolioCategory->name)) {
+            return $this->portfolioCategory->name;
+        }
+        return $this->category;
     }
 
     /**
      * Получить slug категории (с обратной совместимостью)
      */
-    public function getCategorySlugAttribute()
+    public function getCategorySlugAttribute(): ?string
     {
-        return $this->portfolioCategory ? $this->portfolioCategory->slug : \Illuminate\Support\Str::slug($this->category);
+        if ($this->portfolioCategory && isset($this->portfolioCategory->slug)) {
+            return $this->portfolioCategory->slug;
+        }
+        return $this->category ? \Illuminate\Support\Str::slug($this->category) : null;
     }
 
     // Скопы для запросов
-    public function scopePublished($query)
+    public function scopePublished(Builder $query): Builder
     {
         return $query->where('is_published', true);
     }
 
-    public function scopeFeatured($query)
+    public function scopeFeatured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
     }
 
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory(Builder $query, string $category): Builder
     {
         return $query->where('category', $category);
     }
 
-    public function scopeOrdered($query)
+    public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('completed_at', 'desc');
     }
@@ -114,18 +130,18 @@ class Portfolio extends Model
         return 'slug';
     }
 
-    public function getTechnologiesListAttribute()
+    public function getTechnologiesListAttribute(): string
     {
         return implode(', ', $this->technologies ?? []);
     }
 
-    public function getFormattedCompletedDateAttribute()
+    public function getFormattedCompletedDateAttribute(): ?string
     {
-        return $this->completed_at?->format('M Y');
+        return $this->completed_at->format('M Y');
     }
 
     // Мутаторы
-    public function setTitleAttribute($value)
+    public function setTitleAttribute(string $value): void
     {
         $this->attributes['title'] = $value;
         if (empty($this->attributes['slug'])) {

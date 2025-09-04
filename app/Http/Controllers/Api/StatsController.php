@@ -10,13 +10,14 @@ use App\Models\News;
 use App\Models\ContactMessage;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class StatsController extends Controller
 {
     /**
      * Get general statistics for the homepage
      */
-    public function public()
+    public function public(): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -34,7 +35,7 @@ class StatsController extends Controller
     /**
      * Get detailed statistics for admin dashboard
      */
-    public function admin()
+    public function admin(): JsonResponse
     {
         // Users statistics
         $usersStats = User::selectRaw('

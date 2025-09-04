@@ -1,4 +1,4 @@
-rincludes:
+includes:
     - ./vendor/larastan/larastan/extension.neon
 
 parameters:
@@ -11,10 +11,11 @@ parameters:
     level: 6
 
     ignoreErrors:
-        # Ignore Laravel's magic methods and properties
-        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::#'
-        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Builder::#'
-        - '#Call to an undefined method Illuminate\\Database\\Query\\Builder::#'
+        # Laravel framework-specific generic types that are complex to specify
+        - '#Method .* return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types#'
+        - '#Method .* has parameter .* with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types#'
+        - '#Method .* return type with generic class Illuminate\\Database\\Eloquent\\Relations\\.* does not specify its types#'
+        - '#Method .* has parameter .* with generic class App\\Models\\.* but does not specify its types#'
 
     excludePaths:
         - vendor/

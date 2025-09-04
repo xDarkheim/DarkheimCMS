@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class ActivityLogController extends Controller
 {
@@ -137,9 +138,9 @@ class ActivityLogController extends Controller
     }
 
     /**
-     * Export activity logs (for compliance/auditing)
+     * Export activity logs
      */
-    public function export(Request $request)
+    public function export(Request $request): Response|JsonResponse
     {
         $request->validate([
             'format' => 'required|in:csv,json',
@@ -165,7 +166,7 @@ class ActivityLogController extends Controller
                 $csv .= sprintf(
                     "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
                     $log->id,
-                    $log->user ? $log->user->email : 'System',
+                    $log->user ? $log->user->name ?? $log->user->email ?? 'System' : 'System',
                     $log->action,
                     str_replace(',', ';', $log->description),
                     $log->model_type ?: '',

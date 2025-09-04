@@ -9,13 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
 
 class TeamMemberController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $teamMembers = TeamMember::orderBy('priority', 'desc')
             ->orderBy('created_at', 'desc')
@@ -30,7 +31,7 @@ class TeamMemberController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         // Prepare data for validation - convert JSON strings to arrays if needed
         $requestData = $request->all();
@@ -121,7 +122,7 @@ class TeamMemberController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(TeamMember $teamMember)
+    public function show(TeamMember $teamMember): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -132,7 +133,7 @@ class TeamMemberController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, TeamMember $teamMember)
+    public function update(Request $request, TeamMember $teamMember): JsonResponse
     {
         // Store original data for logging
         $originalData = $teamMember->toArray();
@@ -244,7 +245,7 @@ class TeamMemberController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(TeamMember $teamMember)
+    public function destroy(TeamMember $teamMember): JsonResponse
     {
         $memberData = $teamMember->toArray();
         $memberName = $teamMember->name;
@@ -290,7 +291,7 @@ class TeamMemberController extends Controller
     /**
      * Toggle visibility of team member on website
      */
-    public function toggleVisible(Request $request, TeamMember $teamMember)
+    public function toggleVisible(Request $request, TeamMember $teamMember): JsonResponse
     {
         $originalValue = $teamMember->show_on_website;
         $teamMember->show_on_website = !$teamMember->show_on_website;

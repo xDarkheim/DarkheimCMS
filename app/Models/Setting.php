@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * @method static create(array|string $array_merge)
- * @method static where(string $string, string $key)
+ * @method static \Illuminate\Database\Eloquent\Builder|Setting newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Setting newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Setting query()
+ * @method static Setting create(array<string, mixed> $attributes = [])
  */
 class Setting extends Model
 {
@@ -28,7 +30,7 @@ class Setting extends Model
     /**
      * Get setting value by key
      */
-    public static function get(string $key, $default = null)
+    public static function get(string $key, mixed $default = null): mixed
     {
         return Cache::remember("setting_{$key}", 3600, function () use ($key, $default) {
             $setting = static::where('key', $key)->first();
@@ -39,24 +41,23 @@ class Setting extends Model
     /**
      * Set setting value
      */
-    public static function set(string $key, $value, string $type = 'string', string $group = 'general'): self
+    public static function set(string $key, mixed $value): void
     {
         $setting = static::updateOrCreate(
             ['key' => $key],
             [
                 'value' => $value,
-                'type' => $type,
-                'group' => $group
+                'type' => 'string',
+                'group' => 'general'
             ]
         );
 
         Cache::forget("setting_{$key}");
-
-        return $setting;
     }
 
     /**
      * Get settings by group
+     * @return array<string, mixed>
      */
     public static function getByGroup(string $group): array
     {
@@ -65,6 +66,7 @@ class Setting extends Model
 
     /**
      * Get public settings (for frontend)
+     * @return array<string, mixed>
      */
     public static function getPublic(): array
     {

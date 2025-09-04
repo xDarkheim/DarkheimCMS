@@ -87,6 +87,7 @@ class DashboardController extends Controller
 
     /**
      * Calculate dashboard statistics
+     * @return array<string, mixed>
      */
     private function getDashboardStats(): array
     {
@@ -175,6 +176,7 @@ class DashboardController extends Controller
 
     /**
      * Get recent activity for dashboard
+     * @return array<int, array<string, mixed>>
      */
     private function getRecentActivity(): array
     {
@@ -240,6 +242,7 @@ class DashboardController extends Controller
 
     /**
      * Get notifications for dashboard
+     * @return array<int, array<string, mixed>>
      */
     private function getNotifications(): array
     {

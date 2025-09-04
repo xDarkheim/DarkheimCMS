@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 class NewsController extends Controller
@@ -12,7 +13,7 @@ class NewsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $news = News::orderBy('created_at', 'desc')->paginate(15);
         return response()->json($news);
@@ -21,7 +22,7 @@ class NewsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): void
     {
         //
     }
@@ -29,7 +30,7 @@ class NewsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -62,7 +63,7 @@ class NewsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(News $news)
+    public function show(News $news): JsonResponse
     {
         return response()->json($news);
     }
@@ -70,7 +71,7 @@ class NewsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id): void
     {
         //
     }
@@ -78,7 +79,7 @@ class NewsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, News $news)
+    public function update(Request $request, News $news): JsonResponse
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -119,13 +120,13 @@ class NewsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(News $news)
+    public function destroy(News $news): JsonResponse
     {
         $news->delete();
         return response()->json(['message' => 'News article deleted successfully']);
     }
 
-    public function categories()
+    public function categories(): JsonResponse
     {
         $categories = News::distinct('category')->pluck('category');
         return response()->json($categories);

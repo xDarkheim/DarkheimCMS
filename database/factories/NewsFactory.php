@@ -14,7 +14,7 @@ class NewsFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var string
+     * @var class-string<\App\Models\News>
      */
     protected $model = News::class;
 

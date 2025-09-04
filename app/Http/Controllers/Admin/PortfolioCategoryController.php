@@ -7,13 +7,14 @@ use App\Models\PortfolioCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
 
 class PortfolioCategoryController extends Controller
 {
     /**
      * Получить список всех категорий
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $categories = PortfolioCategory::withCount(['portfolios' => function ($query) {
                 $query->where('is_published', true);
@@ -31,7 +32,7 @@ class PortfolioCategoryController extends Controller
     /**
      * Создать новую категорию
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:portfolio_categories,name',
@@ -63,35 +64,35 @@ class PortfolioCategoryController extends Controller
     /**
      * Показать конкретную категорию
      */
-    public function show(PortfolioCategory $portfolioCategory)
+    public function show(PortfolioCategory $category): JsonResponse
     {
-        $portfolioCategory->loadCount(['portfolios' => function ($query) {
+        $category->loadCount(['portfolios' => function ($query) {
             $query->where('is_published', true);
         }]);
 
         return response()->json([
             'success' => true,
-            'data' => $portfolioCategory
+            'data' => $category
         ]);
     }
 
     /**
      * Обновить категорию
      */
-    public function update(Request $request, PortfolioCategory $portfolioCategory)
+    public function update(Request $request, PortfolioCategory $category): JsonResponse
     {
         $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('portfolio_categories', 'name')->ignore($portfolioCategory->id)
+                Rule::unique('portfolio_categories', 'name')->ignore($category->id)
             ],
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('portfolio_categories', 'slug')->ignore($portfolioCategory->id)
+                Rule::unique('portfolio_categories', 'slug')->ignore($category->id)
             ],
             'description' => 'nullable|string|max:500',
             'icon' => 'nullable|string|max:100',
@@ -100,7 +101,7 @@ class PortfolioCategoryController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        $portfolioCategory->update([
+        $category->update([
             'name' => $request->name,
             'slug' => $request->slug ?: Str::slug($request->name),
             'description' => $request->description,
@@ -112,7 +113,7 @@ class PortfolioCategoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $portfolioCategory,
+            'data' => $category,
             'message' => 'Category updated successfully'
         ]);
     }
@@ -120,10 +121,10 @@ class PortfolioCategoryController extends Controller
     /**
      * Удалить категорию
      */
-    public function destroy(PortfolioCategory $portfolioCategory)
+    public function destroy(PortfolioCategory $category): JsonResponse
     {
         // Проверяем, есть ли проекты в этой категории
-        $projectsCount = $portfolioCategory->portfolios()->count();
+        $projectsCount = $category->portfolios()->count();
 
         if ($projectsCount > 0) {
             return response()->json([
@@ -132,7 +133,7 @@ class PortfolioCategoryController extends Controller
             ], 422);
         }
 
-        $portfolioCategory->delete();
+        $category->delete();
 
         return response()->json([
             'success' => true,
@@ -143,7 +144,7 @@ class PortfolioCategoryController extends Controller
     /**
      * Получить активные категории для выбора в формах
      */
-    public function active()
+    public function active(): JsonResponse
     {
         $categories = PortfolioCategory::active()
             ->ordered()
@@ -158,7 +159,7 @@ class PortfolioCategoryController extends Controller
     /**
      * Обновить порядок сортировки категорий
      */
-    public function updateOrder(Request $request)
+    public function updateOrder(Request $request): JsonResponse
     {
         $request->validate([
             'categories' => 'required|array',

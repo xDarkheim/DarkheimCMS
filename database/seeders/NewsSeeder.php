@@ -8,7 +8,10 @@ use Carbon\Carbon;
 
 class NewsSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
         // Очищаем существующие новости
         News::truncate();

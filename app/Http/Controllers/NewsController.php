@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class NewsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = News::where('is_published', true)
                     ->orderBy('published_at', 'desc');
@@ -28,7 +29,7 @@ class NewsController extends Controller
         ]);
     }
 
-    public function show($slug)
+    public function show(string $slug): JsonResponse
     {
         $article = News::where('slug', $slug)
                       ->where('is_published', true)
@@ -50,7 +51,7 @@ class NewsController extends Controller
         ]);
     }
 
-    public function featured()
+    public function featured(): JsonResponse
     {
         $news = News::where('is_published', true)
                    ->where('is_featured', true)
@@ -64,7 +65,7 @@ class NewsController extends Controller
         ]);
     }
 
-    public function latest()
+    public function latest(): JsonResponse
     {
         $news = News::where('is_published', true)
                    ->orderBy('published_at', 'desc')
@@ -77,7 +78,7 @@ class NewsController extends Controller
         ]);
     }
 
-    public function categories()
+    public function categories(): JsonResponse
     {
         // Возвращаем предопределенные категории с их отображаемыми названиями
         $categories = News::getCategories();
@@ -100,7 +101,7 @@ class NewsController extends Controller
     /**
      * Получить все доступные категории (для фильтрации)
      */
-    public function allCategories()
+    public function allCategories(): JsonResponse
     {
         return response()->json([
             'success' => true,

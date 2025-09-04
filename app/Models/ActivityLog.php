@@ -33,6 +33,8 @@ class ActivityLog extends Model
 
     /**
      * Log an activity
+     *
+     * @param array<string, mixed>|null $changes
      */
     public static function log(
         string $action,
@@ -95,9 +97,9 @@ class ActivityLog extends Model
     {
         return static::log(
             'created',
-            $description ?: "Created {$model->getMorphClass()} #{$model->id}",
+            $description ?: "Created {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
-            $model->id,
+            (int) $model->getKey(),
             $model->toArray(),
             'info'
         );
@@ -105,6 +107,8 @@ class ActivityLog extends Model
 
     /**
      * Log model update
+     *
+     * @param array<string, mixed> $originalData
      */
     public static function logUpdated(Model $model, array $originalData, string $description = null): self
     {
@@ -118,9 +122,9 @@ class ActivityLog extends Model
 
         return static::log(
             'updated',
-            $description ?: "Updated {$model->getMorphClass()} #{$model->id}",
+            $description ?: "Updated {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
-            $model->id,
+            (int) $model->getKey(),
             $changes,
             'info'
         );
@@ -133,9 +137,9 @@ class ActivityLog extends Model
     {
         return static::log(
             'deleted',
-            $description ?: "Deleted {$model->getMorphClass()} #{$model->id}",
+            $description ?: "Deleted {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
-            $model->id,
+            (int) $model->getKey(),
             $model->toArray(),
             'warning'
         );
@@ -178,12 +182,17 @@ class ActivityLog extends Model
      */
     public function getSeverityColorAttribute(): string
     {
-        return match($this->severity) {
-            'critical' => '#dc3545',
-            'warning' => '#fd7e14',
-            'info' => '#0dcaf0',
-            'success' => '#198754',
-            default => '#6c757d'
-        };
+        switch ($this->severity) {
+            case 'critical':
+                return '#dc3545';
+            case 'warning':
+                return '#fd7e14';
+            case 'info':
+                return '#0dcaf0';
+            case 'success':
+                return '#198754';
+            default:
+                return '#6c757d';
+        }
     }
 }

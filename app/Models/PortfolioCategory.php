@@ -4,10 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @template TFactory of \Illuminate\Database\Eloquent\Factories\Factory
+ */
 class PortfolioCategory extends Model
 {
+    /** @use HasFactory<TFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -44,62 +49,60 @@ class PortfolioCategory extends Model
     }
 
     /**
-     * Связь с портфолио проектами
+     * Get portfolios for this category
      */
-    public function portfolios()
+    public function portfolios(): HasMany
     {
         return $this->hasMany(Portfolio::class, 'portfolio_category_id');
     }
 
     /**
-     * Скоуп для получения только активных категорий
+     * Scope active categories
      */
-    public function scopeActive($query)
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
 
     /**
-     * Скоуп для сортировки по порядку
+     * Scope ordered categories
      */
-    public function scopeOrdered($query)
+    public function scopeOrdered(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->orderBy('sort_order')->orderBy('name');
     }
 
     /**
-     * Получить категории с количеством проектов
+     * Scope with project counts
+     * @return \Illuminate\Database\Eloquent\Builder<static>
      */
-    public static function withProjectCounts()
+    public function scopeWithProjectCounts(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
-        return static::active()
-            ->ordered()
-            ->withCount(['portfolios' => function ($query) {
-                $query->where('is_published', true);
-            }])
-            ->get();
+        return $query->withCount(['portfolios' => function ($query) {
+            $query->where('is_published', true);
+        }]);
     }
 
     /**
-     * Проверить, можно ли удалить категорию
+     * Check if category can be deleted
      */
-    public function canBeDeleted()
+    public function canBeDeleted(): bool
     {
         return $this->portfolios()->count() === 0;
     }
 
     /**
-     * Получить цвет категории в CSS формате
+     * Get CSS color attribute
      */
-    public function getCssColorAttribute()
+    public function getCssColorAttribute(): string
     {
         return $this->color ?: '#667eea';
     }
 
     /**
-     * Получить иконку категории
+     * Get icon class attribute
      */
-    public function getIconClassAttribute()
+    public function getIconClassAttribute(): string
     {
         return $this->icon ?: 'fas fa-folder';
     }

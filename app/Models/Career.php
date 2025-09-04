@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @template TFactory of \Illuminate\Database\Eloquent\Factories\Factory
+ */
 class Career extends Model
 {
+    /** @use HasFactory<TFactory> */
     use HasFactory;
 
     /**
@@ -37,45 +43,16 @@ class Career extends Model
         'is_active' => 'boolean',
         'remote_available' => 'boolean',
         'priority' => 'integer',
-        'application_deadline' => 'date'
+        'application_deadline' => 'date',
+        'requirements' => 'array',
+        'benefits' => 'array',
+        'skills' => 'array'
     ];
 
     /**
-     * Get the skills attribute.
+     * Scope active careers.
      */
-    public function getSkillsAttribute($value)
-    {
-        if (is_null($value)) {
-            return [];
-        }
-
-        if (is_array($value)) {
-            return $value;
-        }
-
-        // If it's a string, try to decode it
-        if (is_string($value)) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // If the result is still a string (double-encoded JSON), decode again
-                if (is_string($decoded)) {
-                    $doubleDecoded = json_decode($decoded, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                        return $doubleDecoded;
-                    }
-                } elseif (is_array($decoded)) {
-                    return $decoded;
-                }
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Scope to get only active careers.
-     */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
@@ -83,7 +60,7 @@ class Career extends Model
     /**
      * Scope to order by priority.
      */
-    public function scopeByPriority($query)
+    public function scopeByPriority(Builder $query): Builder
     {
         return $query->orderBy('priority', 'desc');
     }
@@ -91,7 +68,7 @@ class Career extends Model
     /**
      * Get formatted employment type.
      */
-    public function getFormattedEmploymentTypeAttribute()
+    public function getFormattedEmploymentTypeAttribute(): string
     {
         return ucfirst(str_replace('-', ' ', $this->employment_type));
     }
@@ -99,7 +76,7 @@ class Career extends Model
     /**
      * Get formatted experience level.
      */
-    public function getFormattedExperienceLevelAttribute()
+    public function getFormattedExperienceLevelAttribute(): string
     {
         return ucfirst($this->experience_level);
     }
@@ -107,7 +84,7 @@ class Career extends Model
     /**
      * Get formatted salary.
      */
-    public function getFormattedSalaryAttribute()
+    public function getFormattedSalaryAttribute(): string
     {
         return $this->salary_range ?: 'Competitive salary';
     }

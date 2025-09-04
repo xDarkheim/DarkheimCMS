@@ -7,6 +7,7 @@ use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ContactMessageController extends Controller
 {
@@ -158,7 +159,7 @@ class ContactMessageController extends Controller
     /**
      * Download resume file
      */
-    public function downloadResume(ContactMessage $contactMessage)
+    public function downloadResume(ContactMessage $contactMessage): JsonResponse|BinaryFileResponse
     {
         if (!$contactMessage->resume_file) {
             return response()->json([

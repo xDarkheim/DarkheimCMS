@@ -23,29 +23,43 @@ class CompanyInfo extends Model
         'sort_order' => 'integer'
     ];
 
-    // Scopes
-    public function scopeActive($query)
+    /**
+     * Scope active company info
+     */
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
 
-    public function scopeOrdered($query)
+    /**
+     * Scope ordered
+     */
+    public function scopeOrdered(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->orderBy('sort_order', 'asc');
     }
 
-    public function scopeByType($query, $type)
+    /**
+     * Scope by type
+     */
+    public function scopeByType(\Illuminate\Database\Eloquent\Builder $query, string $type): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', $type);
     }
 
-    // Static methods for easy access
-    public static function getByKey($key)
+    /**
+     * Get by key
+     */
+    public static function getByKey(string $key): ?self
     {
         return static::where('key', $key)->where('is_active', true)->first();
     }
 
-    public static function getContactInfo()
+    /**
+     * Get contact info
+     * @return \Illuminate\Database\Eloquent\Collection<int, CompanyInfo>
+     */
+    public static function getContactInfo(): \Illuminate\Database\Eloquent\Collection
     {
         return static::active()
             ->ordered()
@@ -53,7 +67,11 @@ class CompanyInfo extends Model
             ->get();
     }
 
-    public static function getSocialLinks()
+    /**
+     * Get social links
+     * @return \Illuminate\Database\Eloquent\Collection<int, CompanyInfo>
+     */
+    public static function getSocialLinks(): \Illuminate\Database\Eloquent\Collection
     {
         return static::active()
             ->ordered()
@@ -61,8 +79,10 @@ class CompanyInfo extends Model
             ->get();
     }
 
-    // Accessors
-    public function getFormattedValueAttribute()
+    /**
+     * Get formatted value attribute
+     */
+    public function getFormattedValueAttribute(): string
     {
         switch ($this->type) {
             case 'email':

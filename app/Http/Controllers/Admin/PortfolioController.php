@@ -8,13 +8,14 @@ use App\Models\PortfolioCategory;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
 
 class PortfolioController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $portfolios = Portfolio::with('portfolioCategory')
             ->orderBy('sort_order')
@@ -26,15 +27,19 @@ class PortfolioController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): JsonResponse
     {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Create form data',
+            'data' => []
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -92,7 +97,7 @@ class PortfolioController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Portfolio $portfolio)
+    public function show(Portfolio $portfolio): JsonResponse
     {
         return response()->json($portfolio->load('portfolioCategory'));
     }
@@ -100,15 +105,18 @@ class PortfolioController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Portfolio $portfolio): JsonResponse
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => $portfolio->load('portfolioCategory')
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Portfolio $portfolio)
+    public function update(Request $request, Portfolio $portfolio): JsonResponse
     {
         // Store original data for logging
         $originalData = $portfolio->toArray();
@@ -182,7 +190,7 @@ class PortfolioController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Portfolio $portfolio)
+    public function destroy(Portfolio $portfolio): JsonResponse
     {
         $portfolioData = $portfolio->toArray();
         $portfolioTitle = $portfolio->title;
@@ -211,7 +219,7 @@ class PortfolioController extends Controller
     /**
      * Получить все категории портфолио (для админ-панели)
      */
-    public function categories()
+    public function categories(): JsonResponse
     {
         $categories = PortfolioCategory::active()
             ->ordered()
@@ -223,7 +231,7 @@ class PortfolioController extends Controller
         ]);
     }
 
-    public function reorder(Request $request)
+    public function reorder(Request $request): JsonResponse
     {
         $request->validate([
             'items' => 'required|array',

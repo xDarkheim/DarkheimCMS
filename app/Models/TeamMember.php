@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @template TFactory of \Illuminate\Database\Eloquent\Factories.Factory
+ */
 class TeamMember extends Model
 {
+    /** @use HasFactory<TFactory> */
     use HasFactory;
 
     /**
@@ -39,116 +44,61 @@ class TeamMember extends Model
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Scope active team members (using status = 'active').
      */
-    protected $hidden = [];
-
-    /**
-     * Scope to get only active team members.
-     */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
     /**
-     * Scope to get only team members visible on website.
+     * Scope visible team members
      */
-    public function scopeVisible($query)
+    public function scopeVisible(Builder $query): Builder
     {
         return $query->where('show_on_website', true);
     }
 
     /**
-     * Scope to order by priority.
+     * Scope by priority
      */
-    public function scopeByPriority($query)
+    public function scopeByPriority(Builder $query): Builder
     {
         return $query->orderBy('priority', 'desc');
     }
 
     /**
-     * Get the formatted employment type.
+     * Scope team members by position.
      */
-    public function getFormattedStatusAttribute()
+    public function scopeByPosition(Builder $query, string $position): Builder
+    {
+        return $query->where('position', $position);
+    }
+
+    /**
+     * Scope to order by priority.
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('priority', 'desc');
+    }
+
+    /**
+     * Get formatted status
+     */
+    public function getFormattedStatusAttribute(): string
     {
         return ucfirst(str_replace('-', ' ', $this->status));
     }
 
     /**
-     * Get the avatar URL attribute.
+     * Get avatar URL
      */
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar && file_exists(public_path($this->avatar))) {
             return $this->avatar;
         }
-
-        // Return a default avatar if none is set or file doesn't exist
         return '/images/default-avatar.png';
-    }
-
-    /**
-     * Get the skills attribute.
-     */
-    public function getSkillsAttribute($value)
-    {
-        if (is_null($value)) {
-            return [];
-        }
-
-        if (is_array($value)) {
-            return $value;
-        }
-
-        // If it's a string, try to decode it
-        if (is_string($value)) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // If the result is still a string (double-encoded JSON), decode again
-                if (is_string($decoded)) {
-                    $doubleDecoded = json_decode($decoded, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                        return $doubleDecoded;
-                    }
-                } elseif (is_array($decoded)) {
-                    return $decoded;
-                }
-            }
-        }
-
-        return [];
-    }
-
-    /**
-     * Get the social_links attribute.
-     */
-    public function getSocialLinksAttribute($value)
-    {
-        if (is_null($value)) {
-            return [];
-        }
-
-        if (is_array($value)) {
-            return $value;
-        }
-
-        // If it's a string, try to decode it
-        if (is_string($value)) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                // If the result is still a string (double-encoded JSON), decode again
-                if (is_string($decoded)) {
-                    $doubleDecoded = json_decode($decoded, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($doubleDecoded)) {
-                        return $doubleDecoded;
-                    }
-                } elseif (is_array($decoded)) {
-                    return $decoded;
-                }
-            }
-        }
-
-        return [];
     }
 }

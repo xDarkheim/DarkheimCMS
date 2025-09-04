@@ -147,7 +147,7 @@ class PortfolioController extends Controller
     /**
      * Показать детали проекта по ID
      */
-    public function show($id): JsonResponse
+    public function show(string $id): JsonResponse
     {
         try {
             $portfolio = Portfolio::where('is_published', true)

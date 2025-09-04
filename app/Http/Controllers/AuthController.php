@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -14,7 +15,7 @@ class AuthController extends Controller
     /**
      * Handle login request
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         try {
             $request->validate([
@@ -93,7 +94,7 @@ class AuthController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Login error: ' . $e->getMessage(), [
+            Log::error('Login error: ' . $e->getMessage(), [
                 'email' => $request->email ?? 'unknown',
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -109,7 +110,7 @@ class AuthController extends Controller
     /**
      * Handle logout request
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
         try {
             $user = $request->user();
@@ -131,7 +132,7 @@ class AuthController extends Controller
                 'message' => 'Logout successful'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Logout error: ' . $e->getMessage());
+            Log::error('Logout error: ' . $e->getMessage());
 
             return response()->json([
                 'message' => 'Logout failed',
@@ -143,7 +144,7 @@ class AuthController extends Controller
     /**
      * Get current authenticated user
      */
-    public function user(Request $request)
+    public function user(Request $request): JsonResponse
     {
         try {
             $user = $request->user();
@@ -164,7 +165,7 @@ class AuthController extends Controller
                 'updated_at' => $user->updated_at,
             ]);
         } catch (\Exception $e) {
-            \Log::error('User fetch error: ' . $e->getMessage());
+            Log::error('User fetch error: ' . $e->getMessage());
 
             return response()->json([
                 'message' => 'Failed to fetch user data',
@@ -176,7 +177,7 @@ class AuthController extends Controller
     /**
      * Validate current token
      */
-    public function validateToken(Request $request)
+    public function validateToken(Request $request): JsonResponse
     {
         try {
             $user = $request->user();
@@ -198,7 +199,7 @@ class AuthController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            \Log::error('Token validation error: ' . $e->getMessage());
+            Log::error('Token validation error: ' . $e->getMessage());
 
             return response()->json([
                 'valid' => false,
