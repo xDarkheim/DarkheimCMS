@@ -5,9 +5,9 @@
       <div class="header__left">
         <router-link to="/" class="logo">
           <div class="logo__icon">
-            <i class="fas fa-terminal"></i>
+            <span class="logo__letter">D</span>
           </div>
-          <span class="logo__text text-gradient">Darkheim</span>
+          <span class="logo__text">Darkheim</span>
         </router-link>
       </div>
 
@@ -482,20 +482,19 @@ $border-radius: 12px;
   &__icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, $primary-color, $primary-hover);
-    border-radius: 12px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: white;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-    transition: $transition;
+  }
 
-    &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-    }
+  &__letter {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $primary-color;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
   }
 
   &__text {
@@ -505,6 +504,7 @@ $border-radius: 12px;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
   }
 }
 
@@ -851,10 +851,29 @@ $border-radius: 12px;
 }
 
 // Focus states for accessibility
+.logo:focus,
 .nav__link:focus,
 .mobile-nav__link:focus,
 .mobile-menu-toggle:focus {
-  outline: 2px solid $primary-color;
-  outline-offset: 2px;
+  outline: none;
+}
+
+// Optional: Add subtle focus indication without outline
+.logo:focus {
+  .logo__text {
+    opacity: 0.8;
+  }
+}
+
+.nav__link:focus {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-nav__link:focus {
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.mobile-menu-toggle:focus {
+  background: rgba(255, 255, 255, 0.05);
 }
 </style>

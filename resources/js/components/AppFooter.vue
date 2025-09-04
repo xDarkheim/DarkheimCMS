@@ -7,10 +7,26 @@
         <div class="footer__section footer__section--main">
           <div class="footer__brand">
             <div class="footer__logo">
-              <div class="footer__logo-icon">
-                <i class="fas fa-terminal"></i>
+              <div class="footer__logo-container">
+                <div class="footer__logo-icon">
+                  <div class="footer__logo-symbol">
+                    <span class="footer__logo-d">D</span>
+                    <div class="footer__logo-brackets">
+                      <span class="footer__logo-bracket footer__logo-bracket--left">{</span>
+                      <span class="footer__logo-bracket footer__logo-bracket--right">}</span>
+                    </div>
+                    <div class="footer__logo-dots">
+                      <span class="footer__logo-dot"></span>
+                      <span class="footer__logo-dot"></span>
+                      <span class="footer__logo-dot"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="footer__logo-text-wrapper">
+                  <span class="footer__logo-text">Darkheim</span>
+                  <span class="footer__logo-tagline">Creative Studio</span>
+                </div>
               </div>
-              <span class="footer__logo-text">Darkheim</span>
             </div>
             <p class="footer__description">
               {{ companyDescription || 'We create exceptional digital experiences that drive business growth and user engagement.' }}
@@ -388,39 +404,169 @@ $border-radius: 12px;
 
 // Brand Section
 .footer__logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: $transition;
+
+  &:hover {
+    .footer__logo-bracket {
+      animation: footerBracketPulse 0.8s ease-in-out;
+    }
+
+    .footer__logo-dot {
+      animation: footerDotBounce 0.8s ease-in-out;
+
+      &:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+    }
+
+    .footer__logo-d {
+      animation: footerLogoGlow 0.8s ease-in-out;
+    }
+
+    .footer__logo-icon {
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+    }
+  }
+
+  &-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
   &-icon {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, $primary-color, $primary-hover);
-    border-radius: $border-radius;
+    width: 64px;
+    height: 64px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
-    color: white;
+    background: linear-gradient(135deg, $primary-color, $primary-hover);
+    border-radius: $border-radius;
     box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    transition: $transition;
+  }
+
+  &-symbol {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  &-d {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  &-brackets {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  &-bracket {
+    font-size: 1.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.8;
+
+    &--left {
+      transform: translateX(-10px);
+    }
+
+    &--right {
+      transform: translateX(10px);
+    }
+  }
+
+  &-dots {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+  }
+
+  &-dot {
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+  }
+
+  &-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   &-text {
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 700;
     background: linear-gradient(135deg, $primary-color, #9b59b6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    line-height: 1.2;
+    filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+  }
+
+  &-tagline {
+    font-size: 1rem;
+    font-weight: 400;
+    color: $text-muted;
+    margin-top: 4px;
+    opacity: 0.8;
   }
 }
 
-.footer__description {
-  color: $text-muted;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  font-size: 0.95rem;
+// Footer Logo Animations
+@keyframes footerBracketPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes footerDotBounce {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 15px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes footerLogoGlow {
+  0%, 100% {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    text-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  }
 }
 
 // Social Section

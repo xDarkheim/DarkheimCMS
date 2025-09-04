@@ -10,12 +10,6 @@
       <div class="container">
         <div class="hero-content">
           <div class="hero-left">
-            <div class="intro-badge">
-              <i class="fas fa-code"></i>
-              <span>Development Studio</span>
-              <div class="badge-glow"></div>
-            </div>
-
             <h1 class="hero-title">
               <span class="title-line">Darkheim</span>
               <span class="title-line highlight">Development Studio</span>
@@ -161,7 +155,6 @@
                     <span>11</span>
                     <span>12</span>
                     <span>13</span>
-                    <span>14</span>
                   </div>
 
                   <div class="code-text">
@@ -181,25 +174,6 @@
                     <div class="code-line">&nbsp;&nbsp;}</div>
                     <div class="code-line">}<span class="cursor">|</span></div>
                   </div>
-                </div>
-              </div>
-
-              <!-- Floating Elements -->
-              <div class="floating-elements">
-                <div class="float-element" style="--delay: 0s; --duration: 3s;">
-                  <i class="fab fa-laravel"></i>
-                </div>
-                <div class="float-element" style="--delay: 1s; --duration: 4s;">
-                  <i class="fab fa-vuejs"></i>
-                </div>
-                <div class="float-element" style="--delay: 2s; --duration: 3.5s;">
-                  <i class="fab fa-js-square"></i>
-                </div>
-                <div class="float-element" style="--delay: 0.5s; --duration: 4.5s;">
-                  <i class="fab fa-html5"></i>
-                </div>
-                <div class="float-element" style="--delay: 1.5s; --duration: 3.2s;">
-                  <i class="fab fa-css3-alt"></i>
                 </div>
               </div>
 

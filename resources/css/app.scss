@@ -35,10 +35,10 @@
 
 // 6. FONT AWESOME - Using only custom font configuration
 // Note: Removed FontAwesome SCSS imports to avoid conflicting font paths
-// Using only our custom fontawesome-fix.scss with proper font references
+// Using only our custom fontawesome.scss with proper font references
 
 // 7. FONT AWESOME FIXES - Using modern @use syntax
-@use 'fontawesome-fix';
+@use 'fontawesome';
 
 // 8. GLOBAL APP STYLES (after all @use rules)
 body {
