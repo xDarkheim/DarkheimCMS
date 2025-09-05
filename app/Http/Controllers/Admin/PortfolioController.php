@@ -41,9 +41,6 @@ class PortfolioController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // Get available category slugs for validation
-        $categorySlugs = PortfolioCategory::where('is_active', true)->pluck('slug')->toArray();
-
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -54,14 +51,16 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
-            'category' => 'required|string|in:' . implode(',', $categorySlugs), // Исправлена валидация
-            'portfolio_category_id' => 'required|exists:portfolio_categories,id',
+            'portfolio_category_id' => 'required|exists:portfolio_categories,id|exists:portfolio_categories,id,is_active,1',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
+
+        // Get the category slug from the selected category
+        $category = PortfolioCategory::find($request->portfolio_category_id);
 
         $portfolio = Portfolio::create([
             'title' => $request->title,
@@ -73,7 +72,7 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies,
-            'category' => $request->category,
+            'category' => $category->slug, // Use the category slug from database
             'portfolio_category_id' => $request->portfolio_category_id,
             'client' => $request->client,
             'completed_at' => $request->completed_at,
@@ -128,10 +127,6 @@ class PortfolioController extends Controller
         // Store original data for logging
         $originalData = $portfolio->toArray();
 
-        // Get available category slugs for validation
-        $categoryIds = PortfolioCategory::where('is_active', true)->pluck('id')->toArray();
-        $categorySlugs = PortfolioCategory::where('is_active', true)->pluck('slug')->toArray();
-
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -142,14 +137,16 @@ class PortfolioController extends Controller
             'project_url' => 'nullable|url',
             'github_url' => 'nullable|url',
             'technologies' => 'nullable|array',
-            'category' => 'required|string|in:' . implode(',', $categorySlugs), // Исправлена валидация категорий
-            'portfolio_category_id' => 'required|exists:portfolio_categories,id',
+            'portfolio_category_id' => 'required|exists:portfolio_categories,id|exists:portfolio_categories,id,is_active,1',
             'client' => 'nullable|string|max:255',
             'completed_at' => 'nullable|date',
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
+
+        // Get the category slug from the selected category
+        $category = PortfolioCategory::find($request->portfolio_category_id);
 
         $portfolio->update([
             'title' => $request->title,
@@ -161,7 +158,7 @@ class PortfolioController extends Controller
             'project_url' => $request->project_url,
             'github_url' => $request->github_url,
             'technologies' => $request->technologies,
-            'category' => $request->category, // Теперь принимает правильные slug'и
+            'category' => $category->slug, // Use the category slug from database
             'portfolio_category_id' => $request->portfolio_category_id,
             'client' => $request->client,
             'completed_at' => $request->completed_at,
@@ -172,13 +169,15 @@ class PortfolioController extends Controller
 
         // Log portfolio update with changes
         $changes = [];
-        $newData = $portfolio->fresh()->toArray();
-        foreach ($newData as $key => $newValue) {
-            if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
-                $changes[$key] = [
-                    'old' => $originalData[$key],
-                    'new' => $newValue
-                ];
+        $newData = $portfolio->fresh()?->toArray();
+        if ($newData) {
+            foreach ($newData as $key => $newValue) {
+                if (isset($originalData[$key]) && $originalData[$key] !== $newValue) {
+                    $changes[$key] = [
+                        'old' => $originalData[$key],
+                        'new' => $newValue
+                    ];
+                }
             }
         }
 
