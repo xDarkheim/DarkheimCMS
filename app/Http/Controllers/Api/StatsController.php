@@ -22,12 +22,15 @@ class StatsController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'projects_completed' => Portfolio::where('is_featured', true)->count(),
+                'projects_completed' => Portfolio::where('is_published', true)->count(),
                 'total_projects' => Portfolio::count(),
+                'featured_projects' => Portfolio::where('is_featured', true)->count(),
                 'team_members' => TeamMember::count(),
                 'years_experience' => 1, // Исправлено: компания работает 1 год
                 'open_positions' => Career::where('is_active', true)->count(),
                 'news_articles' => News::where('is_published', true)->count(),
+                'client_satisfaction' => 98, // Добавляем показатель удовлетворенности клиентов
+                'technologies_used' => 12, // Количество используемых технологий
             ]
         ]);
     }

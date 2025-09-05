@@ -242,6 +242,111 @@
       </div>
     </section>
 
+    <!-- Our Achievements Section -->
+    <section class="section">
+      <div class="container">
+        <div class="section__header animate-fade-in">
+          <h2 class="section__title">Our Achievements</h2>
+          <p class="section__subtitle">
+            Milestones we've reached and the impact we've made since our founding.
+          </p>
+        </div>
+
+        <div class="grid grid--3 gap-8 animate-slide-up">
+          <div class="achievement-card">
+            <div class="achievement-card__icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <h3 class="achievement-card__title">Quality Delivery</h3>
+            <p class="achievement-card__text">
+              Successfully delivered {{ stats.projects_completed }} projects with 100% client satisfaction rate.
+              Every project was completed on time and within budget.
+            </p>
+          </div>
+
+          <div class="achievement-card">
+            <div class="achievement-card__icon">
+              <i class="fas fa-users-cog"></i>
+            </div>
+            <h3 class="achievement-card__title">Growing Team</h3>
+            <p class="achievement-card__text">
+              Built a dedicated team of {{ stats.team_members }} professionals who are passionate about
+              creating exceptional web experiences.
+            </p>
+          </div>
+
+          <div class="achievement-card">
+            <div class="achievement-card__icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="achievement-card__title">Technology Expertise</h3>
+            <p class="achievement-card__text">
+              Mastered {{ stats.technologies_used }} modern technologies to provide comprehensive
+              web development solutions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Process Section -->
+    <section class="section section--alt">
+      <div class="container">
+        <div class="section__header animate-fade-in">
+          <h2 class="section__title">How We Work</h2>
+          <p class="section__subtitle">
+            Our proven development process ensures transparent communication and successful project delivery.
+          </p>
+        </div>
+
+        <div class="process-timeline animate-slide-up">
+          <div class="process-step">
+            <div class="process-step__number">1</div>
+            <div class="process-step__content">
+              <h3 class="process-step__title">Discovery & Planning</h3>
+              <p class="process-step__text">
+                We start by understanding your business goals, target audience, and technical requirements.
+                This phase includes detailed project planning and timeline creation.
+              </p>
+            </div>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__number">2</div>
+            <div class="process-step__content">
+              <h3 class="process-step__title">Design & Prototyping</h3>
+              <p class="process-step__text">
+                Our team creates wireframes and designs that align with your brand and user experience goals.
+                We iterate based on your feedback before moving to development.
+              </p>
+            </div>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__number">3</div>
+            <div class="process-step__content">
+              <h3 class="process-step__title">Development & Testing</h3>
+              <p class="process-step__text">
+                We build your website using modern technologies and best practices.
+                Rigorous testing ensures everything works perfectly across all devices.
+              </p>
+            </div>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__number">4</div>
+            <div class="process-step__content">
+              <h3 class="process-step__title">Launch & Support</h3>
+              <p class="process-step__text">
+                After final approval, we launch your website and provide ongoing support.
+                We're here to help your business grow with continued maintenance and updates.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="section section--cta">
       <div class="container">
@@ -271,10 +376,13 @@ export default {
       stats: {
         projects_completed: 0,
         total_projects: 0,
+        featured_projects: 0,
         team_members: 0,
         years_experience: 1,
         open_positions: 0,
-        news_articles: 0
+        news_articles: 0,
+        client_satisfaction: 0,
+        technologies_used: 0
       },
       animatingNumbers: new Set()
     }
@@ -283,16 +391,17 @@ export default {
     statsArray() {
       return [
         {
-          key: 'years_experience',
-          value: this.stats.years_experience,
-          label: `${this.getYearLabel(this.stats.years_experience)} in business`,
-          icon: 'fas fa-calendar-alt'
-        },
-        {
           key: 'projects_completed',
           value: this.stats.projects_completed,
           label: this.getProjectLabel(this.stats.projects_completed),
-          icon: 'fas fa-project-diagram'
+          icon: 'fas fa-check-circle'
+        },
+        {
+          key: 'client_satisfaction',
+          value: this.stats.client_satisfaction,
+          label: 'client satisfaction',
+          icon: 'fas fa-heart',
+          suffix: '%'
         },
         {
           key: 'team_members',
@@ -301,10 +410,10 @@ export default {
           icon: 'fas fa-users'
         },
         {
-          key: 'news_articles',
-          value: this.stats.news_articles,
-          label: this.getNewsLabel(this.stats.news_articles),
-          icon: 'fas fa-newspaper'
+          key: 'technologies_used',
+          value: this.stats.technologies_used,
+          label: 'technologies used',
+          icon: 'fas fa-code'
         }
       ]
     }
@@ -357,6 +466,8 @@ export default {
       const element = this.$refs[`number-${key}`]?.[0]
       if (!element) return
 
+      const stat = this.statsArray.find(s => s.key === key)
+      const suffix = stat?.suffix || ''
       const duration = 1000
       const startTime = performance.now()
 
@@ -368,12 +479,12 @@ export default {
         const easeOutCubic = 1 - Math.pow(1 - progress, 3)
         const currentValue = Math.floor(finalValue * easeOutCubic)
 
-        element.textContent = currentValue
+        element.textContent = currentValue + suffix
 
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
-          element.textContent = finalValue
+          element.textContent = finalValue + suffix
         }
       }
 
