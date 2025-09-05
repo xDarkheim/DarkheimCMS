@@ -11,7 +11,7 @@
         <div class="hero-content">
           <div class="hero-left">
             <h1 class="hero-title">
-              <span class="title-line">Darkheim</span>
+              <span class="title-line main">Darkheim</span>
               <span class="title-line highlight">Development Studio</span>
             </h1>
 
@@ -21,7 +21,7 @@
               <em>digital solutions</em> that help your business grow online.
             </p>
 
-            <div class="hero-features">
+            <div class="hero-features centered">
               <div class="feature-item">
                 <i class="fas fa-rocket"></i>
                 <span>Fast Delivery</span>
@@ -36,7 +36,7 @@
               </div>
             </div>
 
-            <div class="hero-actions">
+            <div class="hero-actions centered">
               <router-link to="/contact" class="btn btn-primary btn-hero">
                 <span class="btn-content">
                   <i class="fas fa-rocket"></i>

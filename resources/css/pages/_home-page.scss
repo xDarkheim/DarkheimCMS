@@ -212,6 +212,11 @@
         width: 100%;
         flex-wrap: wrap; // Добавляем возможность переноса
 
+        &.centered {
+          justify-content: center;
+          align-items: center;
+        }
+
         @media (max-width: 640px) {
           flex-direction: column;
           gap: var(--space-3);
@@ -259,6 +264,11 @@
         margin-bottom: var(--space-12);
         animation: fadeInUp 1s ease-out 0.9s both;
         width: 100%;
+
+        &.centered {
+          justify-content: center;
+          align-items: center;
+        }
 
         @media (max-width: 640px) {
           flex-direction: column;
