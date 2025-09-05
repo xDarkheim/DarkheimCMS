@@ -44,9 +44,17 @@ Route::prefix('news')->group(function () {
     Route::get('/', [NewsController::class, 'index']);
     Route::get('/featured', [NewsController::class, 'featured']);
     Route::get('/latest', [NewsController::class, 'latest']);
-    Route::get('/categories', [NewsController::class, 'categories']);
-    Route::get('/all-categories', [NewsController::class, 'allCategories']);
+    Route::get('/search', [NewsController::class, 'search']);
+    Route::get('/archive', [NewsController::class, 'archive']);
+    Route::get('/archive/{year}/{month}', [NewsController::class, 'archiveDate']);
+    Route::get('/sitemap', [NewsController::class, 'sitemap']);
+    Route::get('/categories', [NewsController::class, 'allCategories']);
+    Route::get('/category/{category}', [NewsController::class, 'byCategory']);
+    Route::get('/category-stats', [NewsController::class, 'categoryStats']);
+    Route::get('/tags', [NewsController::class, 'tags']);
+    Route::get('/stats', [NewsController::class, 'stats']);
     Route::get('/{slug}', [NewsController::class, 'show']);
+    Route::get('/{slug}/related', [NewsController::class, 'related']);
 });
 
 // Public Contact Form

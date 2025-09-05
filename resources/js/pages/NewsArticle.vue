@@ -35,6 +35,10 @@
                 <i class="fas fa-eye"></i>
                 <span>{{ article.views }} views</span>
               </div>
+              <div class="meta-item reading-time">
+                <i class="fas fa-clock"></i>
+                <span>{{ calculateReadingTime(article.content) }} min read</span>
+              </div>
             </div>
 
             <h1 class="article-title">{{ article.title }}</h1>
@@ -68,27 +72,89 @@
               <div class="content-wrapper">
                 <div class="article-text" v-html="formatContent(article.content)"></div>
 
-                <!-- Share Section -->
+                <!-- Author Info -->
+                <div v-if="article.author" class="author-info">
+                  <div class="author-avatar">
+                    {{ article.author.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="author-details">
+                    <div class="author-name">{{ article.author }}</div>
+                    <div class="author-bio">Article author and content creator</div>
+                  </div>
+                </div>
+
+                <!-- Enhanced Share Section -->
                 <div class="article-share">
                   <h4>Share this article</h4>
+                  <p class="share-description">Help others discover this content</p>
                   <div class="share-buttons">
                     <button @click="shareOnTwitter" class="share-btn twitter">
-                      <i class="fab fa-twitter"></i>
-                      Twitter
+                      <svg class="x-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                      <span class="share-text">
+                        <span class="share-title">X (Twitter)</span>
+                        <span class="share-subtitle">Post on X</span>
+                      </span>
                     </button>
+
                     <button @click="shareOnFacebook" class="share-btn facebook">
-                      <i class="fab fa-facebook-f"></i>
-                      Facebook
+                      <i class="fab fa-facebook"></i>
+                      <span class="share-text">
+                        <span class="share-title">Facebook</span>
+                        <span class="share-subtitle">Share on Facebook</span>
+                      </span>
                     </button>
+
                     <button @click="shareOnLinkedIn" class="share-btn linkedin">
-                      <i class="fab fa-linkedin-in"></i>
-                      LinkedIn
+                      <i class="fab fa-linkedin"></i>
+                      <span class="share-text">
+                        <span class="share-title">LinkedIn</span>
+                        <span class="share-subtitle">Share professionally</span>
+                      </span>
                     </button>
-                    <button @click="copyLink" class="share-btn copy">
-                      <i class="fas fa-link"></i>
-                      Copy Link
+
+                    <button @click="shareOnWhatsApp" class="share-btn whatsapp">
+                      <i class="fab fa-whatsapp"></i>
+                      <span class="share-text">
+                        <span class="share-title">WhatsApp</span>
+                        <span class="share-subtitle">Send to contacts</span>
+                      </span>
+                    </button>
+
+                    <button @click="shareOnTelegram" class="share-btn telegram">
+                      <i class="fab fa-telegram"></i>
+                      <span class="share-text">
+                        <span class="share-title">Telegram</span>
+                        <span class="share-subtitle">Share on Telegram</span>
+                      </span>
+                    </button>
+
+                    <button @click="shareByEmail" class="share-btn email">
+                      <i class="fas fa-envelope"></i>
+                      <span class="share-text">
+                        <span class="share-title">Email</span>
+                        <span class="share-subtitle">Send via email</span>
+                      </span>
+                    </button>
+
+                    <button @click="copyLink" class="share-btn copy" :class="{ copied: linkCopied }">
+                      <i :class="linkCopied ? 'fas fa-check' : 'fas fa-copy'"></i>
+                      <span class="share-text">
+                        <span class="share-title">{{ linkCopied ? 'Copied!' : 'Copy Link' }}</span>
+                        <span class="share-subtitle">{{ linkCopied ? 'Link copied to clipboard' : 'Copy to clipboard' }}</span>
+                      </span>
                     </button>
                   </div>
+
+                  <!-- Native Share API Button (for mobile) -->
+                  <button v-if="canUseNativeShare" @click="nativeShare" class="share-btn native">
+                    <i class="fas fa-share"></i>
+                    <span class="share-text">
+                      <span class="share-title">More Options</span>
+                      <span class="share-subtitle">Use device sharing</span>
+                    </span>
+                  </button>
                 </div>
 
                 <!-- Article Tags -->
@@ -102,7 +168,7 @@
               </div>
             </main>
 
-            <!-- Sidebar -->
+            <!-- Simplified Sidebar -->
             <aside class="article-sidebar">
               <!-- Related Articles -->
               <div class="sidebar-card">
@@ -215,7 +281,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import axios from 'axios'
 
@@ -229,26 +295,34 @@ export default {
     const previousArticle = ref(null)
     const nextArticle = ref(null)
     const loading = ref(false)
+    const linkCopied = ref(false)
+
+    // Check if native share API is available
+    const canUseNativeShare = computed(() => {
+      return navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    })
 
     const loadArticle = async (slug) => {
       try {
         loading.value = true
         const response = await axios.get(`/api/news/${slug}`)
-        article.value = response.data.data
 
-        // Используем setPageTitle вместо прямого обращения к document.title
-        if (article.value && article.value.title) {
-          const { setPageTitle } = await import('../composables/usePageTitle.js')
-          setPageTitle(article.value.title)
+        if (response.data.success) {
+          article.value = response.data.data
+
+          if (article.value && article.value.title) {
+            const { setPageTitle } = await import('../composables/usePageTitle.js')
+            setPageTitle(article.value.title)
+          }
+
+          loadRelatedArticles()
+          loadNavigation()
+        } else {
+          throw new Error(response.data.message || 'Failed to load article')
         }
-
-        // Load related content after getting the article
-        loadRelatedArticles()
-        loadNavigation()
       } catch (error) {
         console.error('Failed to load article:', error)
         article.value = null
-        // Используем setPageTitle для fallback
         const { setPageTitle } = await import('../composables/usePageTitle.js')
         setPageTitle('Article Not Found')
       } finally {
@@ -257,31 +331,48 @@ export default {
     }
 
     const loadRelatedArticles = async () => {
-      if (!article.value) return
+      if (!route.params.slug) return
 
       try {
-        const response = await axios.get(`/api/news?category=${encodeURIComponent(article.value.category)}&per_page=4`)
-        // Filter out current article
-        relatedArticles.value = (response.data.data || response.data)
-          .filter(item => item.id !== article.value.id)
-          .slice(0, 3)
+        const response = await axios.get(`/api/news/${route.params.slug}/related`)
+
+        if (response.data.success) {
+          relatedArticles.value = response.data.data || []
+        } else {
+          throw new Error('Failed to load related articles')
+        }
       } catch (error) {
         console.error('Failed to load related articles:', error)
         relatedArticles.value = []
+
+        try {
+          const fallbackResponse = await axios.get('/api/news/latest')
+          if (fallbackResponse.data.success) {
+            const latestArticles = fallbackResponse.data.data || []
+            relatedArticles.value = latestArticles
+              .filter(item => item.slug !== route.params.slug)
+              .slice(0, 3)
+          }
+        } catch (fallbackError) {
+          console.error('Failed to load fallback articles:', fallbackError)
+        }
       }
     }
 
     const loadNavigation = async () => {
-      // This would ideally be implemented with proper prev/next endpoints
-      // For now, we'll skip this functionality
       previousArticle.value = null
       nextArticle.value = null
     }
 
     const loadCategories = async () => {
       try {
-        const response = await axios.get('/api/news/all-categories')
-        categories.value = response.data.data || response.data
+        const response = await axios.get('/api/news/categories')
+
+        if (response.data.success) {
+          categories.value = response.data.data || {}
+        } else {
+          throw new Error('Failed to load categories')
+        }
       } catch (error) {
         console.error('Failed to load categories:', error)
         categories.value = {}
@@ -295,7 +386,6 @@ export default {
     const formatContent = (content) => {
       if (!content) return ''
 
-      // Convert line breaks to paragraphs
       return content
         .split('\n\n')
         .map(paragraph => paragraph.trim())
@@ -313,33 +403,97 @@ export default {
       })
     }
 
+    const calculateReadingTime = (content) => {
+      if (!content) return 0
+      const wordsPerMinute = 200
+      const wordCount = content.split(/\s+/).length
+      return Math.ceil(wordCount / wordsPerMinute)
+    }
+
+    // Enhanced sharing functions
+    const getShareUrl = () => window.location.href
+    const getShareTitle = () => article.value?.title || 'Check out this article'
+    const getShareText = () => article.value?.excerpt || article.value?.title || 'Interesting article'
+
     const shareOnTwitter = () => {
-      const url = encodeURIComponent(window.location.href)
-      const text = encodeURIComponent(article.value.title)
-      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank')
+      const url = encodeURIComponent(getShareUrl())
+      const text = encodeURIComponent(`${getShareTitle()} - ${getShareText()}`)
+      const hashtags = encodeURIComponent('news,article')
+      window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}&hashtags=${hashtags}`, '_blank', 'width=550,height=420')
     }
 
     const shareOnFacebook = () => {
-      const url = encodeURIComponent(window.location.href)
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank')
+      const url = encodeURIComponent(getShareUrl())
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=550,height=420')
     }
 
     const shareOnLinkedIn = () => {
-      const url = encodeURIComponent(window.location.href)
-      const title = encodeURIComponent(article.value.title)
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`, '_blank')
+      const url = encodeURIComponent(getShareUrl())
+      const title = encodeURIComponent(getShareTitle())
+      const summary = encodeURIComponent(getShareText())
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}&summary=${summary}`, '_blank', 'width=550,height=420')
+    }
+
+    const shareOnWhatsApp = () => {
+      const text = encodeURIComponent(`${getShareTitle()}\n\n${getShareText()}\n\n${getShareUrl()}`)
+      window.open(`https://wa.me/?text=${text}`, '_blank')
+    }
+
+    const shareOnTelegram = () => {
+      const url = encodeURIComponent(getShareUrl())
+      const text = encodeURIComponent(`${getShareTitle()}\n\n${getShareText()}`)
+      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank')
+    }
+
+    const shareByEmail = () => {
+      const subject = encodeURIComponent(`Check out: ${getShareTitle()}`)
+      const body = encodeURIComponent(`I thought you might be interested in this article:\n\n${getShareTitle()}\n\n${getShareText()}\n\nRead more: ${getShareUrl()}`)
+      window.location.href = `mailto:?subject=${subject}&body=${body}`
     }
 
     const copyLink = async () => {
       try {
-        await navigator.clipboard.writeText(window.location.href)
-        alert('Link copied to clipboard!')
+        await navigator.clipboard.writeText(getShareUrl())
+        linkCopied.value = true
+        setTimeout(() => {
+          linkCopied.value = false
+        }, 2000)
       } catch (error) {
         console.error('Failed to copy link:', error)
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = getShareUrl()
+        document.body.appendChild(textArea)
+        textArea.select()
+        try {
+          document.execCommand('copy')
+          linkCopied.value = true
+          setTimeout(() => {
+            linkCopied.value = false
+          }, 2000)
+        } catch (fallbackError) {
+          console.error('Fallback copy failed:', fallbackError)
+        }
+        document.body.removeChild(textArea)
       }
     }
 
-    // Watch for route changes
+    const nativeShare = async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: getShareTitle(),
+            text: getShareText(),
+            url: getShareUrl()
+          })
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            console.error('Error sharing:', error)
+          }
+        }
+      }
+    }
+
     watch(() => route.params.slug, (newSlug) => {
       if (newSlug) {
         loadArticle(newSlug)
@@ -358,12 +512,19 @@ export default {
       previousArticle,
       nextArticle,
       loading,
+      linkCopied,
+      canUseNativeShare,
+      calculateReadingTime,
       formatContent,
       formatDate,
       shareOnTwitter,
       shareOnFacebook,
       shareOnLinkedIn,
+      shareOnWhatsApp,
+      shareOnTelegram,
+      shareByEmail,
       copyLink,
+      nativeShare,
       getCategoryDisplayName
     }
   }
@@ -506,6 +667,90 @@ export default {
       margin-bottom: 0;
     }
   }
+
+  :deep(h1),
+  :deep(h2),
+  :deep(h3),
+  :deep(h4),
+  :deep(h5),
+  :deep(h6) {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 2rem 0 1rem;
+    line-height: 1.3;
+  }
+
+  :deep(h1) { font-size: 2.5rem; }
+  :deep(h2) { font-size: 2rem; }
+  :deep(h3) { font-size: 1.5rem; }
+  :deep(h4) { font-size: 1.25rem; }
+
+  :deep(blockquote) {
+    border-left: 4px solid #667eea;
+    background: #f8f9fa;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    border-radius: 0 8px 8px 0;
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(ul),
+  :deep(ol) {
+    margin: 1.5rem 0;
+    padding-left: 2rem;
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+  }
+
+  :deep(code) {
+    background: #f1f3f4;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+  }
+
+  :deep(pre) {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 2rem 0;
+
+    code {
+      background: none;
+      padding: 0;
+      color: inherit;
+    }
+  }
+
+  :deep(a) {
+    color: #667eea;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #764ba2;
+      border-bottom-color: #764ba2;
+    }
+  }
+
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 2rem 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .article-share {
@@ -515,64 +760,160 @@ export default {
   margin-bottom: 2rem;
 
   h4 {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
     color: #2c3e50;
+    font-weight: 600;
+  }
+
+  .share-description {
+    color: #6c757d;
+    margin-bottom: 2rem;
+    font-size: 1rem;
   }
 }
 
 .share-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
-  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
 .share-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
-  font-size: 0.9rem;
+  background: white;
+  border: 2px solid #e9ecef;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  i {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .x-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .share-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .share-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .share-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
 
   &.twitter {
-    background: #1da1f2;
-    color: white;
-
     &:hover {
-      background: #0d8bd9;
+      background: #1da1f2;
+      color: white;
+      border-color: #1da1f2;
     }
   }
 
   &.facebook {
-    background: #4267b2;
-    color: white;
-
     &:hover {
-      background: #365899;
+      background: #4267b2;
+      color: white;
+      border-color: #4267b2;
     }
   }
 
   &.linkedin {
-    background: #0077b5;
-    color: white;
-
     &:hover {
-      background: #005885;
+      background: #0077b5;
+      color: white;
+      border-color: #0077b5;
+    }
+  }
+
+  &.whatsapp {
+    &:hover {
+      background: #25d366;
+      color: white;
+      border-color: #25d366;
+    }
+  }
+
+  &.telegram {
+    &:hover {
+      background: #0088cc;
+      color: white;
+      border-color: #0088cc;
+    }
+  }
+
+  &.email {
+    &:hover {
+      background: #ea4335;
+      color: white;
+      border-color: #ea4335;
     }
   }
 
   &.copy {
-    background: #6c757d;
-    color: white;
-
     &:hover {
-      background: #545b62;
+      background: #6c757d;
+      color: white;
+      border-color: #6c757d;
+    }
+
+    &.copied {
+      background: #28a745;
+      color: white;
+      border-color: #28a745;
+    }
+  }
+
+  &.native {
+    &:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
     }
   }
 }
@@ -684,6 +1025,13 @@ export default {
   font-size: 0.8rem;
   color: #6c757d;
   margin: 0;
+}
+
+.no-related {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
 }
 
 .categories-list {
@@ -836,6 +1184,46 @@ export default {
   }
 }
 
+.author-info {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 3rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .author-details {
+    flex: 1;
+
+    .author-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.25rem;
+    }
+
+    .author-bio {
+      color: #6c757d;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+  }
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -872,12 +1260,53 @@ export default {
   }
 
   .share-buttons {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .article-meta {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .article-header {
+    padding: 1.5rem 0 2rem;
+  }
+
+  .breadcrumb {
+    .current {
+      max-width: 150px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .article-text {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .article-body {
+    padding: 1.5rem;
+  }
+
+  .sidebar-card {
+    padding: 1.5rem;
+  }
+
+  .share-btn {
+    padding: 0.75rem 1rem;
+
+    .share-title {
+      font-size: 0.9rem;
+    }
+
+    .share-subtitle {
+      font-size: 0.75rem;
+    }
+  }
+
+  .nav-btn {
+    padding: 1.5rem;
   }
 }
 </style>
