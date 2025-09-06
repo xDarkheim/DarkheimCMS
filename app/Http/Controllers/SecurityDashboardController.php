@@ -79,7 +79,9 @@ class SecurityDashboardController extends Controller
 
         try {
             if (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
-                return count(Cache::getStore()->getRedis()->keys('*blocked_ip*'));
+                /** @var \Illuminate\Redis\RedisManager $redis */
+                $redis = Cache::getStore()->getRedis();
+                return count($redis->keys('*blocked_ip*'));
             }
             return 0;
         } catch (\Exception $e) {
@@ -98,7 +100,9 @@ class SecurityDashboardController extends Controller
 
         try {
             if (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
-                return count(Cache::getStore()->getRedis()->keys('*email_blocked*'));
+                /** @var \Illuminate\Redis\RedisManager $redis */
+                $redis = Cache::getStore()->getRedis();
+                return count($redis->keys('*email_blocked*'));
             }
             return 0;
         } catch (\Exception $e) {
@@ -156,7 +160,9 @@ class SecurityDashboardController extends Controller
 
         try {
             if (Cache::getStore() instanceof \Illuminate\Cache\RedisStore) {
-                $attempts = count(Cache::getStore()->getRedis()->keys('*login_attempts*'));
+                /** @var \Illuminate\Redis\RedisManager $redis */
+                $redis = Cache::getStore()->getRedis();
+                $attempts = count($redis->keys('*login_attempts*'));
                 return [
                     'active_attempts' => $attempts,
                     'last_updated' => now()->toISOString()

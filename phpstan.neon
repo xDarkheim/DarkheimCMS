@@ -22,6 +22,8 @@ parameters:
         - '#Call to method PHPUnit\\Framework\\Assert::assert(IsArray|IsBool|True)\(\) with .* will always evaluate to true#'
         # Factory generic type specifications in test properties
         - '#Property .* with generic class App\\Models\\.* does not specify its types: TFactory#'
+        # Laravel view function parameter type issue
+        - '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
 
     excludePaths:
         - vendor/
