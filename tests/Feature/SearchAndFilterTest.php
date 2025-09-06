@@ -13,7 +13,7 @@ class SearchAndFilterTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seed = false; // Disable automatic seeding
+    protected bool $seed = false; // Disable automatic seeding
 
     #[Test]
     public function it_can_search_portfolios_by_title(): void

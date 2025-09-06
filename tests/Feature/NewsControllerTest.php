@@ -11,7 +11,7 @@ class NewsControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $seed = false; // Disable automatic seeding
+    protected bool $seed = false; // Disable automatic seeding
 
     #[Test]
     public function it_can_list_published_news(): void
