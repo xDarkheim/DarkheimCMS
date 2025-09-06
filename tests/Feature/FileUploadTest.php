@@ -19,7 +19,7 @@ class FileUploadTest extends TestCase
     }
 
     #[Test]
-    public function it_can_upload_resume_file()
+    public function it_can_upload_resume_file(): void
     {
         $file = UploadedFile::fake()->create('resume.pdf', 1000, 'application/pdf');
 
@@ -31,7 +31,7 @@ class FileUploadTest extends TestCase
             'resume_file' => $file
         ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201); // Changed from 200 to 201
 
         // Verify file was stored
         $this->assertDatabaseHas('contact_messages', [
@@ -41,7 +41,7 @@ class FileUploadTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_resume_file_type()
+    public function it_validates_resume_file_type(): void
     {
         $invalidFile = UploadedFile::fake()->create('document.txt', 1000);
 
@@ -58,7 +58,7 @@ class FileUploadTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_resume_file_size()
+    public function it_validates_resume_file_size(): void
     {
         $largeFile = UploadedFile::fake()->create('resume.pdf', 10001, 'application/pdf'); // Over 10MB
 
@@ -75,7 +75,7 @@ class FileUploadTest extends TestCase
     }
 
     #[Test]
-    public function it_accepts_valid_image_formats()
+    public function it_accepts_valid_image_formats(): void
     {
         $jpgFile = UploadedFile::fake()->image('image.jpg');
         $pngFile = UploadedFile::fake()->image('image.png');
@@ -96,7 +96,7 @@ class FileUploadTest extends TestCase
             'image_file' => $pngFile
         ]);
 
-        $response1->assertStatus(200);
-        $response2->assertStatus(200);
+        $response1->assertStatus(201); // Changed from 200 to 201
+        $response2->assertStatus(201); // Changed from 200 to 201
     }
 }

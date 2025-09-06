@@ -12,7 +12,7 @@ class ContactMessageModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_contact_message()
+    public function it_can_create_contact_message(): void
     {
         $message = ContactMessage::create([
             'name' => 'John Doe',
@@ -30,7 +30,7 @@ class ContactMessageModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_format_salary_expectation()
+    public function it_can_format_salary_expectation(): void
     {
         $message = ContactMessage::create([
             'name' => 'John Doe',
@@ -43,7 +43,7 @@ class ContactMessageModelTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_null_for_empty_salary_expectation()
+    public function it_returns_null_for_empty_salary_expectation(): void
     {
         $message = ContactMessage::create([
             'name' => 'John Doe',
@@ -56,7 +56,7 @@ class ContactMessageModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_identify_job_applications()
+    public function it_can_identify_job_applications(): void
     {
         $jobApplication = ContactMessage::create([
             'name' => 'John Doe',
@@ -77,7 +77,7 @@ class ContactMessageModelTest extends TestCase
     }
 
     #[Test]
-    public function it_casts_attributes_correctly()
+    public function it_casts_attributes_correctly(): void
     {
         $message = ContactMessage::create([
             'name' => 'John Doe',

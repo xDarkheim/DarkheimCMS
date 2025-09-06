@@ -13,7 +13,7 @@ class PortfolioModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_a_portfolio()
+    public function it_can_create_a_portfolio(): void
     {
         $portfolio = Portfolio::create([
             'title' => 'Test Portfolio',
@@ -34,7 +34,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_automatically_generates_slug_on_create()
+    public function it_automatically_generates_slug_on_create(): void
     {
         $portfolio = Portfolio::create([
             'title' => 'My Awesome Project',
@@ -48,7 +48,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_updates_slug_when_title_changes()
+    public function it_updates_slug_when_title_changes(): void
     {
         $portfolio = Portfolio::create([
             'title' => 'Original Title',
@@ -64,7 +64,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_belongs_to_portfolio_category()
+    public function it_belongs_to_portfolio_category(): void
     {
         $category = PortfolioCategory::factory()->create();
         $portfolio = Portfolio::factory()->create([
@@ -76,7 +76,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_get_category_name_from_relationship()
+    public function it_can_get_category_name_from_relationship(): void
     {
         $category = PortfolioCategory::factory()->create(['name' => 'Web Development']);
         $portfolio = Portfolio::factory()->create([
@@ -87,7 +87,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_falls_back_to_category_field_for_category_name()
+    public function it_falls_back_to_category_field_for_category_name(): void
     {
         $portfolio = Portfolio::factory()->create([
             'category' => 'Mobile Apps',
@@ -98,7 +98,7 @@ class PortfolioModelTest extends TestCase
     }
 
     #[Test]
-    public function it_casts_attributes_correctly()
+    public function it_casts_attributes_correctly(): void
     {
         $portfolio = Portfolio::factory()->create([
             'technologies' => ['PHP', 'Laravel'],

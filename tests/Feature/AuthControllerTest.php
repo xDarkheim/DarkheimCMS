@@ -12,7 +12,7 @@ class AuthControllerTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_login_with_valid_credentials()
+    public function it_can_login_with_valid_credentials(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -33,7 +33,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_fails_login_with_invalid_credentials()
+    public function it_fails_login_with_invalid_credentials(): void
     {
         $response = $this->postJson('/api/login', [
             'email' => 'wrong@example.com',
@@ -45,7 +45,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_requires_email_and_password()
+    public function it_requires_email_and_password(): void
     {
         $response = $this->postJson('/api/login', []);
 
@@ -54,7 +54,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_logout_authenticated_user()
+    public function it_can_logout_authenticated_user(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
@@ -68,7 +68,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_get_authenticated_user()
+    public function it_can_get_authenticated_user(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
@@ -85,7 +85,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_validate_token()
+    public function it_can_validate_token(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('test-token')->plainTextToken;
@@ -99,7 +99,7 @@ class AuthControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_fails_validation_with_invalid_token()
+    public function it_fails_validation_with_invalid_token(): void
     {
         $response = $this->withHeaders([
             'Authorization' => 'Bearer invalid-token',

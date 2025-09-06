@@ -10,11 +10,11 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 /**
- * @template TFactory of \Illuminate\Database\Eloquent\Factories\Factory
+ * @use HasFactory<\Database\Factories\PortfolioFactory>
  */
 class Portfolio extends Model
 {
-    /** @use HasFactory<TFactory> */
+    /** @use HasFactory<\Database\Factories\PortfolioFactory> */
     use HasFactory;
 
     protected $fillable = [

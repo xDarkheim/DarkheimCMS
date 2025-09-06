@@ -2,16 +2,31 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Database\Factories\TeamMemberFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * @template TFactory of \Illuminate\Database\Eloquent\Factories.Factory
+ * @property string $name
+ * @property string $position
+ * @property string $department
+ * @property string $bio
+ * @property string $email
+ * @property string|null $avatar
+ * @property array<string> $skills
+ * @property array<string, string> $social_links
+ * @property string $status
+ * @property Carbon $joined_date
+ * @property int $priority
+ * @property bool $show_on_website
+ *
+ * @use HasFactory<TeamMemberFactory>
  */
 class TeamMember extends Model
 {
-    /** @use HasFactory<TFactory> */
+    /** @use HasFactory<TeamMemberFactory> */
     use HasFactory;
 
     /**
@@ -42,6 +57,11 @@ class TeamMember extends Model
         'skills' => 'array',
         'social_links' => 'array'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+    }
 
     /**
      * Scope active team members (using status = 'active').

@@ -12,44 +12,44 @@ class ConfigurationTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function app_environment_is_set_to_testing()
+    public function app_environment_is_set_to_testing(): void
     {
         $this->assertEquals('testing', config('app.env'));
     }
 
     #[Test]
-    public function database_uses_mysql_for_testing()
+    public function database_uses_mysql_for_testing(): void
     {
         $this->assertEquals('mysql', config('database.default'));
         $this->assertEquals('darkheim_db_test', config('database.connections.mysql.database'));
     }
 
     #[Test]
-    public function cache_uses_array_driver_for_testing()
+    public function cache_uses_array_driver_for_testing(): void
     {
         $this->assertEquals('array', config('cache.default'));
     }
 
     #[Test]
-    public function queue_uses_sync_for_testing()
+    public function queue_uses_sync_for_testing(): void
     {
         $this->assertEquals('sync', config('queue.default'));
     }
 
     #[Test]
-    public function session_uses_array_driver_for_testing()
+    public function session_uses_array_driver_for_testing(): void
     {
         $this->assertEquals('array', config('session.driver'));
     }
 
     #[Test]
-    public function mail_uses_array_driver_for_testing()
+    public function mail_uses_array_driver_for_testing(): void
     {
         $this->assertEquals('array', config('mail.default'));
     }
 
     #[Test]
-    public function sanctum_configuration_is_correct()
+    public function sanctum_configuration_is_correct(): void
     {
         // Проверяем, что Sanctum настроен правильно
         $this->assertNotNull(config('sanctum'));
@@ -57,7 +57,7 @@ class ConfigurationTest extends TestCase
     }
 
     #[Test]
-    public function app_has_required_configuration_keys()
+    public function app_has_required_configuration_keys(): void
     {
         $requiredKeys = [
             'app.name',

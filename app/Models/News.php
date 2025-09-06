@@ -110,34 +110,34 @@ class News extends Model
     // SCOPE METHODS
     // ==============================================
 
-    public function scopePublished($query)
+    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_published', true)
                     ->whereNotNull('published_at')
                     ->where('published_at', '<=', now());
     }
 
-    public function scopeFeatured($query)
+    public function scopeFeatured(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_featured', true);
     }
 
-    public function scopeByCategory($query, $category)
+    public function scopeByCategory(\Illuminate\Database\Eloquent\Builder $query, string $category): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('category', $category);
     }
 
-    public function scopeByTag($query, $tag)
+    public function scopeByTag(\Illuminate\Database\Eloquent\Builder $query, string $tag): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereJsonContains('tags', $tag);
     }
 
-    public function scopeByStatus($query, $status)
+    public function scopeByStatus(\Illuminate\Database\Eloquent\Builder $query, string $status): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', $status);
     }
 
-    public function scopeSearch($query, $search)
+    public function scopeSearch(\Illuminate\Database\Eloquent\Builder $query, string $search): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where(function ($q) use ($search) {
             $q->where('title', 'like', "%{$search}%")
@@ -147,12 +147,12 @@ class News extends Model
         });
     }
 
-    public function scopeRecent($query, $days = 30)
+    public function scopeRecent(\Illuminate\Database\Eloquent\Builder $query, int $days = 30): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('published_at', '>=', now()->subDays($days));
     }
 
-    public function scopePopular($query)
+    public function scopePopular(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->orderBy('views', 'desc');
     }
@@ -161,32 +161,32 @@ class News extends Model
     // ACCESSOR METHODS
     // ==============================================
 
-    public function getFormattedDateAttribute()
+    public function getFormattedDateAttribute(): ?string
     {
         return $this->published_at ? $this->published_at->format('F j, Y') : null;
     }
 
-    public function getCategoryDisplayNameAttribute()
+    public function getCategoryDisplayNameAttribute(): string
     {
         return self::CATEGORIES[$this->category] ?? $this->category;
     }
 
-    public function getStatusDisplayNameAttribute()
+    public function getStatusDisplayNameAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
     }
 
-    public function getSocialImageAttribute()
+    public function getSocialImageAttribute(): ?string
     {
         return $this->social_image_url ?: $this->image_url;
     }
 
-    public function getMetaTitleFullAttribute()
+    public function getMetaTitleFullAttribute(): string
     {
         return $this->meta_title ?: $this->title;
     }
 
-    public function getMetaDescriptionFullAttribute()
+    public function getMetaDescriptionFullAttribute(): string
     {
         if ($this->meta_description) {
             return $this->meta_description;
@@ -199,7 +199,7 @@ class News extends Model
         return Str::limit(strip_tags($this->content), 160);
     }
 
-    public function getUrlAttribute()
+    public function getUrlAttribute(): string
     {
         return "/news/{$this->slug}";
     }
@@ -208,7 +208,7 @@ class News extends Model
     // INSTANCE METHODS
     // ==============================================
 
-    public function calculateReadingTime()
+    public function calculateReadingTime(): int
     {
         if (!$this->content) return 1;
 
@@ -216,27 +216,30 @@ class News extends Model
         return max(1, ceil($wordCount / 200)); // 200 слов в минуту
     }
 
-    public function isPublished()
+    public function isPublished(): bool
     {
         return $this->is_published &&
                $this->published_at &&
                $this->published_at <= now();
     }
 
-    public function isScheduled()
+    public function isScheduled(): bool
     {
         return $this->status === self::STATUS_SCHEDULED &&
                $this->published_at &&
                $this->published_at > now();
     }
 
-    public function incrementViews()
+    public function incrementViews(): self
     {
         $this->increment('views');
         return $this;
     }
 
-    public function getRelatedArticles($limit = 3)
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, News>
+     */
+    public function getRelatedArticles(int $limit = 3): \Illuminate\Database\Eloquent\Collection
     {
         // Сначала ищем по той же категории
         $related = self::published()
@@ -265,33 +268,41 @@ class News extends Model
     // STATIC METHODS
     // ==============================================
 
-    public static function getCategories()
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getCategories(): array
     {
         return self::CATEGORIES;
     }
 
-    public static function getStatuses()
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getStatuses(): array
     {
         return self::STATUSES;
     }
 
-    public static function isValidCategory($category)
+    public static function isValidCategory(string $category): bool
     {
         return array_key_exists($category, self::CATEGORIES);
     }
 
-    public static function isValidStatus($status)
+    public static function isValidStatus(string $status): bool
     {
         return array_key_exists($status, self::STATUSES);
     }
 
-    public static function getAllTags()
+    /**
+     * @return array<string>
+     */
+    public static function getAllTags(): array
     {
         try {
             return self::whereNotNull('tags')
                       ->where('tags', '!=', '[]')
                       ->where('is_published', true)
-                      ->get()
                       ->pluck('tags')
                       ->flatten()
                       ->unique()
@@ -304,7 +315,10 @@ class News extends Model
         }
     }
 
-    public static function getCategoryStats()
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getCategoryStats(): array
     {
         $stats = self::published()
                     ->selectRaw('category, COUNT(*) as count')
@@ -317,7 +331,10 @@ class News extends Model
         return $stats;
     }
 
-    public static function getGlobalStats()
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getGlobalStats(): array
     {
         return [
             'total' => self::published()->count(),

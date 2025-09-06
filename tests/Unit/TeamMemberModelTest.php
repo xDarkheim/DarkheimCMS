@@ -12,7 +12,7 @@ class TeamMemberModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_team_member()
+    public function it_can_create_team_member(): void
     {
         $member = TeamMember::create([
             'name' => 'John Doe',
@@ -39,7 +39,7 @@ class TeamMemberModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_scope_active_members()
+    public function it_can_scope_active_members(): void
     {
         TeamMember::factory()->create(['status' => 'active']);
         TeamMember::factory()->create(['status' => 'inactive']);
@@ -50,7 +50,7 @@ class TeamMemberModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_scope_members_by_position()
+    public function it_can_scope_members_by_position(): void
     {
         TeamMember::factory()->create(['position' => 'Developer']);
         TeamMember::factory()->create(['position' => 'Designer']);

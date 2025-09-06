@@ -12,7 +12,7 @@ class NewsModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_news()
+    public function it_can_create_news(): void
     {
         $news = News::create([
             'title' => 'Test News',
@@ -32,7 +32,7 @@ class NewsModelTest extends TestCase
     }
 
     #[Test]
-    public function it_has_predefined_categories()
+    public function it_has_predefined_categories(): void
     {
         $expectedCategories = [
             'announcements' => 'Announcements',
@@ -51,7 +51,7 @@ class NewsModelTest extends TestCase
     }
 
     #[Test]
-    public function it_casts_boolean_attributes()
+    public function it_casts_boolean_attributes(): void
     {
         $news = News::factory()->create([
             'is_published' => 1,
@@ -63,7 +63,7 @@ class NewsModelTest extends TestCase
     }
 
     #[Test]
-    public function it_casts_published_at_to_datetime()
+    public function it_casts_published_at_to_datetime(): void
     {
         $news = News::factory()->create([
             'published_at' => '2023-01-01 12:00:00'

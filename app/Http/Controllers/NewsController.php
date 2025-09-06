@@ -263,13 +263,17 @@ class NewsController extends Controller
                       ->orderBy('year', 'desc')
                       ->orderBy('month', 'desc')
                       ->get()
-                      ->map(function ($item) {
+                      ->map(function ($item): array {
+                          $year = (int) $item->getAttribute('year');
+                          $month = (int) $item->getAttribute('month');
+                          $count = (int) $item->getAttribute('count');
+
                           return [
-                              'year' => $item->year,
-                              'month' => $item->month,
-                              'month_name' => date('F', mktime(0, 0, 0, $item->month, 1)),
-                              'count' => $item->count,
-                              'url' => "/news/archive/{$item->year}/{$item->month}"
+                              'year' => $year,
+                              'month' => $month,
+                              'month_name' => date('F', mktime(0, 0, 0, $month, 1)),
+                              'count' => $count,
+                              'url' => "/news/archive/{$year}/{$month}"
                           ];
                       });
 

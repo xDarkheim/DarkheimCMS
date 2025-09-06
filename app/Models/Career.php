@@ -2,17 +2,35 @@
 
 namespace App\Models;
 
+use Database\Factories\CareerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 /**
- * @template TFactory of \Illuminate\Database\Eloquent\Factories\Factory
+ * @property string $title
+ * @property string $department
+ * @property string $employment_type
+ * @property string $location
+ * @property bool $remote_available
+ * @property string $short_description
+ * @property string $description
+ * @property array<string> $requirements
+ * @property array<string> $benefits
+ * @property string|null $salary_range
+ * @property string $experience_level
+ * @property array<string> $skills
+ * @property bool $is_active
+ * @property int $priority
+ * @property \Carbon\Carbon|null $application_deadline
+ *
+ * @use HasFactory<CareerFactory>
  */
 class Career extends Model
 {
-    /** @use HasFactory<TFactory> */
+    /** @use HasFactory<CareerFactory> */
     use HasFactory;
 
     /**
@@ -48,6 +66,11 @@ class Career extends Model
         'benefits' => 'array',
         'skills' => 'array'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+    }
 
     /**
      * Scope active careers.

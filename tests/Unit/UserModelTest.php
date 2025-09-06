@@ -12,7 +12,7 @@ class UserModelTest extends BaseTestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_a_user()
+    public function it_can_create_a_user(): void
     {
         $user = User::factory()->create([
             'name' => 'John Doe',
@@ -27,7 +27,7 @@ class UserModelTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_can_check_if_user_is_admin()
+    public function it_can_check_if_user_is_admin(): void
     {
         $adminUser = User::factory()->create(['role' => 'admin']);
         $regularUser = User::factory()->create(['role' => 'user']);
@@ -37,7 +37,7 @@ class UserModelTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_can_scope_admin_users()
+    public function it_can_scope_admin_users(): void
     {
         User::factory()->create(['role' => 'admin']);
         User::factory()->create(['role' => 'user']);
@@ -52,7 +52,7 @@ class UserModelTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_hides_sensitive_attributes()
+    public function it_hides_sensitive_attributes(): void
     {
         $user = User::factory()->create();
         $array = $user->toArray();
@@ -62,7 +62,7 @@ class UserModelTest extends BaseTestCase
     }
 
     #[Test]
-    public function it_casts_email_verified_at_to_datetime()
+    public function it_casts_email_verified_at_to_datetime(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
 

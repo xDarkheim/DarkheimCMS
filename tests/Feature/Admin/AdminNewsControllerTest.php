@@ -12,8 +12,8 @@ class AdminNewsControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $adminUser;
-    protected $seed = false; // Disable automatic seeding
+    protected User $adminUser;
+    protected bool $seed = false; // Disable automatic seeding
 
     protected function setUp(): void
     {
@@ -22,8 +22,10 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_list_all_news()
+    public function admin_can_list_all_news(): void
     {
+        News::factory()->count(3)->create();
+
         $response = $this->actingAs($this->adminUser, 'sanctum')
                         ->getJson('/api/admin/news');
 
@@ -35,7 +37,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_create_news()
+    public function admin_can_create_news(): void
     {
         $data = [
             'title' => 'Breaking News',
@@ -60,7 +62,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_update_news()
+    public function admin_can_update_news(): void
     {
         $news = News::factory()->create([
             'title' => 'Original News',
@@ -82,7 +84,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_delete_news()
+    public function admin_can_delete_news(): void
     {
         $news = News::factory()->create();
 
@@ -95,7 +97,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_toggle_news_published_status()
+    public function admin_can_toggle_news_published_status(): void
     {
         $news = News::factory()->create(['is_published' => false]);
 
@@ -111,7 +113,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_toggle_news_featured_status()
+    public function admin_can_toggle_news_featured_status(): void
     {
         $news = News::factory()->create(['is_featured' => false]);
 
@@ -127,7 +129,7 @@ class AdminNewsControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_perform_bulk_actions()
+    public function admin_can_perform_bulk_actions(): void
     {
         $news1 = News::factory()->create(['is_published' => false]);
         $news2 = News::factory()->create(['is_published' => false]);

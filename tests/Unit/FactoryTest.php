@@ -17,7 +17,7 @@ class FactoryTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function user_factory_creates_valid_users()
+    public function user_factory_creates_valid_users(): void
     {
         $user = User::factory()->create();
 
@@ -29,7 +29,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function user_factory_can_create_admin_users()
+    public function user_factory_can_create_admin_users(): void
     {
         $admin = User::factory()->admin()->create();
 
@@ -38,7 +38,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function portfolio_factory_creates_valid_portfolios()
+    public function portfolio_factory_creates_valid_portfolios(): void
     {
         $portfolio = Portfolio::factory()->create();
 
@@ -50,7 +50,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function portfolio_factory_can_create_featured_portfolios()
+    public function portfolio_factory_can_create_featured_portfolios(): void
     {
         $featured = Portfolio::factory()->featured()->create();
 
@@ -59,7 +59,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function news_factory_creates_valid_news()
+    public function news_factory_creates_valid_news(): void
     {
         $news = News::factory()->create();
 
@@ -71,7 +71,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function news_factory_can_create_published_news()
+    public function news_factory_can_create_published_news(): void
     {
         $published = News::factory()->published()->create();
 
@@ -80,7 +80,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function contact_message_factory_creates_valid_messages()
+    public function contact_message_factory_creates_valid_messages(): void
     {
         $message = ContactMessage::factory()->create();
 
@@ -92,7 +92,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function factories_can_create_sequences()
+    public function factories_can_create_sequences(): void
     {
         $users = User::factory()->count(3)->create();
 
@@ -103,7 +103,7 @@ class FactoryTest extends TestCase
     }
 
     #[Test]
-    public function factories_support_state_customization()
+    public function factories_support_state_customization(): void
     {
         $portfolio = Portfolio::factory()
             ->published()

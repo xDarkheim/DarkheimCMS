@@ -12,7 +12,7 @@ class DatabaseSchemaTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function users_table_has_required_columns()
+    public function users_table_has_required_columns(): void
     {
         $this->assertTrue(Schema::hasTable('users'));
 
@@ -24,7 +24,7 @@ class DatabaseSchemaTest extends TestCase
     }
 
     #[Test]
-    public function portfolios_table_has_required_columns()
+    public function portfolios_table_has_required_columns(): void
     {
         $this->assertTrue(Schema::hasTable('portfolios'));
 
@@ -40,7 +40,7 @@ class DatabaseSchemaTest extends TestCase
     }
 
     #[Test]
-    public function news_table_has_required_columns()
+    public function news_table_has_required_columns(): void
     {
         $this->assertTrue(Schema::hasTable('news'));
 
@@ -55,7 +55,7 @@ class DatabaseSchemaTest extends TestCase
     }
 
     #[Test]
-    public function contact_messages_table_has_required_columns()
+    public function contact_messages_table_has_required_columns(): void
     {
         $this->assertTrue(Schema::hasTable('contact_messages'));
 
@@ -71,7 +71,7 @@ class DatabaseSchemaTest extends TestCase
     }
 
     #[Test]
-    public function portfolio_categories_table_has_required_columns()
+    public function portfolio_categories_table_has_required_columns(): void
     {
         $this->assertTrue(Schema::hasTable('portfolio_categories'));
 
@@ -83,7 +83,7 @@ class DatabaseSchemaTest extends TestCase
     }
 
     #[Test]
-    public function personal_access_tokens_table_exists()
+    public function personal_access_tokens_table_exists(): void
     {
         $this->assertTrue(Schema::hasTable('personal_access_tokens'));
 

@@ -13,7 +13,7 @@ class PortfolioCategoryModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_portfolio_category()
+    public function it_can_create_portfolio_category(): void
     {
         $category = PortfolioCategory::create([
             'name' => 'Web Development',
@@ -27,7 +27,7 @@ class PortfolioCategoryModelTest extends TestCase
     }
 
     #[Test]
-    public function it_has_many_portfolios()
+    public function it_has_many_portfolios(): void
     {
         $category = PortfolioCategory::factory()->create();
         Portfolio::factory()->count(3)->create(['portfolio_category_id' => $category->id]);
@@ -37,7 +37,7 @@ class PortfolioCategoryModelTest extends TestCase
     }
 
     #[Test]
-    public function it_automatically_generates_slug_from_name()
+    public function it_automatically_generates_slug_from_name(): void
     {
         $category = PortfolioCategory::create([
             'name' => 'Mobile Applications'

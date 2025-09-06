@@ -12,7 +12,7 @@ class CareerModelTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_create_career()
+    public function it_can_create_career(): void
     {
         $career = Career::create([
             'title' => 'Full Stack Developer',
@@ -34,7 +34,7 @@ class CareerModelTest extends TestCase
     }
 
     #[Test]
-    public function it_can_scope_active_careers()
+    public function it_can_scope_active_careers(): void
     {
         Career::factory()->create(['is_active' => true]);
         Career::factory()->create(['is_active' => false]);

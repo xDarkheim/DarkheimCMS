@@ -14,7 +14,7 @@ class ContactControllerTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_submit_general_contact_message()
+    public function it_can_submit_general_contact_message(): void
     {
         $data = [
             'name' => 'John Doe',
@@ -40,7 +40,7 @@ class ContactControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_submit_job_application()
+    public function it_can_submit_job_application(): void
     {
         Storage::fake('public');
         $resumeFile = UploadedFile::fake()->create('resume.pdf', 1000, 'application/pdf');
@@ -72,7 +72,7 @@ class ContactControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_required_fields()
+    public function it_validates_required_fields(): void
     {
         $response = $this->postJson('/api/contact', []);
 
@@ -81,7 +81,7 @@ class ContactControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_email_format()
+    public function it_validates_email_format(): void
     {
         $data = [
             'name' => 'John Doe',
@@ -96,7 +96,7 @@ class ContactControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_validates_resume_file_for_job_applications()
+    public function it_validates_resume_file_for_job_applications(): void
     {
         $invalidFile = UploadedFile::fake()->create('document.txt', 1000);
 

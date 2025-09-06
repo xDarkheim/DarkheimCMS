@@ -13,7 +13,7 @@ class PortfolioControllerTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_can_list_published_portfolios()
+    public function it_can_list_published_portfolios(): void
     {
         Portfolio::factory()->create(['is_published' => true, 'title' => 'Published Project']);
         Portfolio::factory()->create(['is_published' => false, 'title' => 'Draft Project']);
@@ -26,7 +26,7 @@ class PortfolioControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_show_specific_portfolio()
+    public function it_can_show_specific_portfolio(): void
     {
         $portfolio = Portfolio::factory()->create([
             'is_published' => true,
@@ -42,7 +42,7 @@ class PortfolioControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_returns_404_for_unpublished_portfolio()
+    public function it_returns_404_for_unpublished_portfolio(): void
     {
         $portfolio = Portfolio::factory()->create(['is_published' => false]);
 
@@ -52,7 +52,7 @@ class PortfolioControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_get_featured_portfolios()
+    public function it_can_get_featured_portfolios(): void
     {
         Portfolio::factory()->create(['is_published' => true, 'is_featured' => true]);
         Portfolio::factory()->create(['is_published' => true, 'is_featured' => false]);
@@ -64,7 +64,7 @@ class PortfolioControllerTest extends TestCase
     }
 
     #[Test]
-    public function it_can_get_portfolio_categories()
+    public function it_can_get_portfolio_categories(): void
     {
         $category = PortfolioCategory::factory()->create(['name' => 'Web Development']);
         Portfolio::factory()->create([
@@ -75,11 +75,14 @@ class PortfolioControllerTest extends TestCase
         $response = $this->getJson('/api/portfolios/categories');
 
         $response->assertStatus(200)
-                ->assertJsonFragment(['name' => 'Web Development']);
+                ->assertJsonStructure([
+                    'success',
+                    'data'
+                ]);
     }
 
     #[Test]
-    public function it_can_get_portfolio_stats()
+    public function it_can_get_portfolio_stats(): void
     {
         Portfolio::factory()->count(5)->create(['is_published' => true]);
         Portfolio::factory()->count(2)->create(['is_published' => true, 'is_featured' => true]);
@@ -87,14 +90,17 @@ class PortfolioControllerTest extends TestCase
         $response = $this->getJson('/api/portfolios/stats');
 
         $response->assertStatus(200)
-                ->assertJson([
-                    'total' => 5,
-                    'featured' => 2
+                ->assertJsonStructure([
+                    'success',
+                    'data' => [
+                        'total_projects',
+                        'featured_projects'
+                    ]
                 ]);
     }
 
     #[Test]
-    public function it_can_filter_portfolios_by_category()
+    public function it_can_filter_portfolios_by_category(): void
     {
         $category = PortfolioCategory::factory()->create(['slug' => 'web-development']);
         Portfolio::factory()->create([

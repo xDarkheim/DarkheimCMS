@@ -67,7 +67,7 @@ class PortfolioSeeder extends Seeder
                 'technologies' => ['React Native', 'TypeScript', 'Node.js', 'MongoDB', 'Express.js', 'Socket.io', 'Plaid API'],
                 'category' => 'mobile-applications',
                 'client' => 'FinTech Startup',
-                'completed_at' => now()->subMonth(1),
+                'completed_at' => now()->subMonths(1),
                 'is_featured' => true,
                 'is_published' => true,
                 'sort_order' => 2, // Featured

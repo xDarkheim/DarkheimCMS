@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class TeamMemberFactory extends Factory
 {
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string<\App\Models\TeamMember>
+     */
     protected $model = TeamMember::class;
 
     /**
@@ -19,8 +24,9 @@ class TeamMemberFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->name();
         return [
-            'name' => fake()->name(),
+            'name' => $name,
             'position' => fake()->jobTitle(),
             'department' => fake()->randomElement(['Engineering', 'Design', 'Marketing', 'Sales']),
             'bio' => fake()->paragraphs(2, true),
