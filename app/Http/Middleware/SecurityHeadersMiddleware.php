@@ -55,9 +55,9 @@ class SecurityHeadersMiddleware
         // Контроль передачи referrer
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Ограничение разрешений браузера
+        // Ограничение разрешений браузера (removing deprecated features)
         $response->headers->set('Permissions-Policy',
-            'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=(), vibrate=(), fullscreen=(self), sync-xhr=()');
+            'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), sync-xhr=()');
 
         // Дополнительные заголовки безопасности
         $response->headers->set('X-DNS-Prefetch-Control', 'off');
@@ -74,7 +74,7 @@ class SecurityHeadersMiddleware
     private function buildContentSecurityPolicy(Request $request): string
     {
         $isHttps = $request->isSecure();
-        $protocol = $isHttps ? 'https:' : 'http:';
+        $protocol = $isHttps ? 'https' : 'http';
 
         // Для админки ослабляем CSP чтобы Font Awesome работал
         if ($request->is('admin/*') || $request->is('admin')) {
@@ -91,14 +91,14 @@ class SecurityHeadersMiddleware
                    "frame-ancestors 'none';";
         }
 
-        // Для остального сайта строгая CSP
+        // Для остального сайта строгая CSP с правильными URL
         return "default-src 'self'; " .
-               "script-src 'self' 'nonce-{$this->nonce}' {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com; " .
-               "style-src 'self' 'nonce-{$this->nonce}' 'unsafe-inline' {$protocol}://fonts.googleapis.com {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com {$protocol}://use.fontawesome.com {$protocol}://pro.fontawesome.com; " .
-               "font-src 'self' {$protocol}://fonts.gstatic.com {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com {$protocol}://use.fontawesome.com {$protocol}://pro.fontawesome.com; " .
+               "script-src 'self' 'nonce-{$this->nonce}' 'unsafe-inline' 'unsafe-eval' {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com; " .
+               "style-src 'self' 'unsafe-inline' {$protocol}://fonts.googleapis.com {$protocol}://fonts.bunny.net {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com {$protocol}://use.fontawesome.com {$protocol}://pro.fontawesome.com; " .
+               "font-src 'self' {$protocol}://fonts.gstatic.com {$protocol}://fonts.bunny.net {$protocol}://cdn.jsdelivr.net {$protocol}://cdnjs.cloudflare.com {$protocol}://use.fontawesome.com {$protocol}://pro.fontawesome.com; " .
                "img-src * data: blob: 'unsafe-inline'; " .
                "connect-src 'self' {$protocol}://api.darkheim.net; " .
-               "media-src 'self' {$protocol}:; " .
+               "media-src 'self' https: http:; " .
                "object-src 'none'; " .
                "base-uri 'self'; " .
                "form-action 'self'; " .
