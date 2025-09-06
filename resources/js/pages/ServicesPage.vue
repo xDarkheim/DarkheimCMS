@@ -455,7 +455,71 @@ export default {
   methods: {
     setActiveFilter(filterId) {
       this.activeFilter = filterId
+
+      // On mobile, scroll the active tab into view
+      this.$nextTick(() => {
+        this.scrollActiveTabIntoView()
+      })
     },
+
+    scrollActiveTabIntoView() {
+      if (window.innerWidth <= 768) {
+        const activeTab = document.querySelector('.filter-tab--active')
+        const tabsContainer = document.querySelector('.filter-tabs')
+
+        if (activeTab && tabsContainer) {
+          const containerRect = tabsContainer.getBoundingClientRect()
+          const activeTabRect = activeTab.getBoundingClientRect()
+
+          // Calculate scroll position to center the active tab
+          const scrollLeft = activeTab.offsetLeft - containerRect.width / 2 + activeTabRect.width / 2
+
+          tabsContainer.scrollTo({
+            left: scrollLeft,
+            behavior: 'smooth'
+          })
+        }
+      }
+    },
+
+    handleTabsScroll() {
+      const tabsContainer = document.querySelector('.filter-tabs')
+      const filterSection = document.querySelector('.services-filter')
+
+      if (tabsContainer && filterSection && window.innerWidth <= 768) {
+        const { scrollLeft, scrollWidth, clientWidth } = tabsContainer
+
+        // Add/remove scroll indicator classes
+        if (scrollLeft > 10) {
+          filterSection.classList.add('has-scroll-left')
+        } else {
+          filterSection.classList.remove('has-scroll-left')
+        }
+
+        if (scrollLeft < scrollWidth - clientWidth - 10) {
+          filterSection.classList.add('has-scroll-right')
+        } else {
+          filterSection.classList.remove('has-scroll-right')
+        }
+      }
+    },
+
+    setupMobileScrollHandlers() {
+      const tabsContainer = document.querySelector('.filter-tabs')
+
+      if (tabsContainer) {
+        tabsContainer.addEventListener('scroll', this.handleTabsScroll)
+
+        // Initial check
+        this.handleTabsScroll()
+
+        // Check on resize
+        window.addEventListener('resize', () => {
+          setTimeout(this.handleTabsScroll, 100)
+        })
+      }
+    },
+
     showServiceDetails(service) {
       this.selectedService = service
       document.body.style.overflow = 'hidden'
@@ -492,9 +556,24 @@ export default {
 
     // Check for filter parameter in URL
     this.handleRouteChange()
+
+    // Setup mobile scroll handlers
+    this.setupMobileScrollHandlers()
+
+    // Scroll active tab into view on initial load
+    this.$nextTick(() => {
+      this.scrollActiveTabIntoView()
+    })
   },
   beforeUnmount() {
     document.body.style.overflow = 'auto'
+
+    // Clean up event listeners
+    const tabsContainer = document.querySelector('.filter-tabs')
+    if (tabsContainer) {
+      tabsContainer.removeEventListener('scroll', this.handleTabsScroll)
+    }
+    window.removeEventListener('resize', this.handleTabsScroll)
   }
 }
 </script>

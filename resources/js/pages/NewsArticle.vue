@@ -583,12 +583,147 @@ export default {
   margin-bottom: 2rem;
   font-size: 0.9rem;
   color: #6c757d;
+
+  // Enhanced mobile responsiveness
+  @media (max-width: 768px) {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.8rem;
+  }
+
+  // Ultra small screens - compact layout
+  @media (max-width: 360px) {
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
 }
 
 .meta-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
+
+  // Mobile optimizations
+  @media (max-width: 768px) {
+    gap: 0.4rem;
+    min-width: 0; // Allow shrinking
+  }
+
+  @media (max-width: 480px) {
+    // Create two-column layout on mobile
+    flex: 1;
+    min-width: calc(50% - 0.375rem);
+    max-width: 100%;
+
+    // Allow text to wrap if needed
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  @media (max-width: 360px) {
+    // Single column on very small screens
+    flex: 1;
+    min-width: 100%;
+  }
+
+  i {
+    font-size: 0.85em;
+    color: #9ca3af;
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+
+    @media (max-width: 768px) {
+      font-size: 0.8em;
+      width: 12px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.75em;
+      width: 10px;
+    }
+  }
+
+  span {
+    line-height: 1.4;
+
+    @media (max-width: 480px) {
+      font-size: inherit;
+      line-height: 1.3;
+    }
+  }
+
+  // Special styling for reading time
+  &.reading-time {
+    @media (max-width: 480px) {
+      // Make reading time more prominent on mobile
+      background: #f3f4f6;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+      color: #4b5563;
+
+      i {
+        color: #6b7280;
+      }
+    }
+  }
+
+  // Responsive text truncation for longer content
+  @media (max-width: 480px) {
+    &:not(.reading-time) span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      max-height: 2.6em; // Accommodate 2 lines
+    }
+  }
+}
+
+// Special grid layout for mobile meta items
+@media (max-width: 480px) {
+  .article-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+
+    .meta-item {
+      flex: none;
+      min-width: 0;
+
+      &.reading-time {
+        grid-column: 1 / -1; // Span full width
+        justify-self: center;
+        max-width: 200px;
+      }
+    }
+  }
+}
+
+// Stack layout for very small screens
+@media (max-width: 360px) {
+  .article-meta {
+    display: flex;
+    flex-direction: column;
+
+    .meta-item {
+      &.reading-time {
+        order: -1; // Move to top
+        align-self: center;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
 }
 
 .article-title {

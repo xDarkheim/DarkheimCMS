@@ -224,35 +224,136 @@
       <!-- Mobile menu overlay -->
       <div class="mobile-menu" :class="{ 'mobile-menu--open': isMobileMenuOpen }">
         <div class="mobile-menu__content">
+          <!-- Mobile menu header with close button -->
+          <div class="mobile-menu__header">
+            <div class="mobile-menu__logo">
+              <div class="logo__icon">
+                <span class="logo__letter">D</span>
+              </div>
+              <span class="logo__text">Darkheim</span>
+            </div>
+            <button
+              class="mobile-menu__close"
+              @click="closeMobileMenu"
+              aria-label="Close menu"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
           <nav class="mobile-nav">
+            <!-- Home -->
             <router-link to="/" class="mobile-nav__link" @click="closeMobileMenu">
               <i class="fas fa-home"></i>
               <span>Home</span>
             </router-link>
-            <router-link to="/services" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-laptop-code"></i>
-              <span>Services</span>
-            </router-link>
-            <router-link to="/portfolio" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-folder-open"></i>
-              <span>Portfolio</span>
-            </router-link>
-            <router-link to="/about" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-info-circle"></i>
-              <span>About</span>
-            </router-link>
-            <router-link to="/team" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-users"></i>
-              <span>Team</span>
-            </router-link>
-            <router-link to="/careers" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-briefcase"></i>
-              <span>Careers</span>
-            </router-link>
-            <router-link to="/news" class="mobile-nav__link" @click="closeMobileMenu">
-              <i class="fas fa-newspaper"></i>
-              <span>News</span>
-            </router-link>
+
+            <!-- Services - Collapsible Section -->
+            <div class="mobile-nav__section">
+              <button
+                class="mobile-nav__section-toggle"
+                @click="toggleMobileSection('services')"
+                :class="{ 'mobile-nav__section-toggle--active': mobileSections.services }"
+              >
+                <i class="fas fa-laptop-code"></i>
+                <span>Services</span>
+                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+              </button>
+              <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.services }">
+                <router-link to="/services" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-list"></i>
+                  <span>All Services</span>
+                </router-link>
+                <router-link to="/services?filter=web-development" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-code"></i>
+                  <span>Web Development</span>
+                </router-link>
+                <router-link to="/services?filter=ui-ux-design" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-palette"></i>
+                  <span>UI/UX Design</span>
+                </router-link>
+                <router-link to="/services?filter=mobile-apps" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span>Mobile Apps</span>
+                </router-link>
+                <router-link to="/services?filter=consulting" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-lightbulb"></i>
+                  <span>Consulting</span>
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Portfolio - Collapsible Section -->
+            <div class="mobile-nav__section">
+              <button
+                class="mobile-nav__section-toggle"
+                @click="toggleMobileSection('portfolio')"
+                :class="{ 'mobile-nav__section-toggle--active': mobileSections.portfolio }"
+              >
+                <i class="fas fa-folder-open"></i>
+                <span>Portfolio</span>
+                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+              </button>
+              <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.portfolio }">
+                <router-link to="/portfolio" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-th-large"></i>
+                  <span>All Projects</span>
+                </router-link>
+                <router-link to="/portfolio?category=web-development" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-code"></i>
+                  <span>Web Development</span>
+                </router-link>
+                <router-link to="/portfolio?category=mobile-applications" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-mobile-alt"></i>
+                  <span>Mobile Applications</span>
+                </router-link>
+                <router-link to="/portfolio?category=ecommerce-solutions" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-shopping-cart"></i>
+                  <span>E-commerce Solutions</span>
+                </router-link>
+                <router-link to="/portfolio?category=business-applications" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-briefcase"></i>
+                  <span>Business Applications</span>
+                </router-link>
+                <router-link to="/portfolio?category=landing-pages" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-rocket"></i>
+                  <span>Landing Pages</span>
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Company - Collapsible Section -->
+            <div class="mobile-nav__section">
+              <button
+                class="mobile-nav__section-toggle"
+                @click="toggleMobileSection('company')"
+                :class="{ 'mobile-nav__section-toggle--active': mobileSections.company }"
+              >
+                <i class="fas fa-building"></i>
+                <span>Company</span>
+                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+              </button>
+              <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.company }">
+                <router-link to="/about" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-info-circle"></i>
+                  <span>About Us</span>
+                </router-link>
+                <router-link to="/team" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-users"></i>
+                  <span>Our Team</span>
+                </router-link>
+                <router-link to="/careers" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-briefcase"></i>
+                  <span>Careers</span>
+                </router-link>
+                <router-link to="/news" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                  <i class="fas fa-newspaper"></i>
+                  <span>News & Blog</span>
+                </router-link>
+              </div>
+            </div>
+
+            <!-- Contact -->
             <router-link to="/contact" class="mobile-nav__link mobile-nav__link--cta" @click="closeMobileMenu">
               <i class="fas fa-paper-plane"></i>
               <span>Contact</span>
@@ -273,6 +374,12 @@ export default {
     const isScrolled = ref(false)
     const isMobileMenuOpen = ref(false)
     const dropdowns = ref({
+      services: false,
+      portfolio: false,
+      company: false
+    })
+
+    const mobileSections = ref({
       services: false,
       portfolio: false,
       company: false
@@ -299,6 +406,10 @@ export default {
 
     const closeMobileMenu = () => {
       isMobileMenuOpen.value = false
+      // Close all mobile sections when menu closes
+      Object.keys(mobileSections.value).forEach(key => {
+        mobileSections.value[key] = false
+      })
     }
 
     const closeAllDropdowns = () => {
@@ -381,6 +492,18 @@ export default {
       }
     }
 
+    const toggleMobileSection = (section) => {
+      // Close the section if it's already open, otherwise open it
+      mobileSections.value[section] = !mobileSections.value[section]
+
+      // Close other sections
+      Object.keys(mobileSections.value).forEach(key => {
+        if (key !== section) {
+          mobileSections.value[key] = false
+        }
+      })
+    }
+
     onMounted(() => {
       window.addEventListener('scroll', handleScroll)
       document.addEventListener('click', handleOutsideClick)
@@ -402,13 +525,15 @@ export default {
       isScrolled,
       isMobileMenuOpen,
       dropdowns,
+      mobileSections,
       toggleMobileMenu,
       closeMobileMenu,
       showDropdown,
       hideDropdown,
       handleDropdownEnter,
       handleDropdownLeave,
-      closeAllDropdowns
+      closeAllDropdowns,
+      toggleMobileSection
     }
   }
 }
@@ -750,10 +875,76 @@ $border-radius: 12px;
   }
 
   &__content {
-    padding: 6rem 2rem 2rem;
+    padding: 0;
     height: 100%;
     transform: translateY(-50px);
     transition: $transition;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(26, 37, 47, 0.95);
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .logo__icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .logo__letter {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $primary-color;
+        text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+      }
+    }
+
+    .logo__text {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, $primary-color, #9b59b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+    }
+  }
+
+  &__close {
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: $transition;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-light;
+
+    &:hover {
+      background: rgba(231, 76, 60, 0.1);
+      color: $accent-color;
+      transform: scale(1.1);
+    }
+
+    i {
+      font-size: 1.2rem;
+    }
   }
 }
 
@@ -761,6 +952,9 @@ $border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
 
   &__link {
     display: flex;
@@ -796,6 +990,114 @@ $border-radius: 12px;
       width: 24px;
       text-align: center;
     }
+  }
+
+  &__section {
+    width: 100%;
+
+    &-toggle {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: $text-light;
+      border-radius: 12px;
+      transition: $transition;
+      text-align: left;
+
+      &:hover {
+        background: rgba(52, 152, 219, 0.1);
+        color: $primary-color;
+        transform: translateX(10px);
+      }
+
+      &--active {
+        color: $primary-color;
+        background: rgba(52, 152, 219, 0.1);
+
+        .mobile-nav__chevron {
+          transform: rotate(180deg);
+        }
+      }
+
+      i:first-child {
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+      }
+
+      span {
+        flex: 1;
+      }
+    }
+
+    &-submenu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &--open {
+        max-height: 400px;
+      }
+    }
+  }
+
+  &__submenu-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem 0.75rem 3rem;
+    color: $text-muted;
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 1rem;
+    border-radius: 8px;
+    margin: 0.25rem 0;
+    transition: $transition;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 2.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 4px;
+      background: $text-muted;
+      border-radius: 50%;
+      transition: $transition;
+    }
+
+    &:hover {
+      background: rgba(52, 152, 219, 0.1);
+      color: $primary-color;
+      transform: translateX(15px);
+
+      &::before {
+        background: $primary-color;
+        transform: translateY(-50%) scale(1.5);
+      }
+    }
+
+    i {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+  }
+
+  &__chevron {
+    font-size: 0.8rem !important;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    width: auto !important;
   }
 }
 

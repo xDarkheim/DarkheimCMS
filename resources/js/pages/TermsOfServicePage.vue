@@ -381,6 +381,19 @@ $border-radius: 12px;
   padding: 6rem 0 4rem;
   position: relative;
 
+  // Mobile header spacing fix - increased padding
+  @media (max-width: 768px) {
+    padding: 10rem 0 3rem; // Increased from 8rem to 10rem for mobile header
+  }
+
+  @media (max-width: 480px) {
+    padding: 9rem 0 2.5rem; // Increased from 7rem to 9rem for smaller mobile screens
+  }
+
+  @media (max-width: 360px) {
+    padding: 8.5rem 0 2rem; // Additional spacing for very small screens
+  }
+
   &::before {
     content: '';
     position: absolute;

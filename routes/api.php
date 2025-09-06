@@ -48,7 +48,8 @@ Route::prefix('news')->group(function () {
     Route::get('/archive', [NewsController::class, 'archive']);
     Route::get('/archive/{year}/{month}', [NewsController::class, 'archiveDate']);
     Route::get('/sitemap', [NewsController::class, 'sitemap']);
-    Route::get('/categories', [NewsController::class, 'allCategories']);
+    Route::get('/all-categories', [NewsController::class, 'allCategories']);
+    Route::get('/categories', [NewsController::class, 'allCategories']); // Keep both for compatibility
     Route::get('/category/{category}', [NewsController::class, 'byCategory']);
     Route::get('/category-stats', [NewsController::class, 'categoryStats']);
     Route::get('/tags', [NewsController::class, 'tags']);

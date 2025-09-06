@@ -81,6 +81,18 @@
     display: flex;
     gap: var(--space-4);
 
+    // Mobile improvements
+    @media (max-width: 768px) {
+      justify-content: center;
+      gap: var(--space-6);
+      margin-top: var(--space-2);
+    }
+
+    @media (max-width: 480px) {
+      gap: var(--space-5);
+      flex-wrap: wrap;
+    }
+
     a {
       display: flex;
       align-items: center;
@@ -92,12 +104,350 @@
       color: var(--color-neutral-300);
       text-decoration: none;
       transition: all var(--transition-base);
+      position: relative;
 
+      // Better mobile touch targets
+      @media (max-width: 768px) {
+        width: 48px;
+        height: 48px;
+        font-size: var(--font-size-lg);
+      }
+
+      // Ultra small screens
+      @media (max-width: 360px) {
+        width: 44px;
+        height: 44px;
+      }
+
+      // Remove hover effects on touch devices
       &:hover {
         background: var(--color-primary-600);
         color: white;
         transform: translateY(-2px);
+
+        @media (hover: none) {
+          transform: none;
+        }
+      }
+
+      // Add active state for mobile
+      &:active {
+        transform: scale(0.95);
+
+        @media (hover: hover) {
+          transform: translateY(-2px) scale(0.95);
+        }
+      }
+
+      // Better touch feedback
+      @media (max-width: 768px) {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          background: transparent;
+          transition: background-color var(--transition-base);
+        }
+
+        &:active::before {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      // Social platform specific colors for better visual hierarchy
+      &[href*="facebook"]:hover {
+        background: #1877f2;
+      }
+
+      &[href*="twitter"]:hover,
+      &[href*="x.com"]:hover {
+        background: #1da1f2;
+      }
+
+      &[href*="linkedin"]:hover {
+        background: #0077b5;
+      }
+
+      &[href*="instagram"]:hover {
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      }
+
+      &[href*="github"]:hover {
+        background: #333;
+      }
+
+      &[href*="youtube"]:hover {
+        background: #ff0000;
+      }
+
+      // Disable platform colors on touch devices for consistency
+      @media (hover: none) {
+        &[href*="facebook"]:hover,
+        &[href*="twitter"]:hover,
+        &[href*="x.com"]:hover,
+        &[href*="linkedin"]:hover,
+        &[href*="instagram"]:hover,
+        &[href*="github"]:hover,
+        &[href*="youtube"]:hover {
+          background: var(--color-primary-600);
+        }
       }
     }
+  }
+
+  // Footer CTA Button Section
+  &__cta {
+    background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    margin-bottom: var(--space-12);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: 768px) {
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+      border-radius: var(--radius-lg);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+      opacity: 0.1;
+    }
+
+    &-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    &-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: var(--font-weight-bold);
+      color: white;
+      margin-bottom: var(--space-4);
+      line-height: var(--line-height-tight);
+
+      @media (max-width: 480px) {
+        margin-bottom: var(--space-3);
+      }
+    }
+
+    &-text {
+      font-size: var(--font-size-base);
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: var(--space-6);
+      line-height: var(--line-height-relaxed);
+
+      @media (max-width: 768px) {
+        font-size: var(--font-size-sm);
+        margin-bottom: var(--space-5);
+      }
+    }
+
+    &-actions {
+      display: flex;
+      gap: var(--space-4);
+      justify-content: center;
+      align-items: center;
+
+      @media (max-width: 480px) {
+        flex-direction: column;
+        gap: var(--space-3);
+        width: 100%;
+      }
+    }
+  }
+
+  &__cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+
+    // Mobile optimizations
+    @media (max-width: 768px) {
+      padding: var(--space-3) var(--space-5);
+      font-size: var(--font-size-sm);
+      min-height: 44px; // Minimum touch target
+    }
+
+    @media (max-width: 480px) {
+      width: 100%;
+      max-width: 280px;
+      padding: var(--space-3-5) var(--space-6);
+      justify-content: center;
+    }
+
+    // Touch improvements
+    @media (max-width: 768px) {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+
+    i {
+      font-size: var(--font-size-sm);
+      transition: transform var(--transition-base);
+
+      @media (max-width: 768px) {
+        font-size: var(--font-size-xs);
+      }
+    }
+
+    // Primary CTA button style
+    &--primary {
+      background: white;
+      color: var(--color-primary-600);
+      box-shadow: var(--shadow-lg);
+
+      &:hover {
+        background: var(--color-neutral-50);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+
+        i {
+          transform: translateX(2px);
+        }
+
+        @media (hover: none) {
+          transform: none;
+          box-shadow: var(--shadow-lg);
+        }
+      }
+
+      &:active {
+        transform: translateY(0) scale(0.97);
+
+        @media (hover: hover) {
+          transform: translateY(-1px) scale(0.97);
+        }
+      }
+    }
+
+    // Secondary CTA button style
+    &--secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+
+        i {
+          transform: translateX(2px);
+        }
+
+        @media (hover: none) {
+          transform: none;
+          background: transparent;
+        }
+      }
+
+      &:active {
+        transform: translateY(0) scale(0.97);
+        background: rgba(255, 255, 255, 0.05);
+
+        @media (hover: hover) {
+          transform: translateY(-1px) scale(0.97);
+        }
+      }
+    }
+
+    // Size variants
+    &--sm {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--font-size-sm);
+
+      @media (max-width: 768px) {
+        padding: var(--space-2-5) var(--space-4);
+        font-size: var(--font-size-xs);
+      }
+    }
+
+    &--lg {
+      padding: var(--space-4) var(--space-8);
+      font-size: var(--font-size-lg);
+
+      @media (max-width: 768px) {
+        padding: var(--space-3-5) var(--space-6);
+        font-size: var(--font-size-base);
+      }
+
+      @media (max-width: 480px) {
+        padding: var(--space-4) var(--space-6);
+      }
+    }
+
+    // Loading state
+    &--loading {
+      pointer-events: none;
+      opacity: 0.7;
+
+      i {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    // Disabled state
+    &:disabled,
+    &--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+  }
+
+  // Responsive adjustments for CTA section
+  @media (max-width: 768px) {
+    &__cta {
+      margin-left: calc(-1 * var(--space-4));
+      margin-right: calc(-1 * var(--space-4));
+    }
+  }
+
+  @media (max-width: 480px) {
+    &__cta {
+      margin-left: calc(-1 * var(--space-3));
+      margin-right: calc(-1 * var(--space-3));
+      border-radius: var(--radius-md);
+    }
+  }
+}
+
+// Keyframe animations
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
