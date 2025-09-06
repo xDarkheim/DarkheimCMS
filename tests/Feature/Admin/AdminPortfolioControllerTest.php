@@ -20,7 +20,7 @@ class AdminPortfolioControllerTest extends TestCase
     {
         parent::setUp();
         $this->adminUser = User::factory()->create(['role' => 'admin']);
-        $this->category = PortfolioCategory::factory()->create();
+        $this->category = PortfolioCategory::factory()->create(['is_active' => true]);
     }
 
     #[Test]

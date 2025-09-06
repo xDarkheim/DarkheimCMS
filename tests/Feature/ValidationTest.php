@@ -36,7 +36,7 @@ class ValidationTest extends TestCase
     #[Test]
     public function portfolio_title_must_be_unique(): void
     {
-        $category = \App\Models\PortfolioCategory::factory()->create();
+        $category = \App\Models\PortfolioCategory::factory()->create(['is_active' => true]);
         $existingPortfolio = Portfolio::factory()->create([
             'title' => 'Existing Title',
             'portfolio_category_id' => $category->id
@@ -50,7 +50,7 @@ class ValidationTest extends TestCase
                             'short_description' => 'Test short description',
                             'technologies' => ['PHP', 'Laravel'],
                             'category' => 'web',
-                            'portfolio_category_id' => $existingPortfolio->portfolio_category_id, // Используем категорию существующего портфолио
+                            'portfolio_category_id' => $category->id, // Use the active category
                             'completed_at' => '2023-12-01'
                         ]);
 

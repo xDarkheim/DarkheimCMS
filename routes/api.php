@@ -25,7 +25,7 @@ use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageCo
 */
 
 // Authentication Routes
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('brute-force');
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user']);
 Route::middleware('auth:sanctum')->get('/validate-token', [AuthController::class, 'validateToken']);
@@ -59,7 +59,7 @@ Route::prefix('news')->group(function () {
 });
 
 // Public Contact Form
-Route::post('/contact', [ContactController::class, 'submit']);
+Route::post('/contact', [ContactController::class, 'submit'])->middleware('file-security');
 
 // Public Statistics
 Route::get('/stats', [App\Http\Controllers\Api\StatsController::class, 'public']);
@@ -79,7 +79,7 @@ Route::get('/team', [TeamMemberController::class, 'index']);
 Route::get('/team/{teamMember}', [TeamMemberController::class, 'show']);
 
 // Admin Routes (protected by Sanctum)
-Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index']);
     Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats']);
@@ -167,7 +167,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     // File Manager
     Route::prefix('files')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\FileManagerController::class, 'index']);
-        Route::post('/upload', [App\Http\Controllers\Admin\FileManagerController::class, 'upload']);
+        Route::post('/upload', [App\Http\Controllers\Admin\FileManagerController::class, 'upload'])->middleware('file-security');
         Route::post('/directory', [App\Http\Controllers\Admin\FileManagerController::class, 'createDirectory']);
         Route::delete('/', [App\Http\Controllers\Admin\FileManagerController::class, 'delete']);
     });

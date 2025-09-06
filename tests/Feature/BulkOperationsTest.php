@@ -25,7 +25,9 @@ class BulkOperationsTest extends TestCase
     #[Test]
     public function admin_can_bulk_publish_portfolios(): void
     {
-        $category = \App\Models\PortfolioCategory::factory()->create();
+        // Create an active category explicitly
+        $category = \App\Models\PortfolioCategory::factory()->create(['is_active' => true]);
+
         $portfolios = Portfolio::factory()->count(3)->create([
             'is_published' => false,
             'portfolio_category_id' => $category->id
@@ -33,7 +35,6 @@ class BulkOperationsTest extends TestCase
 
         // Since bulk endpoint doesn't exist, test individual publish actions
         foreach ($portfolios as $portfolio) {
-            // Обновляем категорию для каждого портфолио, чтобы быть уверенными
             $portfolio->refresh();
             $response = $this->actingAs($this->adminUser, 'sanctum')
                             ->putJson("/api/admin/portfolios/{$portfolio->id}", [
@@ -42,7 +43,7 @@ class BulkOperationsTest extends TestCase
                                 'short_description' => $portfolio->short_description ?? 'Updated description',
                                 'technologies' => $portfolio->technologies ?? ['PHP'],
                                 'category' => $portfolio->category ?? 'web',
-                                'portfolio_category_id' => $portfolio->portfolio_category_id, // Используем существующую категорию портфолио
+                                'portfolio_category_id' => $category->id, // Use the guaranteed active category
                                 'completed_at' => $portfolio->completed_at ?? '2023-12-01',
                                 'is_published' => true
                             ]);
