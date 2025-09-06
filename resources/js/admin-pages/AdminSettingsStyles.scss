@@ -1,0 +1,426 @@
+// Additional styles for AdminSettings component
+
+// Color Input Group
+.color-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+
+  .color-picker {
+    width: 60px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: none;
+
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    &::-webkit-color-swatch {
+      border: none;
+      border-radius: 6px;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    }
+  }
+
+  .color-text {
+    flex: 1;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+}
+
+// File Upload Area
+.file-upload-area {
+  .logo-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+
+    .logo-image {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: white;
+      padding: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-danger {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #c53030;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+// Password Input
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-right: 3rem;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #3182ce;
+      background: rgba(49, 130, 206, 0.1);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+    }
+  }
+}
+
+// API Key Item
+.api-key-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  .api-key-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .key-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 0.9rem;
+    }
+
+    .api-key {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+      border: 1px solid #4a5568;
+    }
+  }
+
+  .btn {
+    align-self: flex-start;
+  }
+}
+
+// SMTP Config Animation
+.smtp-config {
+  animation: slideDown 0.3s ease;
+  margin-top: 1rem;
+}
+
+// Settings Actions
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 2rem;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 16px 16px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  .btn {
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    justify-content: center;
+
+    &.btn-primary {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
+      }
+    }
+
+    &.btn-warning {
+      background: linear-gradient(135deg, #f56500 0%, #dd6b20 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(245, 101, 0, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 101, 0, 0.4);
+      }
+    }
+
+    &.btn-secondary {
+      background: #ffffff;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background: #f7fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    i.fa-spinner {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+}
+
+// Toast Notifications
+.toast-container {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+.toast-notification {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid;
+  animation: slideInRight 0.3s ease;
+  backdrop-filter: blur(10px);
+
+  &.success {
+    border-left-color: #38a169;
+    background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+
+    .toast-content i {
+      color: #38a169;
+    }
+  }
+
+  &.error {
+    border-left-color: #e53e3e;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+
+    .toast-content i {
+      color: #e53e3e;
+    }
+  }
+
+  &.warning {
+    border-left-color: #f56500;
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+
+    .toast-content i {
+      color: #f56500;
+    }
+  }
+
+  &.info {
+    border-left-color: #3182ce;
+    background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+
+    .toast-content i {
+      color: #3182ce;
+    }
+  }
+
+  .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #2d3748;
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    margin-left: 1rem;
+
+    &:hover {
+      color: #2d3748;
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Toast animations
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter {
+  opacity: 0;
+  transform: translateX(100px);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(100px);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Button enhancements
+.btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  min-width: auto;
+}
+
+// Loading state
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  backdrop-filter: blur(2px);
+
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #3182ce;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+// Enhanced focus indicators
+.nav-tab:focus-visible {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
+
+// Improved error states
+.form-group.has-error {
+  input,
+  textarea,
+  select {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+  }
+}
+
+// Success states
+.form-group.has-success {
+  input,
+  textarea,
+  select {
+    border-color: #38a169;
+    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+  }
+}

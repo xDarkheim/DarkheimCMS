@@ -4,6 +4,37 @@
       <div class="header-content">
         <h1><i class="fas fa-cog"></i> Settings</h1>
         <p>Configure and customize your application settings</p>
+
+        <!-- Search and Quick Actions -->
+        <div class="header-actions">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search settings..."
+              @input="handleSearch"
+            >
+          </div>
+
+          <div class="action-buttons">
+            <button @click="exportSettings" class="btn btn-outline" title="Export Settings">
+              <i class="fas fa-download"></i>
+              Export
+            </button>
+            <button @click="importSettings" class="btn btn-outline" title="Import Settings">
+              <i class="fas fa-upload"></i>
+              Import
+            </button>
+            <input ref="importFile" type="file" accept=".json" @change="handleImport" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Unsaved Changes Warning -->
+        <div v-if="hasUnsavedChanges" class="unsaved-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          You have unsaved changes. Don't forget to save your settings.
+        </div>
       </div>
     </div>
 
@@ -11,13 +42,14 @@
     <div class="content-card">
       <div class="settings-nav">
         <button
-          v-for="section in sections"
+          v-for="section in filteredSections"
           :key="section.id"
           @click="activeSection = section.id"
           :class="['nav-tab', { active: activeSection === section.id }]"
         >
           <i :class="section.icon"></i>
           <span>{{ section.title }}</span>
+          <span v-if="sectionHasMatches(section.id)" class="search-indicator">•</span>
         </button>
       </div>
 
@@ -40,13 +72,16 @@
               </div>
               <div class="card-content">
                 <div class="form-group">
-                  <label for="site_name">Site Name</label>
+                  <label for="site_name">Site Name *</label>
                   <input
                     id="site_name"
                     v-model="settings.site_name"
                     type="text"
                     placeholder="Your amazing site name"
+                    :class="{ 'error': errors.site_name }"
+                    @input="validateField('site_name')"
                   >
+                  <span v-if="errors.site_name" class="error-text">{{ errors.site_name }}</span>
                 </div>
                 <div class="form-group">
                   <label for="site_description">Description</label>
@@ -55,7 +90,21 @@
                     v-model="settings.site_description"
                     placeholder="Tell the world about your site..."
                     rows="3"
+                    maxlength="500"
                   ></textarea>
+                  <small class="char-count">{{ settings.site_description?.length || 0 }}/500 characters</small>
+                </div>
+                <div class="form-group">
+                  <label for="site_url">Site URL</label>
+                  <input
+                    id="site_url"
+                    v-model="settings.site_url"
+                    type="url"
+                    placeholder="https://example.com"
+                    :class="{ 'error': errors.site_url }"
+                    @input="validateField('site_url')"
+                  >
+                  <span v-if="errors.site_url" class="error-text">{{ errors.site_url }}</span>
                 </div>
               </div>
             </div>
@@ -69,13 +118,16 @@
               </div>
               <div class="card-content">
                 <div class="form-group">
-                  <label for="admin_email">Admin Email</label>
+                  <label for="admin_email">Admin Email *</label>
                   <input
                     id="admin_email"
                     v-model="settings.admin_email"
                     type="email"
                     placeholder="admin@example.com"
+                    :class="{ 'error': errors.admin_email }"
+                    @input="validateField('admin_email')"
                   >
+                  <span v-if="errors.admin_email" class="error-text">{{ errors.admin_email }}</span>
                 </div>
                 <div class="form-group">
                   <label for="items_per_page">Items Per Page</label>
@@ -86,6 +138,91 @@
                     <option value="25">25 items</option>
                     <option value="50">50 items</option>
                   </select>
+                </div>
+                <div class="form-group">
+                  <label for="timezone">Timezone</label>
+                  <select id="timezone" v-model="settings.timezone">
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">Eastern Time</option>
+                    <option value="America/Chicago">Central Time</option>
+                    <option value="America/Denver">Mountain Time</option>
+                    <option value="America/Los_Angeles">Pacific Time</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Europe/Paris">Paris</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-palette"></i>
+                </div>
+                <h4>Appearance</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="settings.dark_mode"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Enable Dark Mode</span>
+                  </label>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="settings.maintenance_mode"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Maintenance Mode</span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label for="primary_color">Primary Color</label>
+                  <div class="color-input-group">
+                    <input
+                      id="primary_color"
+                      v-model="settings.primary_color"
+                      type="color"
+                      class="color-picker"
+                    >
+                    <input
+                      v-model="settings.primary_color"
+                      type="text"
+                      placeholder="#3498db"
+                      class="color-text"
+                      @input="validateColorInput"
+                    >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="logo_upload">Site Logo</label>
+                  <div class="file-upload-area">
+                    <input
+                      id="logo_upload"
+                      ref="logoUpload"
+                      type="file"
+                      accept="image/*"
+                      @change="handleLogoUpload"
+                      style="display: none;"
+                    >
+                    <div class="logo-preview" v-if="settings.site_logo">
+                      <img :src="settings.site_logo" alt="Current logo" class="logo-image">
+                      <button @click="removeLogo" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                    <button @click="$refs.logoUpload.click()" class="btn btn-outline">
+                      <i class="fas fa-upload"></i>
+                      {{ settings.site_logo ? 'Change Logo' : 'Upload Logo' }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -116,7 +253,10 @@
                     type="number"
                     min="5"
                     max="480"
+                    :class="{ 'error': errors.session_timeout }"
+                    @input="validateField('session_timeout')"
                   >
+                  <span v-if="errors.session_timeout" class="error-text">{{ errors.session_timeout }}</span>
                 </div>
                 <div class="form-group">
                   <label for="max_login_attempts">Max Login Attempts</label>
@@ -140,24 +280,55 @@
               </div>
               <div class="card-content">
                 <div class="form-group checkbox-group">
-                  <label>
+                  <label class="modern-checkbox">
                     <input
                       v-model="securitySettings.require_email_verification"
                       type="checkbox"
                     >
                     <span class="checkmark"></span>
-                    Require Email Verification
+                    <span class="label-text">Require Email Verification</span>
                   </label>
                 </div>
                 <div class="form-group checkbox-group">
-                  <label>
+                  <label class="modern-checkbox">
                     <input
                       v-model="securitySettings.enable_2fa"
                       type="checkbox"
                     >
                     <span class="checkmark"></span>
-                    Enable Two-Factor Authentication
+                    <span class="label-text">Enable Two-Factor Authentication</span>
                   </label>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="securitySettings.force_https"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Force HTTPS</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-ban"></i>
+                </div>
+                <h4>IP Restrictions</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group">
+                  <label for="blocked_ips">Blocked IP Addresses</label>
+                  <textarea
+                    id="blocked_ips"
+                    v-model="securitySettings.blocked_ips_text"
+                    placeholder="192.168.1.1&#10;10.0.0.1"
+                    rows="3"
+                  ></textarea>
+                  <small>Enter IP addresses one per line</small>
                 </div>
               </div>
             </div>
@@ -181,32 +352,70 @@
               </div>
               <div class="card-content">
                 <div class="form-group checkbox-group">
-                  <label>
+                  <label class="modern-checkbox">
                     <input
                       v-model="emailSettings.smtp_enabled"
                       type="checkbox"
                     >
                     <span class="checkmark"></span>
-                    Enable SMTP
+                    <span class="label-text">Enable SMTP</span>
                   </label>
                 </div>
-                <div class="form-group">
-                  <label for="smtp_host">SMTP Host</label>
-                  <input
-                    id="smtp_host"
-                    v-model="emailSettings.smtp_host"
-                    type="text"
-                    placeholder="smtp.gmail.com"
-                  >
-                </div>
-                <div class="form-group">
-                  <label for="smtp_port">SMTP Port</label>
-                  <input
-                    id="smtp_port"
-                    v-model="emailSettings.smtp_port"
-                    type="number"
-                    placeholder="587"
-                  >
+                <div v-if="emailSettings.smtp_enabled" class="smtp-config">
+                  <div class="form-group">
+                    <label for="smtp_host">SMTP Host *</label>
+                    <input
+                      id="smtp_host"
+                      v-model="emailSettings.smtp_host"
+                      type="text"
+                      placeholder="smtp.gmail.com"
+                      :class="{ 'error': errors.smtp_host }"
+                      @input="validateField('smtp_host')"
+                    >
+                    <span v-if="errors.smtp_host" class="error-text">{{ errors.smtp_host }}</span>
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_port">SMTP Port</label>
+                    <input
+                      id="smtp_port"
+                      v-model="emailSettings.smtp_port"
+                      type="number"
+                      placeholder="587"
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_username">SMTP Username</label>
+                    <input
+                      id="smtp_username"
+                      v-model="emailSettings.smtp_username"
+                      type="text"
+                      placeholder="your-email@gmail.com"
+                    >
+                  </div>
+                  <div class="form-group">
+                    <label for="smtp_password">SMTP Password</label>
+                    <div class="password-input">
+                      <input
+                        id="smtp_password"
+                        v-model="emailSettings.smtp_password"
+                        :type="showPassword ? 'text' : 'password'"
+                        placeholder="••••••••"
+                      >
+                      <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="password-toggle"
+                      >
+                        <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <button @click="testEmail" class="btn btn-outline btn-sm">
+                      <i class="fas fa-paper-plane"></i>
+                      Test Email Connection
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -228,6 +437,16 @@
                     rows="3"
                   ></textarea>
                   <small>Enter email addresses separated by commas</small>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="emailSettings.email_notifications"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Enable Email Notifications</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -270,6 +489,119 @@
                     max="86400"
                   >
                 </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="apiSettings.api_enabled"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Enable API</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-key"></i>
+                </div>
+                <h4>API Keys</h4>
+              </div>
+              <div class="card-content">
+                <div class="api-key-item">
+                  <div class="api-key-info">
+                    <span class="key-name">Master API Key</span>
+                    <code class="api-key">{{ apiSettings.master_api_key || 'Not generated' }}</code>
+                  </div>
+                  <button @click="generateApiKey" class="btn btn-outline btn-sm">
+                    <i class="fas fa-sync-alt"></i>
+                    Regenerate
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Section -->
+        <div v-if="activeSection === 'performance'" class="settings-panel">
+          <div class="panel-header">
+            <h3>Performance & Optimization</h3>
+            <p>Configure caching, compression and performance settings</p>
+          </div>
+
+          <div class="settings-grid">
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-rocket"></i>
+                </div>
+                <h4>Caching</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="performanceSettings.enable_caching"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Enable Page Caching</span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label for="cache_duration">Cache Duration (hours)</label>
+                  <input
+                    id="cache_duration"
+                    v-model="performanceSettings.cache_duration"
+                    type="number"
+                    min="1"
+                    max="168"
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-card">
+              <div class="card-header">
+                <div class="card-icon">
+                  <i class="fas fa-compress"></i>
+                </div>
+                <h4>Compression</h4>
+              </div>
+              <div class="card-content">
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="performanceSettings.enable_gzip"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Enable GZIP Compression</span>
+                  </label>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="performanceSettings.minify_css"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Minify CSS</span>
+                  </label>
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="modern-checkbox">
+                    <input
+                      v-model="performanceSettings.minify_js"
+                      type="checkbox"
+                    >
+                    <span class="checkmark"></span>
+                    <span class="label-text">Minify JavaScript</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -278,7 +610,7 @@
 
       <!-- Action Buttons -->
       <div class="settings-actions">
-        <button @click="saveSettings" :disabled="saving" class="btn btn-primary">
+        <button @click="saveSettings" :disabled="saving || !isFormValid" class="btn btn-primary">
           <i v-if="saving" class="fas fa-spinner fa-spin"></i>
           <i v-else class="fas fa-save"></i>
           {{ saving ? 'Saving...' : 'Save Settings' }}
@@ -295,6 +627,23 @@
         </button>
       </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <transition-group name="toast" tag="div" class="toast-container">
+      <div
+        v-for="toast in toasts"
+        :key="toast.id"
+        :class="['toast-notification', toast.type]"
+      >
+        <div class="toast-content">
+          <i :class="getToastIcon(toast.type)"></i>
+          <span>{{ toast.message }}</span>
+        </div>
+        <button @click="removeToast(toast.id)" class="toast-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </transition-group>
   </div>
 </template>
 
@@ -307,11 +656,14 @@ export default {
     return {
       activeSection: 'general',
       saving: false,
+      searchQuery: '',
+      showPassword: false,
       sections: [
         { id: 'general', title: 'General', icon: 'fas fa-cog' },
         { id: 'security', title: 'Security', icon: 'fas fa-shield-alt' },
         { id: 'email', title: 'Email', icon: 'fas fa-envelope' },
-        { id: 'api', title: 'API', icon: 'fas fa-code' }
+        { id: 'api', title: 'API', icon: 'fas fa-code' },
+        { id: 'performance', title: 'Performance', icon: 'fas fa-rocket' }
       ],
 
       // Settings data
@@ -319,33 +671,118 @@ export default {
         site_name: '',
         site_description: '',
         admin_email: '',
-        items_per_page: 15
+        items_per_page: 15,
+        site_url: '',
+        timezone: 'UTC',
+        dark_mode: false,
+        maintenance_mode: false,
+        primary_color: '#3498db',
+        site_logo: null
       },
 
       securitySettings: {
         session_timeout: 60,
         max_login_attempts: 5,
         require_email_verification: true,
-        enable_2fa: false
+        enable_2fa: false,
+        force_https: false,
+        blocked_ips: [],
+        blocked_ips_text: ''
       },
 
       emailSettings: {
         smtp_enabled: false,
         smtp_host: '',
         smtp_port: 587,
+        smtp_username: '',
+        smtp_password: '',
+        email_notifications: true,
         contact_form_emails: [],
         contact_form_emails_text: ''
       },
 
       apiSettings: {
         api_rate_limit: 100,
-        api_cache_ttl: 3600
+        api_cache_ttl: 3600,
+        api_enabled: false,
+        master_api_key: ''
+      },
+
+      performanceSettings: {
+        enable_caching: false,
+        cache_duration: 24,
+        enable_gzip: false,
+        minify_css: false,
+        minify_js: false
+      },
+
+      // Form validation and UI state
+      errors: {},
+      toasts: [],
+      originalSettings: {},
+      searchResults: []
+    }
+  },
+
+  computed: {
+    filteredSections() {
+      if (!this.searchQuery) {
+        return this.sections
       }
+
+      const query = this.searchQuery.toLowerCase()
+      return this.sections.filter(section => {
+        return section.title.toLowerCase().includes(query) || this.sectionHasMatches(section.id)
+      })
+    },
+
+    isFormValid() {
+      const hasErrors = Object.keys(this.errors).length > 0
+      const requiredFields = this.settings.site_name && this.settings.admin_email
+
+      // Исправляем логику валидации email - если email есть, проверяем его валидность
+      const validEmail = this.settings.admin_email ? this.validateEmail(this.settings.admin_email) : true
+
+      // Если нет обязательных полей, форма все равно может быть валидной для сохранения других настроек
+      return !hasErrors && validEmail
+    },
+
+    hasUnsavedChanges() {
+      return JSON.stringify(this.getCurrentSettings()) !== JSON.stringify(this.originalSettings)
+    }
+  },
+
+  watch: {
+    settings: {
+      handler() {
+        this.validateAllFields()
+      },
+      deep: true
+    },
+    securitySettings: {
+      handler() {
+        this.validateAllFields()
+      },
+      deep: true
+    },
+    emailSettings: {
+      handler() {
+        this.validateAllFields()
+      },
+      deep: true
     }
   },
 
   async mounted() {
     await this.loadSettings()
+    this.storeOriginalSettings()
+
+    // Auto-hide toasts after 5 seconds
+    setInterval(() => {
+      this.toasts = this.toasts.filter(toast => {
+        return Date.now() - toast.timestamp < 5000
+      })
+    }, 1000)
   },
 
   methods: {
@@ -360,7 +797,13 @@ export default {
         }
 
         if (allSettings.security) {
-          this.securitySettings = { ...this.securitySettings, ...this.parseSettingsGroup(allSettings.security) }
+          const securityData = this.parseSettingsGroup(allSettings.security)
+          this.securitySettings = { ...this.securitySettings, ...securityData }
+
+          // Convert blocked IPs array to text
+          if (securityData.blocked_ips) {
+            this.securitySettings.blocked_ips_text = securityData.blocked_ips.join('\n')
+          }
         }
 
         if (allSettings.email) {
@@ -377,57 +820,153 @@ export default {
           this.apiSettings = { ...this.apiSettings, ...this.parseSettingsGroup(allSettings.api) }
         }
 
+        if (allSettings.performance) {
+          this.performanceSettings = { ...this.performanceSettings, ...this.parseSettingsGroup(allSettings.performance) }
+        }
+
+        this.storeOriginalSettings()
+
       } catch (error) {
         console.error('Failed to load settings:', error)
-        this.$toast?.error('Failed to load settings')
+        this.showToast('Failed to load settings', 'error')
       }
     },
 
     parseSettingsGroup(group) {
       const parsed = {}
       group.forEach(setting => {
-        parsed[setting.key] = setting.value
+        // Handle different data types
+        let value = setting.value
+        if (setting.type === 'boolean') {
+          value = value === 'true' || value === true
+        } else if (setting.type === 'integer') {
+          value = parseInt(value)
+        } else if (setting.type === 'array') {
+          value = Array.isArray(value) ? value : JSON.parse(value || '[]')
+        }
+        parsed[setting.key] = value
       })
       return parsed
     },
 
     async saveSettings() {
+      // Добавляем дополнительное логирование для отладки
+      console.log('Save Settings clicked:', {
+        isFormValid: this.isFormValid,
+        hasErrors: Object.keys(this.errors).length > 0,
+        errors: this.errors,
+        saving: this.saving
+      })
+
+      if (!this.isFormValid) {
+        console.warn('Form validation failed:', this.errors)
+        this.showToast('Please fix validation errors before saving', 'error')
+        return
+      }
+
       this.saving = true
 
       try {
         // Prepare settings for each group
         const groups = {
           general: this.prepareSettingsForSave(this.settings, 'general'),
-          security: this.prepareSettingsForSave(this.securitySettings, 'security'),
+          security: this.prepareSecuritySettings(),
           email: this.prepareEmailSettings(),
-          api: this.prepareSettingsForSave(this.apiSettings, 'api')
+          api: this.prepareSettingsForSave(this.apiSettings, 'api'),
+          performance: this.prepareSettingsForSave(this.performanceSettings, 'performance')
         }
 
+        console.log('Prepared settings groups:', groups)
+
         // Save each group
-        for (const [groupName, settings] of Object.entries(groups)) {
-          if (settings.length > 0) {
-            await adminApiService.updateSettingsGroup(groupName, settings)
+        for (const [groupName, settingsArray] of Object.entries(groups)) {
+          if (settingsArray.length > 0) {
+            console.log(`Saving ${groupName} settings:`, settingsArray)
+
+            // Pass the settings array directly - the API service will wrap it
+            console.log(`Request data for ${groupName}:`, settingsArray)
+            await adminApiService.updateSettingsGroup(groupName, settingsArray)
+            console.log(`Successfully saved ${groupName} settings`)
           }
         }
 
-        this.$toast?.success('Settings saved successfully')
+        this.showToast('Settings saved successfully', 'success')
+        this.storeOriginalSettings()
 
       } catch (error) {
         console.error('Failed to save settings:', error)
-        this.$toast?.error('Failed to save settings')
+
+        // Более детальная информация об ошибке
+        if (error.response) {
+          console.error('Error response:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data
+          })
+
+          // Показываем более конкретную ошибку пользователю
+          const errorMessage = error.response.data?.message || 'Failed to save settings'
+          this.showToast(errorMessage, 'error')
+        } else if (error.request) {
+          console.error('Network error:', error.request)
+          this.showToast('Network error: Please check your connection', 'error')
+        } else {
+          console.error('Unexpected error:', error.message)
+          this.showToast('Unexpected error occurred', 'error')
+        }
       } finally {
         this.saving = false
       }
     },
 
     prepareSettingsForSave(settingsObject, group) {
-      return Object.entries(settingsObject).map(([key, value]) => ({
-        key,
-        value,
-        type: this.getSettingType(value),
-        group,
-        is_public: this.isPublicSetting(key)
-      }))
+      return Object.entries(settingsObject)
+        .filter(([key, value]) => {
+          // Only include settings that have a valid value
+          return value !== null && value !== undefined && value !== '';
+        })
+        .map(([key, value]) => ({
+          key,
+          value: this.normalizeSettingValue(value),
+          type: this.getSettingType(value),
+          group,
+          is_public: this.isPublicSetting(key)
+        }))
+    },
+
+    normalizeSettingValue(value) {
+      // Ensure arrays are properly serialized as JSON strings for storage
+      if (Array.isArray(value)) {
+        return JSON.stringify(value);
+      }
+
+      // Convert boolean to string for consistent storage
+      if (typeof value === 'boolean') {
+        return value.toString();
+      }
+
+      // Convert numbers to strings
+      if (typeof value === 'number') {
+        return value.toString();
+      }
+
+      // Return string values as-is
+      return value;
+    },
+
+    prepareSecuritySettings() {
+      const securityData = { ...this.securitySettings }
+
+      // Convert blocked IPs text to array
+      if (securityData.blocked_ips_text) {
+        securityData.blocked_ips = securityData.blocked_ips_text
+          .split('\n')
+          .map(ip => ip.trim())
+          .filter(ip => ip)
+      }
+
+      delete securityData.blocked_ips_text
+      return this.prepareSettingsForSave(securityData, 'security')
     },
 
     prepareEmailSettings() {
@@ -442,7 +981,6 @@ export default {
       }
 
       delete emailData.contact_form_emails_text
-
       return this.prepareSettingsForSave(emailData, 'email')
     },
 
@@ -454,7 +992,7 @@ export default {
     },
 
     isPublicSetting(key) {
-      const publicSettings = ['site_name', 'site_description']
+      const publicSettings = ['site_name', 'site_description', 'primary_color', 'timezone']
       return publicSettings.includes(key)
     },
 
@@ -463,12 +1001,318 @@ export default {
         try {
           await adminApiService.resetSettingsToDefaults()
           await this.loadSettings()
-          this.$toast?.success('Settings reset to defaults')
+          this.showToast('Settings reset to defaults', 'success')
         } catch (error) {
           console.error('Failed to reset settings:', error)
-          this.$toast?.error('Failed to reset settings')
+          this.showToast('Failed to reset settings', 'error')
         }
       }
+    },
+
+    // Validation methods
+    validateField(field) {
+      this.$nextTick(() => {
+        if (field === 'site_name') {
+          if (!this.settings.site_name || this.settings.site_name.trim().length < 2) {
+            // Vue 3 compatible way to set reactive errors
+            this.errors = { ...this.errors, site_name: 'Site name must be at least 2 characters' }
+          } else {
+            // Vue 3 compatible way to delete from reactive errors
+            const { site_name, ...rest } = this.errors
+            this.errors = rest
+          }
+        }
+
+        if (field === 'admin_email') {
+          if (!this.settings.admin_email) {
+            this.errors = { ...this.errors, admin_email: 'Admin email is required' }
+          } else if (!this.validateEmail(this.settings.admin_email)) {
+            this.errors = { ...this.errors, admin_email: 'Please enter a valid email address' }
+          } else {
+            const { admin_email, ...rest } = this.errors
+            this.errors = rest
+          }
+        }
+
+        if (field === 'site_url' && this.settings.site_url) {
+          const urlPattern = /^(ftp|http|https):\/\/[^ "]+$/
+          if (!urlPattern.test(this.settings.site_url)) {
+            this.errors = { ...this.errors, site_url: 'Please enter a valid URL (e.g., https://example.com)' }
+          } else {
+            const { site_url, ...rest } = this.errors
+            this.errors = rest
+          }
+        }
+
+        if (field === 'session_timeout') {
+          const timeout = parseInt(this.securitySettings.session_timeout)
+          if (isNaN(timeout) || timeout < 5 || timeout > 480) {
+            this.errors = { ...this.errors, session_timeout: 'Session timeout must be between 5 and 480 minutes' }
+          } else {
+            const { session_timeout, ...rest } = this.errors
+            this.errors = rest
+          }
+        }
+
+        if (field === 'smtp_host' && this.emailSettings.smtp_enabled) {
+          if (!this.emailSettings.smtp_host || this.emailSettings.smtp_host.trim().length < 3) {
+            this.errors = { ...this.errors, smtp_host: 'SMTP host is required when SMTP is enabled' }
+          } else {
+            const { smtp_host, ...rest } = this.errors
+            this.errors = rest
+          }
+        }
+      })
+    },
+
+    validateAllFields() {
+      this.validateField('site_name')
+      this.validateField('admin_email')
+      this.validateField('site_url')
+      this.validateField('session_timeout')
+      this.validateField('smtp_host')
+    },
+
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return emailRegex.test(email)
+    },
+
+    validateColorInput() {
+      const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+      if (this.settings.primary_color && !colorRegex.test(this.settings.primary_color)) {
+        this.errors = { ...this.errors, primary_color: 'Please enter a valid hex color (e.g., #3498db)' }
+      } else {
+        const { primary_color, ...rest } = this.errors
+        this.errors = rest
+      }
+    },
+
+    async handleLogoUpload(event) {
+      const file = event.target.files[0]
+      if (!file) return
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.showToast('Please select a valid image file', 'error')
+        return
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        this.showToast('Image size must be less than 2MB', 'error')
+        return
+      }
+
+      try {
+        const formData = new FormData()
+        formData.append('logo', file)
+
+        this.showToast('Uploading logo...', 'info')
+
+        const response = await adminApiService.uploadLogo(formData)
+        this.settings.site_logo = response.data.logo_url
+
+        this.showToast('Logo uploaded successfully', 'success')
+      } catch (error) {
+        console.error('Failed to upload logo:', error)
+        this.showToast('Failed to upload logo', 'error')
+      }
+    },
+
+    removeLogo() {
+      if (confirm('Are you sure you want to remove the current logo?')) {
+        this.settings.site_logo = null
+        this.showToast('Logo removed', 'success')
+      }
+    },
+
+    // Import/Export functionality
+    async exportSettings() {
+      try {
+        const allSettings = this.getCurrentSettings()
+        const exportData = {
+          timestamp: new Date().toISOString(),
+          version: '1.0',
+          settings: allSettings
+        }
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+
+        link.href = url
+        link.download = `settings-export-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        this.showToast('Settings exported successfully', 'success')
+
+      } catch (error) {
+        console.error('Failed to export settings:', error)
+        this.showToast('Failed to export settings', 'error')
+      }
+    },
+
+    importSettings() {
+      this.$refs.importFile.click()
+    },
+
+    async handleImport(event) {
+      const file = event.target.files[0]
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        try {
+          const importData = JSON.parse(e.target.result)
+
+          // Validate import structure
+          if (!importData.settings) {
+            this.showToast('Invalid settings file format', 'error')
+            return
+          }
+
+          if (!confirm('This will overwrite your current settings. Are you sure you want to continue?')) {
+            return
+          }
+
+          // Apply imported settings
+          const { settings } = importData
+          if (settings.general) Object.assign(this.settings, settings.general)
+          if (settings.security) Object.assign(this.securitySettings, settings.security)
+          if (settings.email) Object.assign(this.emailSettings, settings.email)
+          if (settings.api) Object.assign(this.apiSettings, settings.api)
+          if (settings.performance) Object.assign(this.performanceSettings, settings.performance)
+
+          this.showToast('Settings imported successfully', 'success')
+
+        } catch (error) {
+          console.error('Failed to import settings:', error)
+          this.showToast('Invalid JSON file or corrupted data', 'error')
+        }
+      }
+
+      reader.readAsText(file)
+      event.target.value = ''
+    },
+
+    // Search functionality
+    handleSearch() {
+      if (!this.searchQuery) {
+        this.searchResults = []
+        return
+      }
+
+      const query = this.searchQuery.toLowerCase()
+      this.searchResults = []
+
+      // Search through all settings
+      const allSettings = {
+        general: this.settings,
+        security: this.securitySettings,
+        email: this.emailSettings,
+        api: this.apiSettings,
+        performance: this.performanceSettings
+      }
+
+      Object.entries(allSettings).forEach(([section, settings]) => {
+        Object.keys(settings).forEach(key => {
+          if (key.toLowerCase().includes(query)) {
+            this.searchResults.push({ section, key })
+          }
+        })
+      })
+
+      // Auto-switch to first matching section
+      if (this.searchResults.length > 0) {
+        this.activeSection = this.searchResults[0].section
+      }
+    },
+
+    sectionHasMatches(sectionId) {
+      return this.searchResults.some(result => result.section === sectionId)
+    },
+
+    // API testing functionality
+    async testEmail() {
+      try {
+        this.showToast('Testing email connection...', 'info')
+
+        const testData = {
+          smtp_host: this.emailSettings.smtp_host,
+          smtp_port: this.emailSettings.smtp_port,
+          smtp_username: this.emailSettings.smtp_username,
+          smtp_password: this.emailSettings.smtp_password
+        }
+
+        await adminApiService.testEmailConnection(testData)
+        this.showToast('Email connection test successful!', 'success')
+
+      } catch (error) {
+        console.error('Email test failed:', error)
+        this.showToast('Email connection test failed. Please check your settings.', 'error')
+      }
+    },
+
+    async generateApiKey() {
+      try {
+        const response = await adminApiService.generateApiKey()
+        this.apiSettings.master_api_key = response.data.api_key
+        this.showToast('New API key generated successfully', 'success')
+
+      } catch (error) {
+        console.error('Failed to generate API key:', error)
+        this.showToast('Failed to generate API key', 'error')
+      }
+    },
+
+    // Utility methods
+    getCurrentSettings() {
+      return {
+        general: this.settings,
+        security: { ...this.securitySettings },
+        email: { ...this.emailSettings },
+        api: this.apiSettings,
+        performance: this.performanceSettings
+      }
+    },
+
+    storeOriginalSettings() {
+      this.originalSettings = JSON.parse(JSON.stringify(this.getCurrentSettings()))
+    },
+
+    // Toast notification system
+    showToast(message, type = 'info') {
+      const toast = {
+        id: Date.now() + Math.random(),
+        message,
+        type,
+        timestamp: Date.now()
+      }
+
+      this.toasts.push(toast)
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        this.removeToast(toast.id)
+      }, 5000)
+    },
+
+    removeToast(id) {
+      this.toasts = this.toasts.filter(toast => toast.id !== id)
+    },
+
+    getToastIcon(type) {
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+      }
+      return icons[type] || icons.info
     }
   }
 }
@@ -483,102 +1327,210 @@ export default {
   min-height: 100vh;
 }
 
-// Page Header
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 2rem;
 
-  .header-content h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin: 0 0 0.5rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .header-content {
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a365d;
+      margin: 0 0 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
 
-    i {
-      color: #3498db;
+      i {
+        color: #3182ce;
+      }
     }
-  }
 
-  .header-content p {
-    color: #7f8c8d;
-    margin: 0;
+    p {
+      color: #4a5568;
+      margin: 0 0 1.5rem 0;
+      font-size: 1rem;
+    }
   }
 }
 
-// Navigation Tabs
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    max-width: 400px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    &:focus-within {
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+
+      i {
+        color: #3182ce;
+      }
+    }
+
+    i {
+      color: #a0aec0;
+      margin-right: 0.75rem;
+      font-size: 1rem;
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      color: #2d3748;
+      background: transparent;
+
+      &::placeholder {
+        color: #a0aec0;
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    .btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      &.btn-outline {
+        background: #ffffff;
+        border: 1px solid #3182ce;
+        color: #3182ce;
+
+        &:hover {
+          background: #3182ce;
+          color: white;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+        }
+      }
+    }
+  }
+
+  .unsaved-warning {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 1px solid #fc8181;
+    border-radius: 12px;
+    color: #c53030;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 2px 8px rgba(197, 48, 48, 0.1);
+
+    i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+    }
+  }
+}
+
 .settings-nav {
   display: flex;
-  border-bottom: 1px solid #f1f3f4;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-radius: 12px 12px 0 0;
+  padding: 0.5rem;
+  gap: 0.25rem;
 
   .nav-tab {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1.25rem 2rem;
-    background: none;
+    padding: 1rem 1.5rem;
+    background: transparent;
     border: none;
-    color: #6c757d;
+    color: #4a5568;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    border-radius: 10px;
     font-size: 0.9rem;
+    position: relative;
 
     &:hover {
-      color: #3498db;
-      background: rgba(52, 152, 219, 0.05);
+      color: #3182ce;
+      background: rgba(49, 130, 206, 0.1);
+      transform: translateY(-2px);
     }
 
     &.active {
-      color: #3498db;
-      background: white;
-      border-bottom-color: #3498db;
+      color: #3182ce;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      font-weight: 600;
     }
 
     i {
-      font-size: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .search-indicator {
+      color: #3182ce;
+      font-weight: bold;
+      margin-left: 0.5rem;
+      animation: pulse 2s infinite;
     }
 
     @media (max-width: 768px) {
-      padding: 1rem 1.25rem;
+      padding: 1rem;
 
-      span {
+      span:not(.search-indicator) {
         display: none;
       }
     }
   }
 }
 
-// Content Area
 .settings-content {
   padding: 2rem;
+  background: #ffffff;
 }
 
 .settings-panel {
   .panel-header {
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #f1f3f4;
-    padding-bottom: 1rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
 
     h3 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #2c3e50;
-      margin: 0 0 0.5rem 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a365d;
+      margin: 0 0 0.75rem 0;
     }
 
     p {
-      color: #7f8c8d;
+      color: #4a5568;
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
     }
   }
+
+  animation: fadeInUp 0.6s ease;
 }
 
 .settings-grid {
@@ -587,60 +1539,53 @@ export default {
   gap: 2rem;
 
   .setting-card {
-    background: #f8f9fa;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      border-color: #3498db;
-    }
-
-    &.full-width {
-      grid-column: 1 / -1;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: #3182ce;
     }
 
     .card-header {
-      background: white;
+      background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
       padding: 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       gap: 1rem;
 
       .card-icon {
-        width: 48px;
-        height: 48px;
-        background: #3498db;
-        border-radius: 12px;
+        width: 52px;
+        height: 52px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.25rem;
+        font-size: 1.4rem;
+        backdrop-filter: blur(10px);
       }
 
       h4 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2c3e50;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
         margin: 0;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       }
     }
 
     .card-content {
-      padding: 1.5rem;
-
-      p {
-        color: #7f8c8d;
-        margin: 0 0 1.5rem 0;
-        line-height: 1.6;
-      }
+      padding: 2rem;
 
       .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.75rem;
 
         &:last-child {
           margin-bottom: 0;
@@ -649,235 +1594,385 @@ export default {
         label {
           display: block;
           font-weight: 600;
-          color: #374151;
+          color: #2d3748;
           margin-bottom: 0.5rem;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
         }
 
         input,
         textarea,
         select {
           width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #dee2e6;
-          border-radius: 8px;
-          font-size: 0.9rem;
-          transition: all 0.2s ease;
-          background: white;
-          color: #495057;
+          padding: 0.875rem 1rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 0.95rem;
+          transition: all 0.3s ease;
+          background: #ffffff;
+          color: #2d3748;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
           &:focus {
             outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+            transform: translateY(-1px);
           }
 
           &::placeholder {
-            color: #adb5bd;
+            color: #a0aec0;
+          }
+
+          &.error {
+            border-color: #e53e3e;
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
           }
         }
 
         textarea {
           resize: vertical;
-          min-height: 80px;
+          min-height: 100px;
+          font-family: inherit;
         }
 
         select {
           cursor: pointer;
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234a5568' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
           background-position: right 1rem center;
           background-repeat: no-repeat;
           background-size: 1rem;
           appearance: none;
         }
-      }
 
-      .toggle-field {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-
-        .toggle-info {
-          flex: 1;
-
-          h5 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0 0 0.25rem;
-          }
-
-          p {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin: 0;
-          }
+        .error-text {
+          color: #e53e3e;
+          font-size: 0.85rem;
+          margin-top: 0.5rem;
+          display: block;
+          font-weight: 500;
         }
 
-        .toggle-switch {
-          position: relative;
-          display: inline-block;
-          width: 50px;
-          height: 28px;
-          margin-left: 1rem;
+        .char-count {
+          color: #718096;
+          font-size: 0.8rem;
+          margin-top: 0.5rem;
+          display: block;
+          text-align: right;
+        }
 
-          input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-
-            &:checked + .slider {
-              background-color: #3498db;
-
-              &:before {
-                transform: translateX(22px);
-              }
-            }
-          }
-
-          .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: 0.3s;
-            border-radius: 28px;
-
-            &:before {
-              position: absolute;
-              content: '';
-              height: 22px;
-              width: 22px;
-              left: 3px;
-              bottom: 3px;
-              background-color: white;
-              transition: 0.3s;
-              border-radius: 50%;
-              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            }
-          }
+        small {
+          color: #718096;
+          font-size: 0.85rem;
+          margin-top: 0.5rem;
+          display: block;
         }
       }
     }
   }
 }
 
-// Action Button
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-  text-decoration: none;
-
-  &.btn-primary {
-    background: #3498db;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #2980b9;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  &.btn-secondary {
-    background: #6c757d;
-    color: white;
-
-    &:hover {
-      background: #5a6268;
-    }
-  }
-
-  &.btn-danger {
-    background: #e74c3c;
-    color: white;
-
-    &:hover {
-      background: #c0392b;
-    }
-  }
-}
-
-.settings-actions {
-  padding: 1.5rem 2rem;
-  background: #f8f9fa;
-  border-top: 1px solid #e2e8f0;
+// Color Input Group
+.color-input-group {
   display: flex;
-  justify-content: flex-end;
+  gap: 0.75rem;
+  align-items: center;
+
+  .color-picker {
+    width: 60px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: none;
+
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    &::-webkit-color-swatch {
+      border: none;
+      border-radius: 6px;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    }
+  }
+
+  .color-text {
+    flex: 1;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+}
+
+// File Upload Area
+.file-upload-area {
+  .logo-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+
+    .logo-image {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: white;
+      padding: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-danger {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #c53030;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+// Password Input
+.password-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    padding-right: 3rem;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: #3182ce;
+      background: rgba(49, 130, 206, 0.1);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+    }
+  }
+}
+
+// API Key Item
+.api-key-item {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  padding: 1.5rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  .api-key-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .key-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 0.9rem;
+    }
+
+    .api-key {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+      border: 1px solid #4a5568;
+    }
+  }
+
+  .btn {
+    align-self: flex-start;
+  }
+}
+
+// SMTP Config Animation
+.smtp-config {
+  animation: slideDown 0.3s ease;
+  margin-top: 1rem;
+}
+
+// Settings Actions
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+  padding: 2rem;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  border-radius: 0 0 16px 16px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  .btn {
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+    justify-content: center;
+
+    &.btn-primary {
+      background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(49, 130, 206, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
+      }
+    }
+
+    &.btn-warning {
+      background: linear-gradient(135deg, #f56500 0%, #dd6b20 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(245, 101, 0, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 101, 0, 0.4);
+      }
+    }
+
+    &.btn-secondary {
+      background: #ffffff;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background: #f7fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    i.fa-spinner {
+      animation: spin 1s linear infinite;
+    }
+  }
 
   @media (max-width: 768px) {
     flex-direction: column;
 
     .btn {
-      justify-content: center;
+      width: 100%;
+      min-width: auto;
     }
   }
 }
 
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Toast Notification
-.toast-notification {
+// Toast Notifications
+.toast-container {
   position: fixed;
   top: 2rem;
   right: 2rem;
-  background: white;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+.toast-notification {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  z-index: 1001;
-  max-width: 400px;
-  border: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid;
+  animation: slideInRight 0.3s ease;
+  backdrop-filter: blur(10px);
 
   &.success {
-    border-left: 4px solid #27ae60;
+    border-left-color: #38a169;
+    background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
 
     .toast-content i {
-      color: #27ae60;
+      color: #38a169;
     }
   }
 
   &.error {
-    border-left: 4px solid #e74c3c;
+    border-left-color: #e53e3e;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
 
     .toast-content i {
-      color: #e74c3c;
+      color: #e53e3e;
+    }
+  }
+
+  &.warning {
+    border-left-color: #f56500;
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+
+    .toast-content i {
+      color: #f56500;
+    }
+  }
+
+  &.info {
+    border-left-color: #3182ce;
+    background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
+
+    .toast-content i {
+      color: #3182ce;
     }
   }
 
@@ -886,93 +1981,195 @@ export default {
     align-items: center;
     gap: 0.75rem;
     flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #2d3748;
 
     i {
       font-size: 1.1rem;
-    }
-
-    span {
-      font-weight: 500;
-      color: #2c3e50;
-      font-size: 0.9rem;
     }
   }
 
   .toast-close {
     background: none;
     border: none;
-    color: #7f8c8d;
+    color: #718096;
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    margin-left: 1rem;
 
     &:hover {
-      background: #f8f9fa;
-      color: #495057;
+      color: #2d3748;
+      background: rgba(0, 0, 0, 0.1);
     }
   }
 }
 
+.checkbox-group {
+  .modern-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 0.75rem;
+
+    &:hover {
+      background: rgba(49, 130, 206, 0.08);
+      border-color: #3182ce;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(49, 130, 206, 0.15);
+    }
+
+    input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+
+      &:checked ~ .checkmark {
+        background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+        border-color: #3182ce;
+        transform: scale(1.05);
+
+        &::after {
+          display: block;
+          transform: rotate(45deg) scale(1);
+        }
+      }
+    }
+
+    .checkmark {
+      position: relative;
+      height: 28px;
+      width: 28px;
+      background: #ffffff;
+      border: 3px solid #e2e8f0;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+
+      &::after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 8px;
+        top: 4px;
+        width: 6px;
+        height: 12px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg) scale(0);
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+    }
+
+    .label-text {
+      color: #2d3748;
+      font-weight: 500;
+      font-size: 1rem;
+      line-height: 1.4;
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+.content-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+// Button enhancements
+.btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  min-width: auto;
+}
+
+// Toast animations
 .toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
 }
 
-.toast-enter-from {
+.toast-enter {
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateX(100px);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateX(100px);
 }
 
-// Responsive Design
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .admin-settings {
     padding: 1rem;
   }
 
-  .page-header {
-    flex-direction: column;
-    gap: 1rem;
-
-    .header-content h1 {
-      font-size: 1.75rem;
-    }
-  }
-
-  .settings-content {
-    padding: 1.5rem;
-  }
-
   .settings-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-
-  .toast-notification {
-    left: 1rem;
-    right: 1rem;
-    top: 1rem;
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .setting-card .card-content {
-    padding: 1rem;
-  }
-
-  .settings-nav {
-    overflow-x: auto;
-
-    .nav-tab {
-      white-space: nowrap;
-      min-width: fit-content;
-    }
   }
 }
 </style>
