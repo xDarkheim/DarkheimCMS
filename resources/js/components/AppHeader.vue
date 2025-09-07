@@ -5,9 +5,17 @@
       <div class="header__left">
         <router-link to="/" class="logo">
           <div class="logo__icon">
-            <span class="logo__letter">D</span>
+            <div class="logo__shape">
+              <div class="logo__inner">
+                <span class="logo__letter">D</span>
+              </div>
+              <div class="logo__accent"></div>
+            </div>
           </div>
-          <span class="logo__text">Darkheim</span>
+          <div class="logo__text-wrapper">
+            <span class="logo__text">DARKHEIM</span>
+            <span class="logo__tagline">Digital Solutions</span>
+          </div>
         </router-link>
       </div>
 
@@ -228,9 +236,14 @@
           <div class="mobile-menu__header">
             <router-link to="/" class="mobile-menu__logo" @click="closeMobileMenu">
               <div class="logo__icon">
-                <span class="logo__letter">D</span>
+                <div class="logo__shape">
+                  <div class="logo__inner">
+                    <span class="logo__letter">D</span>
+                  </div>
+                  <div class="logo__accent"></div>
+                </div>
               </div>
-              <span class="logo__text">Darkheim</span>
+              <span class="logo__text">DARKHEIM</span>
             </router-link>
             <button
               class="mobile-menu__close"
@@ -758,44 +771,161 @@ $border-radius: 12px;
   }
 }
 
-// Logo Styles
+// Logo Styles - СТРОГИЙ ПРОФЕССИОНАЛЬНЫЙ ДИЗАЙН
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   text-decoration: none;
   transition: $transition;
 
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
+
+    .logo__shape {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+
+      .logo__accent {
+        transform: scaleX(1.2);
+      }
+    }
+
+    .logo__text {
+      color: $primary-color;
+    }
   }
 
   &__icon {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__shape {
+    position: relative;
     width: 48px;
     height: 48px;
-    position: relative;
+    background: linear-gradient(135deg, $bg-darker 0%, #34495e 100%);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow:
+      0 4px 15px rgba(0, 0, 0, 0.2),
+      inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    transition: $transition;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+
+    @media (max-width: 768px) {
+      width: 40px;
+      height: 40px;
+    }
+
+    @media (max-width: 480px) {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  &__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
   }
 
   &__letter {
-    font-size: 2rem;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    font-size: 24px;
     font-weight: 700;
     color: $primary-color;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     position: relative;
-    z-index: 2;
-    text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+    z-index: 3;
+    text-rendering: optimizeLegibility;
+
+    @media (max-width: 768px) {
+      font-size: 20px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 18px;
+    }
+  }
+
+  &__accent {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    background: linear-gradient(90deg, $primary-color, $primary-hover);
+    border-radius: 1px;
+    transition: $transition;
+
+    @media (max-width: 768px) {
+      width: 16px;
+      height: 1.5px;
+      bottom: 3px;
+    }
+
+    @media (max-width: 480px) {
+      width: 14px;
+      height: 1.5px;
+    }
+  }
+
+  &__text-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    @media (max-width: 1024px) {
+      align-items: center;
+      text-align: center;
+    }
   }
 
   &__text {
-    font-size: 1.75rem;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(135deg, $primary-color, #9b59b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+    color: $text-light;
+    line-height: 1.1;
+    letter-spacing: 0.5px;
+    text-rendering: optimizeLegibility;
+    transition: $transition;
+
+    @media (max-width: 768px) {
+      font-size: 1.3rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__tagline {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    opacity: 0.8;
+
+    @media (max-width: 768px) {
+      font-size: 0.7rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.65rem;
+      margin-top: 1px;
+    }
   }
 }
 
@@ -1075,30 +1205,65 @@ $border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    text-decoration: none;
 
     .logo__icon {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      .logo__shape {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, $bg-darker 0%, #34495e 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          0 4px 15px rgba(0, 0, 0, 0.2),
+          inset 0 1px 2px rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(52, 152, 219, 0.2);
+        position: relative;
 
-      .logo__letter {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: $primary-color;
-        text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+        .logo__inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2;
+        }
+
+        .logo__letter {
+          font-family: 'Inter', 'Roboto', sans-serif;
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: $primary-color;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          position: relative;
+          z-index: 3;
+          text-rendering: optimizeLegibility;
+        }
+
+        .logo__accent {
+          position: absolute;
+          bottom: 3px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 16px;
+          height: 1.5px;
+          background: linear-gradient(90deg, $primary-color, $primary-hover);
+          border-radius: 1px;
+        }
       }
     }
 
     .logo__text {
+      font-family: 'Inter', 'Roboto', sans-serif;
       font-size: 1.5rem;
       font-weight: 700;
-      background: linear-gradient(135deg, $primary-color, #9b59b6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+      color: $text-light;
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+      text-rendering: optimizeLegibility;
     }
   }
 

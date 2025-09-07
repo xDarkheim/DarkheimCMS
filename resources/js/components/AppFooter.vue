@@ -9,27 +9,21 @@
             <div class="footer__logo">
               <div class="footer__logo-container">
                 <div class="footer__logo-icon">
-                  <div class="footer__logo-symbol">
-                    <span class="footer__logo-d">D</span>
-                    <div class="footer__logo-brackets">
-                      <span class="footer__logo-bracket footer__logo-bracket--left">{</span>
-                      <span class="footer__logo-bracket footer__logo-bracket--right">}</span>
+                  <div class="footer__logo-shape">
+                    <div class="footer__logo-inner">
+                      <span class="footer__logo-letter">D</span>
                     </div>
-                    <div class="footer__logo-dots">
-                      <span class="footer__logo-dot"></span>
-                      <span class="footer__logo-dot"></span>
-                      <span class="footer__logo-dot"></span>
-                    </div>
+                    <div class="footer__logo-accent"></div>
                   </div>
                 </div>
                 <div class="footer__logo-text-wrapper">
-                  <span class="footer__logo-text">Darkheim</span>
-                  <span class="footer__logo-tagline">Creative Studio</span>
+                  <span class="footer__logo-text">DARKHEIM</span>
+                  <span class="footer__logo-tagline">Digital Solutions</span>
                 </div>
               </div>
             </div>
             <p class="footer__description">
-              {{ companyDescription || 'We create exceptional digital experiences that drive business growth and user engagement.' }}
+              {{ companyDescription || 'Crafting innovative digital experiences that push the boundaries of technology and design.' }}
             </p>
           </div>
 
@@ -434,7 +428,7 @@ $border-radius: 12px;
   }
 }
 
-// Brand Section
+// Brand Section - СТРОГИЙ ПРОФЕССИОНАЛЬНЫЙ ДИЗАЙН ФУТЕРА
 .footer__logo {
   margin-bottom: 1.5rem;
   cursor: pointer;
@@ -455,29 +449,17 @@ $border-radius: 12px;
   }
 
   &:hover {
-    .footer__logo-bracket {
-      animation: footerBracketPulse 0.8s ease-in-out;
-    }
+    .footer__logo-shape {
+      transform: scale(1.02);
+      box-shadow: 0 12px 40px rgba(52, 152, 219, 0.4);
 
-    .footer__logo-dot {
-      animation: footerDotBounce 0.8s ease-in-out;
-
-      &:nth-child(2) {
-        animation-delay: 0.15s;
-      }
-
-      &:nth-child(3) {
-        animation-delay: 0.3s;
+      .footer__logo-accent {
+        transform: translate(-50%, -50%) scale(1.1);
       }
     }
 
-    .footer__logo-d {
-      animation: footerLogoGlow 0.8s ease-in-out;
-    }
-
-    .footer__logo-icon {
-      transform: scale(1.05);
-      box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+    .footer__logo-text {
+      color: $primary-color;
     }
   }
 
@@ -513,10 +495,7 @@ $border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, $primary-color, $primary-hover);
-    border-radius: $border-radius;
-    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-    transition: $transition;
+    flex-shrink: 0;
 
     // Адаптивные размеры иконки
     @media (max-width: 768px) {
@@ -535,19 +514,55 @@ $border-radius: 12px;
     }
   }
 
-  &-symbol {
+  &-shape {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, $bg-darker 0%, #34495e 100%);
+    border-radius: $border-radius;
     display: flex;
     align-items: center;
-    position: relative;
+    justify-content: center;
+    box-shadow:
+      0 8px 25px rgba(0, 0, 0, 0.3),
+      inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    transition: $transition;
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    overflow: hidden;
+
+    // Адаптивные размеры формы
+    @media (max-width: 768px) {
+      border-radius: 10px;
+    }
+
+    @media (max-width: 480px) {
+      border-radius: 8px;
+    }
+
+    @media (max-width: 360px) {
+      border-radius: 6px;
+    }
   }
 
-  &-d {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: white;
+  &-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
     position: relative;
     z-index: 2;
+  }
+
+  &-letter {
+    font-family: 'Inter', 'Roboto', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: $primary-color;
+    position: relative;
+    z-index: 3;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-rendering: optimizeLegibility;
 
     // Адаптивные размеры D
     @media (max-width: 768px) {
@@ -563,46 +578,36 @@ $border-radius: 12px;
     }
   }
 
-  &-brackets {
+  &-accent {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-  }
-
-  &-bracket {
-    font-size: 1.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    opacity: 0.8;
-
-    &--left {
-      transform: translateX(-10px);
-    }
-
-    &--right {
-      transform: translateX(10px);
-    }
-  }
-
-  &-dots {
-    position: absolute;
-    bottom: -6px;
+    bottom: 6px;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 3px;
-  }
+    width: 24px;
+    height: 2px;
+    background: linear-gradient(90deg, $primary-color, $primary-hover);
+    border-radius: 1px;
+    transition: $transition;
+    z-index: 2;
 
-  &-dot {
-    width: 8px;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+    // Адаптивные размеры акцента
+    @media (max-width: 768px) {
+      width: 20px;
+      height: 1.5px;
+      bottom: 5px;
+    }
+
+    @media (max-width: 480px) {
+      width: 18px;
+      height: 1.5px;
+      bottom: 4px;
+    }
+
+    @media (max-width: 360px) {
+      width: 16px;
+      height: 1px;
+      bottom: 3px;
+    }
   }
 
   &-text-wrapper {
@@ -622,14 +627,14 @@ $border-radius: 12px;
   }
 
   &-text {
+    font-family: 'Inter', 'Roboto', sans-serif;
     font-size: 2.25rem;
     font-weight: 700;
-    background: linear-gradient(135deg, $primary-color, #9b59b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: $text-light;
     line-height: 1.2;
-    filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+    letter-spacing: 0.5px;
+    text-rendering: optimizeLegibility;
+    transition: $transition;
 
     // Адаптивные размеры текста
     @media (max-width: 768px) {
@@ -647,10 +652,12 @@ $border-radius: 12px;
 
   &-tagline {
     font-size: 1rem;
-    font-weight: 400;
+    font-weight: 500;
     color: $text-muted;
     margin-top: 4px;
     opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 
     // Адаптивные размеры тэглайна
     @media (max-width: 768px) {
