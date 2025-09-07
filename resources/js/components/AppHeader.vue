@@ -222,16 +222,16 @@
       </div>
 
       <!-- Mobile menu overlay -->
-      <div class="mobile-menu" :class="{ 'mobile-menu--open': isMobileMenuOpen }">
-        <div class="mobile-menu__content">
+      <div class="mobile-menu" :class="{ 'mobile-menu--open': isMobileMenuOpen }" @click="handleMobileMenuOverlayClick">
+        <div class="mobile-menu__content" @click.stop>
           <!-- Mobile menu header with close button -->
           <div class="mobile-menu__header">
-            <div class="mobile-menu__logo">
+            <router-link to="/" class="mobile-menu__logo" @click="closeMobileMenu">
               <div class="logo__icon">
                 <span class="logo__letter">D</span>
               </div>
               <span class="logo__text">Darkheim</span>
-            </div>
+            </router-link>
             <button
               class="mobile-menu__close"
               @click="closeMobileMenu"
@@ -243,7 +243,12 @@
 
           <nav class="mobile-nav">
             <!-- Home -->
-            <router-link to="/" class="mobile-nav__link" @click="closeMobileMenu">
+            <router-link
+              to="/"
+              class="mobile-nav__link"
+              :class="{ 'mobile-nav__link--active': $route.name === 'Home' }"
+              @click="closeMobileMenu"
+            >
               <i class="fas fa-home"></i>
               <span>Home</span>
             </router-link>
@@ -253,30 +258,58 @@
               <button
                 class="mobile-nav__section-toggle"
                 @click="toggleMobileSection('services')"
-                :class="{ 'mobile-nav__section-toggle--active': mobileSections.services }"
+                :class="{
+                  'mobile-nav__section-toggle--active': mobileSections.services,
+                  'mobile-nav__section-toggle--current': isCurrentSection('services')
+                }"
               >
                 <i class="fas fa-laptop-code"></i>
                 <span>Services</span>
-                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+                <i class="fas fa-chevron-down mobile-nav__chevron" :class="{ 'mobile-nav__chevron--rotated': mobileSections.services }"></i>
               </button>
               <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.services }">
-                <router-link to="/services" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/services"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'Services' && !$route.query.filter }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-list"></i>
                   <span>All Services</span>
                 </router-link>
-                <router-link to="/services?filter=web-development" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/services?filter=web-development"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.filter === 'web-development' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-code"></i>
                   <span>Web Development</span>
                 </router-link>
-                <router-link to="/services?filter=ui-ux-design" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/services?filter=ui-ux-design"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.filter === 'ui-ux-design' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-palette"></i>
                   <span>UI/UX Design</span>
                 </router-link>
-                <router-link to="/services?filter=mobile-apps" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/services?filter=mobile-apps"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.filter === 'mobile-apps' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-mobile-alt"></i>
                   <span>Mobile Apps</span>
                 </router-link>
-                <router-link to="/services?filter=consulting" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/services?filter=consulting"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.filter === 'consulting' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-lightbulb"></i>
                   <span>Consulting</span>
                 </router-link>
@@ -288,34 +321,67 @@
               <button
                 class="mobile-nav__section-toggle"
                 @click="toggleMobileSection('portfolio')"
-                :class="{ 'mobile-nav__section-toggle--active': mobileSections.portfolio }"
+                :class="{
+                  'mobile-nav__section-toggle--active': mobileSections.portfolio,
+                  'mobile-nav__section-toggle--current': isCurrentSection('portfolio')
+                }"
               >
                 <i class="fas fa-folder-open"></i>
                 <span>Portfolio</span>
-                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+                <i class="fas fa-chevron-down mobile-nav__chevron" :class="{ 'mobile-nav__chevron--rotated': mobileSections.portfolio }"></i>
               </button>
               <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.portfolio }">
-                <router-link to="/portfolio" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'Portfolio' && !$route.query.category }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-th-large"></i>
                   <span>All Projects</span>
                 </router-link>
-                <router-link to="/portfolio?category=web-development" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio?category=web-development"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.category === 'web-development' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-code"></i>
                   <span>Web Development</span>
                 </router-link>
-                <router-link to="/portfolio?category=mobile-applications" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio?category=mobile-applications"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.category === 'mobile-applications' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-mobile-alt"></i>
                   <span>Mobile Applications</span>
                 </router-link>
-                <router-link to="/portfolio?category=ecommerce-solutions" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio?category=ecommerce-solutions"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.category === 'ecommerce-solutions' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-shopping-cart"></i>
                   <span>E-commerce Solutions</span>
                 </router-link>
-                <router-link to="/portfolio?category=business-applications" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio?category=business-applications"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.category === 'business-applications' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-briefcase"></i>
                   <span>Business Applications</span>
                 </router-link>
-                <router-link to="/portfolio?category=landing-pages" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/portfolio?category=landing-pages"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.query.category === 'landing-pages' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-rocket"></i>
                   <span>Landing Pages</span>
                 </router-link>
@@ -327,26 +393,49 @@
               <button
                 class="mobile-nav__section-toggle"
                 @click="toggleMobileSection('company')"
-                :class="{ 'mobile-nav__section-toggle--active': mobileSections.company }"
+                :class="{
+                  'mobile-nav__section-toggle--active': mobileSections.company,
+                  'mobile-nav__section-toggle--current': isCurrentSection('company')
+                }"
               >
                 <i class="fas fa-building"></i>
                 <span>Company</span>
-                <i class="fas fa-chevron-down mobile-nav__chevron"></i>
+                <i class="fas fa-chevron-down mobile-nav__chevron" :class="{ 'mobile-nav__chevron--rotated': mobileSections.company }"></i>
               </button>
               <div class="mobile-nav__submenu" :class="{ 'mobile-nav__submenu--open': mobileSections.company }">
-                <router-link to="/about" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/about"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'About' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-info-circle"></i>
                   <span>About Us</span>
                 </router-link>
-                <router-link to="/team" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/team"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'Team' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-users"></i>
                   <span>Our Team</span>
                 </router-link>
-                <router-link to="/careers" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/careers"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'Careers' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-briefcase"></i>
                   <span>Careers</span>
                 </router-link>
-                <router-link to="/news" class="mobile-nav__submenu-link" @click="closeMobileMenu">
+                <router-link
+                  to="/news"
+                  class="mobile-nav__submenu-link"
+                  :class="{ 'mobile-nav__submenu-link--active': $route.name === 'News' }"
+                  @click="closeMobileMenu"
+                >
                   <i class="fas fa-newspaper"></i>
                   <span>News & Blog</span>
                 </router-link>
@@ -354,7 +443,12 @@
             </div>
 
             <!-- Contact -->
-            <router-link to="/contact" class="mobile-nav__link mobile-nav__link--cta" @click="closeMobileMenu">
+            <router-link
+              to="/contact"
+              class="mobile-nav__link mobile-nav__link--cta"
+              :class="{ 'mobile-nav__link--active': $route.name === 'Contact' }"
+              @click="closeMobileMenu"
+            >
               <i class="fas fa-paper-plane"></i>
               <span>Contact</span>
             </router-link>
@@ -366,11 +460,13 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'AppHeader',
   setup() {
+    const route = useRoute()
     const isScrolled = ref(false)
     const isMobileMenuOpen = ref(false)
     const dropdowns = ref({
@@ -401,6 +497,13 @@ export default {
       // Close all dropdowns when mobile menu opens
       if (isMobileMenuOpen.value) {
         closeAllDropdowns()
+        // Блокируем скролл страницы при открытом меню
+        document.body.classList.add('mobile-menu-open')
+        document.body.style.overflow = 'hidden'
+      } else {
+        // Восстанавливаем скролл
+        document.body.classList.remove('mobile-menu-open')
+        document.body.style.overflow = ''
       }
     }
 
@@ -410,6 +513,9 @@ export default {
       Object.keys(mobileSections.value).forEach(key => {
         mobileSections.value[key] = false
       })
+      // Восстанавливаем скролл
+      document.body.classList.remove('mobile-menu-open')
+      document.body.style.overflow = ''
     }
 
     const closeAllDropdowns = () => {
@@ -492,6 +598,25 @@ export default {
       }
     }
 
+    // Touch event handlers for mobile devices
+    const handleTouchStart = (e) => {
+      // Store the initial touch position for potential swipe gestures
+      const touch = e.touches[0]
+      if (touch) {
+        // You can add touch start logic here if needed
+        // For now, we'll just prevent issues with undefined handler
+      }
+    }
+
+    const handleTouchEnd = (e) => {
+      // Handle touch end events
+      // This can be used for closing dropdowns on touch outside
+      const headerEl = document.querySelector('.header')
+      if (headerEl && !headerEl.contains(e.target)) {
+        closeAllDropdowns()
+      }
+    }
+
     const toggleMobileSection = (section) => {
       // Close the section if it's already open, otherwise open it
       mobileSections.value[section] = !mobileSections.value[section]
@@ -504,21 +629,58 @@ export default {
       })
     }
 
+    // Check if current route is in a specific section
+    const isCurrentSection = (section) => {
+      const routeName = route.name
+      const query = route.query
+
+      switch (section) {
+        case 'services':
+          return routeName === 'Services' || query.filter
+        case 'portfolio':
+          return routeName === 'Portfolio' || query.category
+        case 'company':
+          return ['About', 'Team', 'Careers', 'News'].includes(routeName)
+        default:
+          return false
+      }
+    }
+
     onMounted(() => {
       window.addEventListener('scroll', handleScroll)
       document.addEventListener('click', handleOutsideClick)
       document.addEventListener('keydown', handleKeyDown)
+      // Add touch event listeners
+      document.addEventListener('touchstart', handleTouchStart)
+      document.addEventListener('touchend', handleTouchEnd)
     })
+    // Handle mobile menu overlay click
+    const handleMobileMenuOverlayClick = (e) => {
+      // Close menu if clicking on overlay (not on content)
+      if (e.target === e.currentTarget) {
+        closeMobileMenu()
+      }
+    }
+
 
     onUnmounted(() => {
       window.removeEventListener('scroll', handleScroll)
       document.removeEventListener('click', handleOutsideClick)
       document.removeEventListener('keydown', handleKeyDown)
+      // Remove touch event listeners
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchend', handleTouchEnd)
 
       // Clear all timeouts on unmount
       Object.values(dropdownTimeouts.value).forEach(timeout => {
         if (timeout) clearTimeout(timeout)
       })
+    })
+
+    // Watch for route changes to close mobile menu and dropdowns
+    watch(route, () => {
+      closeMobileMenu()
+      closeAllDropdowns()
     })
 
     return {
@@ -528,18 +690,22 @@ export default {
       mobileSections,
       toggleMobileMenu,
       closeMobileMenu,
+      handleMobileMenuOverlayClick,
       showDropdown,
       hideDropdown,
       handleDropdownEnter,
       handleDropdownLeave,
       closeAllDropdowns,
-      toggleMobileSection
+      toggleMobileSection,
+      isCurrentSection
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 // Variables
 $primary-color: #3498db;
 $primary-hover: #2980b9;
@@ -858,12 +1024,18 @@ $border-radius: 12px;
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   background: rgba(26, 37, 47, 0.98);
   backdrop-filter: blur(20px);
   z-index: 999;
   opacity: 0;
   visibility: hidden;
   transition: $transition;
+  overflow: hidden;
+
+  @supports (height: 100dvh) {
+    height: 100dvh;
+  }
 
   &--open {
     opacity: 1;
@@ -877,19 +1049,26 @@ $border-radius: 12px;
   &__content {
     padding: 0;
     height: 100%;
+    height: 100dvh;
     transform: translateY(-50px);
     transition: $transition;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+
+    @supports (height: 100dvh) {
+      height: 100dvh;
+    }
   }
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(26, 37, 47, 0.95);
+    flex-shrink: 0;
   }
 
   &__logo {
@@ -952,9 +1131,16 @@ $border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 120px);
+  max-height: calc(100dvh - 120px);
+
+  @supports (height: 100dvh) {
+    max-height: calc(100dvh - 120px);
+  }
 
   &__link {
     display: flex;
@@ -974,6 +1160,17 @@ $border-radius: 12px;
       transform: translateX(10px);
     }
 
+    &--active {
+      background: linear-gradient(135deg, $primary-color, $primary-hover);
+      color: white;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+
+      &:hover {
+        transform: translateX(10px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+      }
+    }
+
     &--cta {
       background: linear-gradient(135deg, $accent-color, #c0392b);
       color: white;
@@ -982,6 +1179,11 @@ $border-radius: 12px;
       &:hover {
         background: linear-gradient(135deg, #c0392b, $accent-color);
         transform: translateX(10px) scale(1.02);
+      }
+
+      &.mobile-nav__link--active {
+        background: linear-gradient(135deg, color.adjust($accent-color, $lightness: -10%), $accent-color);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
       }
     }
 
@@ -1026,6 +1228,16 @@ $border-radius: 12px;
         }
       }
 
+      &--current {
+        background: linear-gradient(135deg, rgba($primary-color, 0.2), rgba($primary-hover, 0.1));
+        color: $primary-color;
+        border: 1px solid rgba($primary-color, 0.3);
+
+        &:hover {
+          background: linear-gradient(135deg, rgba($primary-color, 0.3), rgba($primary-hover, 0.2));
+        }
+      }
+
       i:first-child {
         font-size: 1.2rem;
         width: 24px;
@@ -1036,15 +1248,18 @@ $border-radius: 12px;
         flex: 1;
       }
     }
+  }
 
-    &-submenu {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  &__submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
 
-      &--open {
-        max-height: 400px;
-      }
+    &--open {
+      max-height: 400px;
+      opacity: 1;
+      padding-top: 0.5rem;
     }
   }
 
@@ -1052,13 +1267,13 @@ $border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem 1.5rem 0.75rem 3rem;
+    padding: 0.65rem 1.5rem 0.65rem 3rem; // Уменьшаем вертикальный padding
     color: $text-muted;
     text-decoration: none;
     font-weight: 400;
-    font-size: 1rem;
+    font-size: 0.95rem; // Немного уменьшаем размер шрифта
     border-radius: 8px;
-    margin: 0.25rem 0;
+    margin: 0.2rem 0; // Уменьшаем margin
     transition: $transition;
     position: relative;
 
@@ -1083,6 +1298,23 @@ $border-radius: 12px;
       &::before {
         background: $primary-color;
         transform: translateY(-50%) scale(1.5);
+      }
+    }
+
+    &--active {
+      background: linear-gradient(135deg, rgba($primary-color, 0.15), rgba($primary-hover, 0.1));
+      color: $primary-color;
+      font-weight: 500;
+
+      &::before {
+        background: $primary-color;
+        transform: translateY(-50%) scale(1.2);
+        box-shadow: 0 0 10px rgba($primary-color, 0.5);
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, rgba($primary-color, 0.2), rgba($primary-hover, 0.15));
+        transform: translateX(15px) scale(1.02);
       }
     }
 
@@ -1177,5 +1409,151 @@ $border-radius: 12px;
 
 .mobile-menu-toggle:focus {
   background: rgba(255, 255, 255, 0.05);
+}
+
+// Vue Transition Animations
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+
+  .mobile-menu__content {
+    transform: translateY(-50px) scale(0.95);
+  }
+}
+
+.mobile-menu-enter-to,
+.mobile-menu-leave-from {
+  opacity: 1;
+
+  .mobile-menu__content {
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Mobile submenu transitions
+.mobile-submenu-enter-active,
+.mobile-submenu-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.mobile-submenu-enter-from,
+.mobile-submenu-leave-to {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.mobile-submenu-enter-to,
+.mobile-submenu-leave-from {
+  max-height: 500px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+// Enhanced mobile navigation chevron rotation
+.mobile-nav__chevron {
+  &--rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// Better z-index management
+.mobile-menu {
+  z-index: 9999 !important;
+}
+
+.header {
+  z-index: 10000 !important;
+}
+
+// Дополнительные стили для лучшего контроля высоты на мобильных устройствах
+@media (max-width: 768px) {
+  .mobile-menu {
+    &__header {
+      padding: 1rem 1.5rem; // Еще больше уменьшаем на маленьких экранах
+    }
+  }
+
+  .mobile-nav {
+    padding: 1rem 1.5rem;
+    max-height: calc(100vh - 100px);
+
+    @supports (height: 100dvh) {
+      max-height: calc(100dvh - 100px);
+    }
+
+    &__submenu {
+      &--open {
+        max-height: 350px;
+      }
+    }
+
+    &__submenu-link {
+      padding: 0.6rem 1.25rem 0.6rem 2.75rem;
+      font-size: 0.9rem;
+    }
+
+    &__link {
+      padding: 0.85rem 1.25rem;
+      font-size: 1rem;
+    }
+
+    &__section-toggle {
+      padding: 0.85rem 1.25rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-menu {
+    &__header {
+      padding: 0.75rem 1rem;
+    }
+  }
+
+  .mobile-nav {
+    padding: 0.75rem 1rem;
+    max-height: calc(100vh - 80px);
+
+    @supports (height: 100dvh) {
+      max-height: calc(100dvh - 80px);
+    }
+
+    &__submenu {
+      &--open {
+        max-height: 300px;
+      }
+    }
+
+    &__submenu-link {
+      padding: 0.55rem 1rem 0.55rem 2.5rem;
+      font-size: 0.85rem;
+    }
+
+    &__link {
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    &__section-toggle {
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+    }
+  }
+}
+
+// Дополнительные стили для предотвращения скролла body
+body.mobile-menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
 }
 </style>

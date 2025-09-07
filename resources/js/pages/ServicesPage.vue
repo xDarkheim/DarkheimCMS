@@ -100,7 +100,7 @@
     <!-- Service Details Modal -->
     <div v-if="selectedService" class="service-modal" @click="closeModal">
       <div class="service-modal__content" @click.stop>
-        <button class="service-modal__close" @click="closeModal">
+        <button class="service-modal__close" @click="closeModal" aria-label="Close modal">
           <i class="fas fa-times"></i>
         </button>
 
@@ -110,6 +110,12 @@
           </div>
           <h2 class="service-modal__title">{{ selectedService.title }}</h2>
           <div class="service-modal__price">{{ selectedService.price }}</div>
+
+          <!-- Additional close button in header for mobile -->
+          <button class="service-modal__header-close" @click="closeModal" aria-label="Close">
+            <i class="fas fa-arrow-down"></i>
+            <span>Close</span>
+          </button>
         </div>
 
         <div class="service-modal__body">
@@ -523,11 +529,110 @@ export default {
     showServiceDetails(service) {
       this.selectedService = service
       document.body.style.overflow = 'hidden'
+
+      // Добавляем обработчик для свайпа вниз на мобильных устройствах
+      this.$nextTick(() => {
+        this.setupMobileModalInteractions()
+      })
     },
+
     closeModal() {
       this.selectedService = null
       document.body.style.overflow = 'auto'
+
+      // Убираем обработчики свайпа
+      this.removeMobileModalInteractions()
     },
+
+    // Новый метод для настройки мобильных взаимодействий с модальным окном
+    setupMobileModalInteractions() {
+      const modal = document.querySelector('.service-modal')
+      const modalContent = document.querySelector('.service-modal__content')
+
+      if (!modal || !modalContent) return
+
+      let startY = 0
+      let currentY = 0
+      let isDragging = false
+
+      const handleTouchStart = (e) => {
+        startY = e.touches[0].clientY
+        isDragging = true
+        modalContent.style.transition = 'none'
+      }
+
+      const handleTouchMove = (e) => {
+        if (!isDragging) return
+
+        currentY = e.touches[0].clientY
+        const deltaY = currentY - startY
+
+        // Позволяем только свайп вниз и только если прокрутка контента в верхней позиции
+        const modalBody = modalContent.querySelector('.service-modal__body')
+        const isScrolledToTop = modalBody.scrollTop === 0
+
+        if (deltaY > 0 && isScrolledToTop) {
+          e.preventDefault()
+          // Применяем трансформацию только если свайп вниз
+          const translateY = Math.min(deltaY * 0.5, 100)
+          modalContent.style.transform = `translateY(${translateY}px)`
+
+          // Изменяем прозрачность фона
+          const opacity = Math.max(0.8 - (deltaY / 300), 0.3)
+          modal.style.background = `rgba(0, 0, 0, ${opacity})`
+        }
+      }
+
+      const handleTouchEnd = (e) => {
+        if (!isDragging) return
+
+        isDragging = false
+        modalContent.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+
+        const deltaY = currentY - startY
+
+        // Если свайп достаточно большой, закрываем модальное окно
+        if (deltaY > 100) {
+          modalContent.style.transform = 'translateY(100vh)'
+          setTimeout(() => {
+            this.closeModal()
+          }, 300)
+        } else {
+          // Возвращаем в исходную позицию
+          modalContent.style.transform = 'translateY(0)'
+          modal.style.background = 'rgba(0, 0, 0, 0.8)'
+        }
+      }
+
+      // Добавляем обработчики событий
+      modalContent.addEventListener('touchstart', handleTouchStart, { passive: false })
+      modalContent.addEventListener('touchmove', handleTouchMove, { passive: false })
+      modalContent.addEventListener('touchend', handleTouchEnd, { passive: false })
+
+      // Сохраняем ссылки на обработчики для последующего удаления
+      this.modalTouchHandlers = {
+        touchstart: handleTouchStart,
+        touchmove: handleTouchMove,
+        touchend: handleTouchEnd,
+        modalContent
+      }
+    },
+
+    // Удаляем обработчики свайпа
+    removeMobileModalInteractions() {
+      if (this.modalTouchHandlers) {
+        const { touchstart, touchmove, touchend, modalContent } = this.modalTouchHandlers
+
+        if (modalContent) {
+          modalContent.removeEventListener('touchstart', touchstart)
+          modalContent.removeEventListener('touchmove', touchmove)
+          modalContent.removeEventListener('touchend', touchend)
+        }
+
+        this.modalTouchHandlers = null
+      }
+    },
+
     // Метод для обработки изменений URL параметров
     handleRouteChange() {
       const urlParams = new URLSearchParams(window.location.search)
@@ -554,6 +659,13 @@ export default {
       }
     })
 
+    // Добавляем обработчик для закрытия модального окна по клику на задний фон
+    document.addEventListener('click', (e) => {
+      if (this.selectedService && e.target.classList.contains('service-modal')) {
+        this.closeModal()
+      }
+    })
+
     // Check for filter parameter in URL
     this.handleRouteChange()
 
@@ -565,6 +677,7 @@ export default {
       this.scrollActiveTabIntoView()
     })
   },
+
   beforeUnmount() {
     document.body.style.overflow = 'auto'
 
@@ -574,6 +687,9 @@ export default {
       tabsContainer.removeEventListener('scroll', this.handleTabsScroll)
     }
     window.removeEventListener('resize', this.handleTabsScroll)
+
+    // Убираем обработчики модального окна
+    this.removeMobileModalInteractions()
   }
 }
 </script>

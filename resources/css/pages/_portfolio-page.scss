@@ -672,8 +672,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal);
+    z-index: 10001;
     padding: var(--space-4);
+    overflow: hidden;
+    // Предотвращаем любые проблемы с шириной
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
 
     // Улучшенная мобильная поддержка
     @media (max-width: 768px) {
@@ -681,12 +686,25 @@
       align-items: flex-start;
       justify-content: center;
       overflow-y: auto;
+      overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      z-index: 10001;
+      // Принудительно устанавливаем размеры
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      max-height: 100vh;
     }
 
     @media (max-width: 480px) {
       padding: 0;
       align-items: stretch;
+      overflow-x: hidden;
+      // Убеждаемся что нет переполнения
+      width: 100vw;
+      height: 100vh;
+      max-width: 100vw;
+      min-width: 100vw;
     }
   }
 
@@ -706,35 +724,88 @@
     align-items: center;
     justify-content: center;
     font-size: var(--font-size-lg);
-    z-index: 10;
+    z-index: 10003; // Кнопка закрытия на самом верху
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-    // Улучшенная мобильная версия
+    // Улучшенная мобильная версия - делаем кнопку очень заметной
     @media (max-width: 768px) {
-      top: var(--space-3);
-      right: var(--space-3);
-      width: 44px;
-      height: 44px;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      top: var(--space-2);
+      right: var(--space-2);
+      width: 3.5rem;
+      height: 3.5rem;
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      backdrop-filter: blur(8px);
+      font-size: var(--font-size-xl);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      z-index: 10003; // Убеждаемся что кнопка видна на мобильных
+
+      &:hover, &:active {
+        background: rgba(231, 76, 60, 1);
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      // Добавляем пульсирующий эффект для привлечения внимания
+      animation: pulseAttention 2s infinite;
+
+      @keyframes pulseAttention {
+        0%, 70%, 100% {
+          transform: scale(1);
+        }
+        35% {
+          transform: scale(1.1);
+        }
+      }
+
+      &:hover, &:active {
+        animation: none;
+      }
     }
 
     @media (max-width: 480px) {
-      top: var(--space-2);
-      right: var(--space-2);
-      width: 36px;
-      height: 36px;
-      font-size: var(--font-size-base);
+      top: var(--space-1);
+      right: var(--space-1);
+      width: 3.25rem;
+      height: 3.25rem;
+      font-size: var(--font-size-lg);
+
+      // Увеличиваем область касания для лучшего UX
+      &::before {
+        content: '';
+        position: absolute;
+        top: -15px;
+        left: -15px;
+        right: -15px;
+        bottom: -15px;
+        border-radius: 50%;
+      }
     }
 
-    &:hover {
-      color: var(--color-primary);
-      background: white;
-      transform: scale(1.05);
+    // Добавляем визуальные эффекты для лучшей видимости
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      pointer-events: none;
     }
 
-    &:active {
-      transform: scale(0.95);
+    &:active::after {
+      width: 100%;
+      height: 100%;
     }
   }
 
@@ -746,31 +817,48 @@
     width: 95%;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     box-shadow: var(--shadow-2xl);
     border: 1px solid var(--color-neutral-300);
     display: flex;
     flex-direction: column;
     animation: modal-appear 0.3s ease-out;
+    z-index: 10002;
+    // Добавляем box-sizing для правильного расчета размеров
+    box-sizing: border-box;
 
     // Мобильная адаптация
     @media (max-width: 768px) {
-      padding: var(--space-6);
-      width: calc(100vw - var(--space-4));
-      max-width: none;
+      padding: var(--space-4);
+      width: calc(100vw - 2rem);
+      max-width: calc(100vw - 2rem);
+      min-width: 0;
       max-height: 95vh;
       margin: var(--space-4) auto;
       border-radius: var(--radius-lg);
+      padding-top: var(--space-8);
+      overflow-x: hidden;
+      // Принудительное ограничение ширины
+      box-sizing: border-box;
     }
 
     @media (max-width: 480px) {
-      padding: var(--space-4);
+      padding: var(--space-3);
       width: 100vw;
+      max-width: 100vw;
+      min-width: 100vw;
       height: 100vh;
       max-height: 100vh;
       margin: 0;
       border-radius: 0;
       border: none;
+      padding-top: var(--space-6);
+      overflow-x: hidden;
+      // Принудительное ограничение размеров
+      box-sizing: border-box;
+      // Предотвращаем любое переполнение
+      contain: layout style;
     }
 
     @keyframes modal-appear {
@@ -807,16 +895,27 @@
   .project-modal__header {
     margin-bottom: var(--space-6);
     flex-shrink: 0;
-    padding-right: var(--space-12); // Место для кнопки закрытия
+    padding-right: var(--space-12);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    // Ограничиваем ширину заголовка
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       margin-bottom: var(--space-4);
       padding-right: var(--space-10);
+      // Принудительное ограничение ширины
+      max-width: calc(100vw - 4rem);
     }
 
     @media (max-width: 480px) {
       margin-bottom: var(--space-3);
       padding-right: var(--space-8);
+      // Более строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
   }
 
@@ -826,15 +925,26 @@
     margin-bottom: var(--space-3);
     color: var(--color-neutral-800);
     line-height: var(--line-height-tight);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+    // Ограничиваем ширину заголовка
+    width: 100%;
+    max-width: 100%;
 
     @media (max-width: 768px) {
       font-size: var(--font-size-xl);
       margin-bottom: var(--space-2);
+      // Принудительное ограничение ширины
+      max-width: calc(100vw - 6rem);
     }
 
     @media (max-width: 480px) {
       font-size: var(--font-size-lg);
       line-height: var(--line-height-snug);
+      // Более строгое ограничение
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
   }
 
@@ -875,61 +985,48 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
+    // Ограничиваем ширину контента
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
       gap: var(--space-6);
       overflow: visible;
+      // Принудительное ограничение ширины
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
 
     @media (max-width: 480px) {
       gap: var(--space-4);
+      min-width: 0;
+      // Строгое ограничение для маленьких экранов
+      width: calc(100vw - 2rem);
+      max-width: calc(100vw - 2rem);
     }
   }
 
-  .project-modal__left-column {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-
-    @media (max-width: 768px) {
-      order: 1;
-    }
-  }
-
+  .project-modal__left-column,
   .project-modal__right-column {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+    // Предотвращаем переполнение колонок
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
-      order: 2;
-      max-height: none;
-      overflow: visible;
+      // Принудительное ограничение ширины колонок
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
 
-    // Скроллбар только для десктопа
-    @media (min-width: 769px) {
-      overflow-y: auto;
-      max-height: 60vh;
-
-      &::-webkit-scrollbar {
-        width: 4px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: var(--color-neutral-200);
-        border-radius: 2px;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: var(--color-neutral-400);
-        border-radius: 2px;
-
-        &:hover {
-          background: var(--color-primary);
-        }
-      }
+    @media (max-width: 480px) {
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
   }
 
@@ -939,14 +1036,23 @@
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       margin-bottom: var(--space-4);
+      // Ограничиваем ширину изображения
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
 
     @media (max-width: 480px) {
       margin-bottom: var(--space-3);
       border-radius: var(--radius-md);
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
 
     .main-project-image {
@@ -955,13 +1061,22 @@
       max-height: 300px;
       object-fit: cover;
       display: block;
+      max-width: 100%;
+      // Добавляем box-sizing для корректного расчета
+      box-sizing: border-box;
 
       @media (max-width: 768px) {
         max-height: 250px;
+        // Ограничиваем ширину изображения
+        max-width: calc(100vw - 4rem);
+        width: calc(100vw - 4rem);
       }
 
       @media (max-width: 480px) {
         max-height: 200px;
+        // Строгое ограничение для маленьких экранов
+        max-width: calc(100vw - 2rem);
+        width: calc(100vw - 2rem);
       }
     }
   }
@@ -969,9 +1084,22 @@
   .project-modal__gallery {
     margin-bottom: var(--space-6);
     flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       margin-bottom: var(--space-4);
+      // Ограничиваем ширину галереи
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
+    }
+
+    @media (max-width: 480px) {
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
 
     h3 {
@@ -995,15 +1123,24 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: var(--space-3);
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
 
       @media (max-width: 768px) {
         grid-template-columns: repeat(3, 1fr);
         gap: var(--space-2);
+        // Ограничиваем ширину сетки галереи
+        max-width: calc(100vw - 4rem);
+        width: calc(100vw - 4rem);
       }
 
       @media (max-width: 480px) {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-2);
+        // Строгое ограничение для маленьких экранов
+        max-width: calc(100vw - 2rem);
+        width: calc(100vw - 2rem);
       }
     }
 
@@ -1014,6 +1151,8 @@
       border-radius: var(--radius-md);
       cursor: pointer;
       transition: var(--transition-base);
+      max-width: 100%;
+      box-sizing: border-box;
 
       @media (max-width: 768px) {
         height: 70px;
@@ -1044,15 +1183,26 @@
     margin-bottom: var(--space-6);
     line-height: var(--line-height-relaxed);
     font-size: var(--font-size-base);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    // Ограничиваем ширину текста
+    width: 100%;
+    max-width: 100%;
 
     @media (max-width: 768px) {
       margin-bottom: var(--space-4);
       font-size: var(--font-size-sm);
+      // Ограничиваем ширину описания
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
 
     @media (max-width: 480px) {
       margin-bottom: var(--space-3);
       line-height: var(--line-height-normal);
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
   }
 
@@ -1093,9 +1243,23 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
+    overflow: hidden;
+    // Ограничиваем ширину списка технологий
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       gap: var(--space-1);
+      // Ограничиваем ширину
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
+    }
+
+    @media (max-width: 480px) {
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
 
     .tech-tag {
@@ -1106,10 +1270,20 @@
       border-radius: var(--radius-md);
       font-weight: var(--font-weight-medium);
       border: 1px solid var(--color-primary-200);
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      max-width: 100%;
+      // Добавляем ограничение для очень длинных тегов
+      max-width: 200px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
 
       @media (max-width: 480px) {
         font-size: 10px;
         padding: var(--space-1) var(--space-2);
+        // Более строгое ограничение на маленьких экранах
+        max-width: 120px;
       }
     }
   }
@@ -1121,16 +1295,25 @@
     margin-top: var(--space-6);
     flex-shrink: 0;
     flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 768px) {
       gap: var(--space-3);
       margin-top: var(--space-4);
+      // Ограничиваем ширину секции кнопок
+      max-width: calc(100vw - 4rem);
+      width: calc(100vw - 4rem);
     }
 
     @media (max-width: 480px) {
       flex-direction: column;
       gap: var(--space-2);
       margin-top: var(--space-3);
+      // Строгое ограничение для маленьких экранов
+      max-width: calc(100vw - 2rem);
+      width: calc(100vw - 2rem);
     }
 
     .btn {
@@ -1138,6 +1321,11 @@
         width: 100%;
         justify-content: center;
         min-height: 44px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        box-sizing: border-box;
       }
     }
   }

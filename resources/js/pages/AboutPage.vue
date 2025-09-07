@@ -15,7 +15,7 @@
           <div class="animate-fade-in">
             <h2 class="section__title text-left">Our Journey</h2>
             <p class="section__text mb-6">
-              Darkheim Development Studio was founded in late 2024 with a mission to help local businesses
+              Darkheim Development Studio was founded in late 2025 with a mission to help local businesses
               and growing companies establish their online presence through modern, reliable web solutions.
             </p>
             <p class="section__text mb-6">

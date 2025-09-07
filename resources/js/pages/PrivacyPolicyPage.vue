@@ -1,5 +1,5 @@
 <template>
-  <div class="legal-page">
+  <div class="legal-page page-with-header-offset">
     <div class="legal-hero">
       <div class="container">
         <div class="legal-hero__content">

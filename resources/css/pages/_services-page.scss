@@ -479,8 +479,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 10001; // Увеличиваем z-index чтобы быть выше меню
     padding: var(--space-4);
+
+    // Mobile improvements
+    @media (max-width: 768px) {
+      padding: var(--space-2);
+      align-items: flex-start;
+      padding-top: var(--space-8);
+      z-index: 10001; // Убеждаемся что и на мобильных z-index высокий
+    }
+
+    @media (max-width: 480px) {
+      padding: var(--space-1);
+      align-items: flex-start;
+      padding-top: var(--space-6);
+    }
 
     &__content {
       background: white;
@@ -493,6 +507,19 @@
       box-shadow: var(--shadow-2xl);
       display: flex;
       flex-direction: column;
+      z-index: 10002; // Контент модального окна еще выше
+
+      // Mobile improvements
+      @media (max-width: 768px) {
+        max-height: 90vh;
+        border-radius: var(--radius-xl);
+      }
+
+      @media (max-width: 480px) {
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+        margin-top: 0;
+      }
     }
 
     &__close {
@@ -510,7 +537,7 @@
       cursor: pointer;
       color: var(--color-neutral-600);
       font-size: var(--font-size-lg);
-      z-index: 10;
+      z-index: 10003; // Кнопка закрытия на самом верху
       transition: all var(--transition-base);
 
       &:hover {
@@ -518,12 +545,106 @@
         color: var(--color-neutral-800);
         transform: scale(1.1);
       }
+
+      // Mobile improvements - делаем кнопку очень заметной
+      @media (max-width: 768px) {
+        width: 3.5rem;
+        height: 3.5rem;
+        top: var(--space-2);
+        right: var(--space-2);
+        background: rgba(231, 76, 60, 0.9);
+        color: white;
+        backdrop-filter: blur(8px);
+        font-size: var(--font-size-xl);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        z-index: 10003; // Убеждаемся что кнопка видна на мобильных
+
+        &:hover, &:active {
+          background: rgba(231, 76, 60, 1);
+          color: white;
+          transform: scale(1.05);
+          box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+
+      @media (max-width: 480px) {
+        width: 3.25rem;
+        height: 3.25rem;
+        top: var(--space-1);
+        right: var(--space-1);
+        font-size: var(--font-size-lg);
+
+        // Увеличиваем область касания для лучшего UX
+        &::before {
+          content: '';
+          position: absolute;
+          top: -15px;
+          left: -15px;
+          right: -15px;
+          bottom: -15px;
+          border-radius: 50%;
+        }
+      }
+
+      // Добавляем пульсирующий эффект для привлечения внимания
+      @media (max-width: 768px) {
+        animation: pulseAttention 2s infinite;
+
+        @keyframes pulseAttention {
+          0%, 70%, 100% {
+            transform: scale(1);
+          }
+          35% {
+            transform: scale(1.1);
+          }
+        }
+
+        &:hover, &:active {
+          animation: none;
+        }
+      }
+
+      // Добавляем визуальные эффекты для лучшей видимости
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+
+      &:active::after {
+        width: 100%;
+        height: 100%;
+      }
     }
 
     &__header {
       text-align: center;
       padding: var(--space-8) var(--space-8) var(--space-6);
       border-bottom: 1px solid var(--color-neutral-200);
+
+      // Mobile improvements
+      @media (max-width: 768px) {
+        padding: var(--space-6) var(--space-6) var(--space-4);
+        padding-top: var(--space-8); // Дополнительное пространство для кнопки закрытия
+      }
+
+      @media (max-width: 480px) {
+        padding: var(--space-4) var(--space-4) var(--space-3);
+        padding-top: var(--space-6);
+      }
 
       .service-modal__icon {
         width: 5rem;
@@ -536,6 +657,20 @@
         margin: 0 auto var(--space-4);
         color: white;
         font-size: var(--font-size-2xl);
+
+        @media (max-width: 768px) {
+          width: 4rem;
+          height: 4rem;
+          font-size: var(--font-size-xl);
+          margin-bottom: var(--space-3);
+        }
+
+        @media (max-width: 480px) {
+          width: 3.5rem;
+          height: 3.5rem;
+          font-size: var(--font-size-lg);
+          margin-bottom: var(--space-2);
+        }
       }
 
       .service-modal__title {
@@ -543,21 +678,98 @@
         font-weight: var(--font-weight-bold);
         color: var(--color-neutral-800);
         margin-bottom: var(--space-2);
+
+        @media (max-width: 768px) {
+          font-size: var(--font-size-2xl);
+        }
+
+        @media (max-width: 480px) {
+          font-size: var(--font-size-xl);
+          margin-bottom: var(--space-1);
+        }
       }
 
       .service-modal__price {
         font-size: var(--font-size-xl);
         font-weight: var(--font-weight-semibold);
         color: #667eea;
+
+        @media (max-width: 768px) {
+          font-size: var(--font-size-lg);
+        }
+
+        @media (max-width: 480px) {
+          font-size: var(--font-size-base);
+        }
+      }
+    }
+
+    // Additional close button in header for mobile
+    &__header-close {
+      display: none;
+
+      @media (max-width: 768px) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        width: 100%;
+        max-width: 200px;
+        margin: var(--space-4) auto 0;
+        padding: var(--space-3) var(--space-4);
+        background: rgba(102, 126, 234, 0.1);
+        border: 2px solid #667eea;
+        border-radius: var(--radius-full);
+        color: #667eea;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: all var(--transition-base);
+
+        &:hover, &:active {
+          background: #667eea;
+          color: white;
+          transform: scale(1.02);
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+
+        i {
+          font-size: var(--font-size-base);
+          transition: transform var(--transition-base);
+        }
+
+        &:hover i {
+          transform: translateY(2px);
+        }
+      }
+
+      @media (max-width: 480px) {
+        padding: var(--space-2-5) var(--space-3);
+        font-size: var(--font-size-xs);
+        margin-top: var(--space-3);
       }
     }
 
     &__body {
       padding: var(--space-8);
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
+
+      // Mobile improvements
+      @media (max-width: 768px) {
+        padding: var(--space-6);
+      }
+
+      @media (max-width: 480px) {
+        padding: var(--space-4);
+      }
 
       .service-modal__description {
         font-size: var(--font-size-lg);

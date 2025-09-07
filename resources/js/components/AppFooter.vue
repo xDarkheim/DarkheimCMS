@@ -377,9 +377,11 @@ $border-radius: 12px;
   gap: 2.5rem;
   padding: 4rem 0;
 
+  // Улучшенная адаптивность для планшетов
   @media (max-width: 1200px) {
     grid-template-columns: 2fr 1fr 1fr;
     gap: 2rem;
+    padding: 3.5rem 0;
 
     .footer__section:nth-child(4),
     .footer__section:nth-child(5) {
@@ -387,10 +389,40 @@ $border-radius: 12px;
     }
   }
 
+  // Промежуточный брейкпоинт для средних планшетов
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 3rem 0;
+
+    .footer__section--main {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+  }
+
+  // Мобильные устройства
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 2rem;
-    padding: 3rem 0;
+    padding: 2.5rem 0;
+
+    .footer__section--main {
+      text-align: center;
+    }
+  }
+
+  // Маленькие мобильные экраны
+  @media (max-width: 480px) {
+    gap: 1.5rem;
+    padding: 2rem 0;
+  }
+
+  // Очень маленькие экраны
+  @media (max-width: 360px) {
+    gap: 1.25rem;
+    padding: 1.5rem 0;
   }
 }
 
@@ -407,6 +439,20 @@ $border-radius: 12px;
   margin-bottom: 1.5rem;
   cursor: pointer;
   transition: $transition;
+
+  // Улучшенная адаптивность для логотипа
+  @media (max-width: 1024px) {
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 0.75rem;
+  }
 
   &:hover {
     .footer__logo-bracket {
@@ -439,6 +485,25 @@ $border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    // Адаптивность контейнера логотипа
+    @media (max-width: 1024px) {
+      justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 480px) {
+      gap: 0.5rem;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    @media (max-width: 360px) {
+      gap: 0.5rem;
+    }
   }
 
   &-icon {
@@ -452,6 +517,22 @@ $border-radius: 12px;
     border-radius: $border-radius;
     box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
     transition: $transition;
+
+    // Адаптивные размеры иконки
+    @media (max-width: 768px) {
+      width: 56px;
+      height: 56px;
+    }
+
+    @media (max-width: 480px) {
+      width: 48px;
+      height: 48px;
+    }
+
+    @media (max-width: 360px) {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   &-symbol {
@@ -467,6 +548,19 @@ $border-radius: 12px;
     position: relative;
     z-index: 2;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+    // Адаптивные размеры D
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.75rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 1.5rem;
+    }
   }
 
   &-brackets {
@@ -515,6 +609,16 @@ $border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+
+    // Центрирование на мобильных
+    @media (max-width: 1024px) {
+      align-items: center;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      align-items: center;
+    }
   }
 
   &-text {
@@ -526,6 +630,19 @@ $border-radius: 12px;
     background-clip: text;
     line-height: 1.2;
     filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.2));
+
+    // Адаптивные размеры текста
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.75rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 1.5rem;
+    }
   }
 
   &-tagline {
@@ -534,6 +651,52 @@ $border-radius: 12px;
     color: $text-muted;
     margin-top: 4px;
     opacity: 0.8;
+
+    // Адаптивные размеры тэглайна
+    @media (max-width: 768px) {
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Улучшенное описание компании
+.footer__description {
+  color: $text-muted;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 1024px) {
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    max-width: 300px;
+  }
+
+  @media (max-width: 360px) {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
   }
 }
 
@@ -571,11 +734,35 @@ $border-radius: 12px;
 
 // Social Section
 .footer__social {
+  // Улучшенная адаптивность социальной секции
+  @media (max-width: 1024px) {
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+  }
+
   &-title {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 1.5rem;
     color: $text-light;
+
+    // Адаптивные размеры заголовка
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 0.85rem;
+    }
   }
 
   &-links {
@@ -584,10 +771,28 @@ $border-radius: 12px;
     gap: 0.75rem;
     max-width: 200px;
 
+    // Улучшенная адаптивность социальных ссылок
+    @media (max-width: 1024px) {
+      max-width: 300px;
+      margin: 0 auto;
+      justify-items: center;
+    }
+
     @media (max-width: 768px) {
       grid-template-columns: repeat(6, 1fr);
       max-width: 100%;
-      justify-items: center;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 180px;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 360px) {
+      max-width: 150px;
+      gap: 0.25rem;
     }
   }
 
@@ -604,6 +809,24 @@ $border-radius: 12px;
     text-decoration: none;
     transition: $transition;
     border: 1px solid rgba(255, 255, 255, 0.1);
+
+    // Адаптивные размеры социальных кнопок
+    @media (max-width: 768px) {
+      width: 44px;
+      height: 44px;
+    }
+
+    @media (max-width: 480px) {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 360px) {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
 
     // Specific social media colors on hover
     &:hover {
@@ -657,6 +880,27 @@ $border-radius: 12px;
     i {
       font-size: 1.25rem;
       transition: $transition;
+
+      // Адаптивные размеры иконок
+      @media (max-width: 768px) {
+        font-size: 1.1rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1rem;
+      }
+
+      @media (max-width: 360px) {
+        font-size: 0.9rem;
+      }
+    }
+
+    // Убираем tooltips на мобильных для лучшего UX
+    @media (max-width: 768px) {
+      &::after,
+      &::before {
+        display: none;
+      }
     }
 
     // Tooltip on hover

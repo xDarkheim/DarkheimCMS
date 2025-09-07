@@ -1,5 +1,5 @@
 <template>
-  <div class="news-page">
+  <div class="news-page page-with-header-offset">
     <!-- Page Header -->
     <section class="page-header">
       <div class="container">

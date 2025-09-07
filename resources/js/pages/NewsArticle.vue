@@ -1,5 +1,5 @@
 <template>
-  <div class="news-article-page">
+  <div class="news-article-page page-with-header-offset">
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
       <p>Loading article...</p>
