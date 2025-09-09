@@ -9,8 +9,8 @@ use App\Models\News;
 use App\Models\User;
 use App\Models\TeamMember;
 use App\Models\Career;
+use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -18,7 +18,7 @@ class DashboardController extends Controller
     /**
      * Get admin dashboard data
      */
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $stats = $this->getDashboardStats();
@@ -34,7 +34,7 @@ class DashboardController extends Controller
                     'last_updated' => now()->format('Y-m-d H:i:s')
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load dashboard data',
@@ -46,7 +46,7 @@ class DashboardController extends Controller
     /**
      * Get dashboard statistics
      */
-    public function stats(Request $request): JsonResponse
+    public function stats(): JsonResponse
     {
         try {
             $stats = $this->getDashboardStats();
@@ -55,7 +55,7 @@ class DashboardController extends Controller
                 'success' => true,
                 'data' => $stats
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load dashboard statistics',
@@ -67,7 +67,7 @@ class DashboardController extends Controller
     /**
      * Get recent activity for dashboard
      */
-    public function recentActivity(Request $request): JsonResponse
+    public function recentActivity(): JsonResponse
     {
         try {
             $activity = $this->getRecentActivity();
@@ -76,7 +76,7 @@ class DashboardController extends Controller
                 'success' => true,
                 'data' => $activity
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load recent activity',
@@ -91,48 +91,75 @@ class DashboardController extends Controller
      */
     private function getDashboardStats(): array
     {
+        $oneMonthAgo = Carbon::now()->subMonth();
+        $oneWeekAgo = Carbon::now()->subWeek();
+
         // Users statistics
-        $usersStats = User::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN role = ? THEN 1 ELSE 0 END) as admin_count,
-            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent_count
-        ', ['admin', Carbon::now()->subMonth()])->first();
+        $usersStats = User::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN role = ? THEN 1 ELSE 0 END) as admin_count,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent_count
+            ', ['admin', $oneMonthAgo])
+            ->first();
 
         // Portfolio statistics
-        $portfoliosStats = Portfolio::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN is_featured = 1 THEN 1 ELSE 0 END) as featured,
-            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent
-        ', [Carbon::now()->subMonth()])->first();
+        $portfoliosStats = Portfolio::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN is_featured = 1 THEN 1 ELSE 0 END) as featured,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent
+            ', [$oneMonthAgo])
+            ->first();
 
         // News statistics
-        $newsStats = News::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN is_published = 1 THEN 1 ELSE 0 END) as published,
-            SUM(CASE WHEN is_featured = 1 THEN 1 ELSE 0 END) as featured,
-            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent
-        ', [Carbon::now()->subMonth()])->first();
+        $newsStats = News::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN is_published = 1 THEN 1 ELSE 0 END) as published,
+                SUM(CASE WHEN is_featured = 1 THEN 1 ELSE 0 END) as featured,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent
+            ', [$oneMonthAgo])
+            ->first();
 
         // Contact messages statistics
-        $contactStats = ContactMessage::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread,
-            SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today,
-            SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as this_week
-        ', [Carbon::now()->subWeek()])->first();
+        $contactStats = ContactMessage::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) as unread,
+                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today,
+                SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as this_week
+            ', [$oneWeekAgo])
+            ->first();
 
         // Team members statistics
-        $teamStats = TeamMember::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active,
-            COUNT(DISTINCT CASE WHEN department IS NOT NULL THEN department END) as departments
-        ', ['active'])->first();
+        $teamStats = TeamMember::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active,
+                COUNT(DISTINCT CASE WHEN department IS NOT NULL THEN department END) as departments
+            ', ['active'])
+            ->first();
 
         // Careers statistics
-        $careersStats = Career::selectRaw('
-            COUNT(*) as total,
-            SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active
-        ')->first();
+        $careersStats = Career::query()
+            ->selectRaw('
+                COUNT(*) as total,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active
+            ')
+            ->first();
+
+        // Get the current user for last login
+        $currentUser = auth()->user();
+        $lastLogin = null;
+
+        if ($currentUser) {
+            if ($currentUser->last_login_at) {
+                $lastLogin = $currentUser->last_login_at;
+            } else {
+                $lastLogin = $currentUser->created_at;
+            }
+        }
 
         return [
             // Users
@@ -170,7 +197,7 @@ class DashboardController extends Controller
             // Security (placeholder - implement with proper logging)
             'failed_logins_24h' => 0,
             'active_sessions' => 1,
-            'last_login' => auth()->user()->last_login_at ?? auth()->user()->created_at
+            'last_login' => $lastLogin?->format('Y-m-d H:i:s')
         ];
     }
 
@@ -180,17 +207,16 @@ class DashboardController extends Controller
      */
     private function getRecentActivity(): array
     {
-        $activity = [];
-
         // Recent portfolios
-        $recentPortfolios = Portfolio::latest()
+        $recentPortfolios = Portfolio::query()
+            ->latest()
             ->take(3)
             ->get()
-            ->map(function ($portfolio) {
+            ->map(function (Portfolio $portfolio): array {
                 return [
                     'type' => 'portfolio_created',
                     'title' => 'New portfolio added',
-                    'description' => "Portfolio '{$portfolio->title}' was created",
+                    'description' => "Portfolio '$portfolio->title' was created",
                     'time' => $portfolio->created_at,
                     'icon' => 'fas fa-briefcase',
                     'color' => 'success'
@@ -198,14 +224,15 @@ class DashboardController extends Controller
             });
 
         // Recent news
-        $recentNews = News::latest()
+        $recentNews = News::query()
+            ->latest()
             ->take(3)
             ->get()
-            ->map(function ($news) {
+            ->map(function (News $news): array {
                 return [
                     'type' => 'news_created',
                     'title' => 'New article published',
-                    'description' => "Article '{$news->title}' was published",
+                    'description' => "Article '$news->title' was published",
                     'time' => $news->created_at,
                     'icon' => 'fas fa-newspaper',
                     'color' => 'info'
@@ -213,14 +240,15 @@ class DashboardController extends Controller
             });
 
         // Recent contact messages
-        $recentMessages = ContactMessage::latest()
+        $recentMessages = ContactMessage::query()
+            ->latest()
             ->take(3)
             ->get()
-            ->map(function ($message) {
+            ->map(function (ContactMessage $message): array {
                 return [
                     'type' => 'contact_message',
                     'title' => 'New contact message',
-                    'description' => "Message from {$message->name} ({$message->email})",
+                    'description' => "Message from $message->name ($message->email)",
                     'time' => $message->created_at,
                     'icon' => 'fas fa-envelope',
                     'color' => $message->is_read ? 'secondary' : 'warning'
@@ -228,7 +256,7 @@ class DashboardController extends Controller
             });
 
         // Combine and sort by time
-        $activity = collect()
+        return collect()
             ->merge($recentPortfolios)
             ->merge($recentNews)
             ->merge($recentMessages)
@@ -236,8 +264,6 @@ class DashboardController extends Controller
             ->take(10)
             ->values()
             ->toArray();
-
-        return $activity;
     }
 
     /**
@@ -254,7 +280,7 @@ class DashboardController extends Controller
             $notifications[] = [
                 'type' => 'warning',
                 'title' => 'Unread Messages',
-                'message' => "You have {$unreadCount} unread contact message" . ($unreadCount > 1 ? 's' : ''),
+                'message' => "You have $unreadCount unread contact message" . ($unreadCount > 1 ? 's' : ''),
                 'action' => '/admin/contact-messages',
                 'action_text' => 'View Messages'
             ];
@@ -266,7 +292,7 @@ class DashboardController extends Controller
             $notifications[] = [
                 'type' => 'danger',
                 'title' => 'High Disk Usage',
-                'message' => "Disk usage is at {$diskUsage}%. Consider cleaning up old files.",
+                'message' => "Disk usage is at $diskUsage%. Consider cleaning up old files.",
                 'action' => '/admin/file-manager',
                 'action_text' => 'Manage Files'
             ];

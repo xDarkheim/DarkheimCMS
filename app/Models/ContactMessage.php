@@ -8,7 +8,18 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @property mixed $is_read
+ * @property mixed $resume_file
+ * @property mixed $name
+ * @property mixed $id
  * @use HasFactory<ContactMessageFactory>
+ * @method static count()
+ * @method static where(string $string, false $false)
+ * @method static whereDate(string $string, \Carbon\CarbonInterface|\Illuminate\Support\Carbon $today)
+ * @method static whereBetween(string $string, array $array)
+ * @method static whereMonth(string $string, int $month)
+ * @method static whereNotNull(string $string)
+ * @method static whereIn(string $string, mixed $ids)
  */
 class ContactMessage extends Model
 {

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * ContactMessageController
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -198,7 +203,7 @@ class ContactMessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Marked {$updatedCount} messages as read",
+            'message' => "Marked $updatedCount messages as read",
             'updated_count' => $updatedCount
         ]);
     }
@@ -226,7 +231,7 @@ class ContactMessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Deleted {$deletedCount} messages successfully",
+            'message' => "Deleted $deletedCount messages successfully",
             'deleted_count' => $deletedCount
         ]);
     }

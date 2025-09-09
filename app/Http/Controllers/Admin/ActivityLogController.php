@@ -1,12 +1,20 @@
 <?php
 
+/**
+ * ActivityLogController
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class ActivityLogController extends Controller
 {
@@ -19,40 +27,41 @@ class ActivityLogController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Filter by user
-        if ($request->has('user_id') && $request->user_id) {
+        if ($request->has('user_id') && $request->filled('user_id')) {
             $query->where('user_id', $request->user_id);
         }
 
         // Filter by action
-        if ($request->has('action') && $request->action) {
+        if ($request->has('action') && $request->filled('action')) {
             $query->where('action', $request->action);
         }
 
         // Filter by severity
-        if ($request->has('severity') && $request->severity) {
+        if ($request->has('severity') && $request->filled('severity')) {
             $query->where('severity', $request->severity);
         }
 
         // Filter by model type
-        if ($request->has('model_type') && $request->model_type) {
+        if ($request->has('model_type') && $request->filled('model_type')) {
             $query->where('model_type', $request->model_type);
         }
 
         // Filter by date range
-        if ($request->has('date_from') && $request->date_from) {
+        if ($request->has('date_from') && $request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
 
-        if ($request->has('date_to') && $request->date_to) {
+        if ($request->has('date_to') && $request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
         // Search in description
-        if ($request->has('search') && $request->search) {
+        if ($request->has('search') && $request->filled('search')) {
             $query->where('description', 'like', '%' . $request->search . '%');
         }
 
-        $logs = $query->paginate($request->get('per_page', 15));
+        $perPage = $request->integer('per_page', 15);
+        $logs = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -123,12 +132,7 @@ class ActivityLogController extends Controller
             'actions' => ActivityLog::distinct()->pluck('action')->filter()->values(),
             'severities' => ['info', 'warning', 'critical', 'success'],
             'model_types' => ActivityLog::distinct()->pluck('model_type')->filter()->values(),
-            'users' => ActivityLog::with('user')
-                                 ->whereNotNull('user_id')
-                                 ->get()
-                                 ->pluck('user')
-                                 ->unique('id')
-                                 ->values()
+            'users' => $this->getUniqueUsers()
         ];
 
         return response()->json([
@@ -138,7 +142,23 @@ class ActivityLogController extends Controller
     }
 
     /**
+     * Get unique users from activity logs
+     */
+    private function getUniqueUsers(): Collection
+    {
+        return ActivityLog::with('user')
+                         ->whereNotNull('user_id')
+                         ->get()
+                         ->pluck('user')
+                         ->filter()
+                         ->unique('id')
+                         ->values();
+    }
+
+    /**
      * Export activity logs
+     *
+     * @throws ValidationException
      */
     public function export(Request $request): Response|JsonResponse
     {
@@ -154,31 +174,7 @@ class ActivityLogController extends Controller
             ->get();
 
         if ($request->format === 'csv') {
-            $filename = 'activity_logs_' . $request->date_from . '_to_' . $request->date_to . '.csv';
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
-            ];
-
-            $csv = "ID,User,Action,Description,Model Type,Model ID,Severity,IP Address,User Agent,Created At\n";
-
-            foreach ($logs as $log) {
-                $csv .= sprintf(
-                    "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
-                    $log->id,
-                    $log->user ? $log->user->name ?? $log->user->email ?? 'System' : 'System',
-                    $log->action,
-                    str_replace(',', ';', $log->description),
-                    $log->model_type ?: '',
-                    $log->model_id ?: '',
-                    $log->severity,
-                    $log->ip_address ?: '',
-                    str_replace(',', ';', $log->user_agent ?: ''),
-                    $log->created_at
-                );
-            }
-
-            return response($csv, 200, $headers);
+            return $this->exportToCsv($logs, $request->date_from, $request->date_to);
         }
 
         // JSON export
@@ -191,7 +187,62 @@ class ActivityLogController extends Controller
     }
 
     /**
+     * Export logs to CSV format
+     */
+    private function exportToCsv(Collection $logs, string $dateFrom, string $dateTo): Response
+    {
+        $filename = 'activity_logs_' . $dateFrom . '_to_' . $dateTo . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ];
+
+        $csv = "ID,User,Action,Description,Model Type,Model ID,Severity,IP Address,User Agent,Created At\n";
+
+        foreach ($logs as $log) {
+            $userName = $this->getUserName($log->user);
+            $csv .= sprintf(
+                "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                $log->id,
+                $userName,
+                $log->action,
+                $this->escapeCsvValue($log->description),
+                $log->model_type ?? '',
+                $log->model_id ?? '',
+                $log->severity,
+                $log->ip_address ?? '',
+                $this->escapeCsvValue($log->user_agent ?? ''),
+                $log->created_at
+            );
+        }
+
+        return response($csv, 200, $headers);
+    }
+
+    /**
+     * Get username safely
+     */
+    private function getUserName(?User $user): string
+    {
+        if (!$user) {
+            return 'System';
+        }
+
+        return $user->name ?? $user->email ?? 'System';
+    }
+
+    /**
+     * Escape CSV values
+     */
+    private function escapeCsvValue(string $value): string
+    {
+        return str_replace(',', ';', $value);
+    }
+
+    /**
      * Clean old activity logs (for maintenance)
+     *
+     * @throws ValidationException
      */
     public function cleanup(Request $request): JsonResponse
     {
@@ -199,7 +250,8 @@ class ActivityLogController extends Controller
             'days' => 'required|integer|min:30|max:365' // Keep at least 30 days
         ]);
 
-        $cutoffDate = now()->subDays($request->days);
+        $days = $request->integer('days');
+        $cutoffDate = now()->subDays($days);
 
         $deletedCount = ActivityLog::where('created_at', '<', $cutoffDate)
                                    ->where('severity', '!=', 'critical') // Keep critical logs longer
@@ -208,16 +260,15 @@ class ActivityLogController extends Controller
         // Log the cleanup action
         ActivityLog::log(
             'cleanup',
-            "Cleaned up {$deletedCount} activity log records older than {$request->days} days",
+            "Cleaned up $deletedCount activity log records older than $days days",
             null,
             null,
-            ['deleted_count' => $deletedCount, 'cutoff_date' => $cutoffDate],
-            'info'
+            ['deleted_count' => $deletedCount, 'cutoff_date' => $cutoffDate->toDateTimeString()]
         );
 
         return response()->json([
             'success' => true,
-            'message' => "Successfully deleted {$deletedCount} old activity log records",
+            'message' => "Successfully deleted $deletedCount old activity log records",
             'deleted_count' => $deletedCount
         ]);
     }

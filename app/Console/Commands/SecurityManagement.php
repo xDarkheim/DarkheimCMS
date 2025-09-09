@@ -1,7 +1,13 @@
 <?php
 
+/**
+ * Security management commands
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -46,7 +52,7 @@ class SecurityManagement extends Command
     }
 
     /**
-     * Блокировка IP адреса
+     * Blocking IP address
      */
     private function blockIp(?string $ip): int
     {
@@ -60,7 +66,7 @@ class SecurityManagement extends Command
             return 1;
         }
 
-        Cache::put("blocked_ip_{$ip}", true, now()->addDays(30));
+        Cache::put("blocked_ip_$ip", true, now()->addDays(30));
 
         Log::info('IP manually blocked', [
             'ip' => $ip,
@@ -68,12 +74,12 @@ class SecurityManagement extends Command
             'timestamp' => now()
         ]);
 
-        $this->info("IP {$ip} has been blocked for 30 days");
+        $this->info("IP $ip has been blocked for 30 days");
         return 0;
     }
 
     /**
-     * Разблокировка IP адреса
+     * Unblocking IP address
      */
     private function unblockIp(?string $ip): int
     {
@@ -82,10 +88,10 @@ class SecurityManagement extends Command
             return 1;
         }
 
-        Cache::forget("blocked_ip_{$ip}");
-        Cache::forget("login_attempts_ip_{$ip}");
-        Cache::forget("total_attempts_ip_{$ip}");
-        Cache::forget("suspicious_activity_{$ip}");
+        Cache::forget("blocked_ip_$ip");
+        Cache::forget("login_attempts_ip_$ip");
+        Cache::forget("total_attempts_ip_$ip");
+        Cache::forget("suspicious_activity_$ip");
 
         Log::info('IP manually unblocked', [
             'ip' => $ip,
@@ -93,12 +99,12 @@ class SecurityManagement extends Command
             'timestamp' => now()
         ]);
 
-        $this->info("IP {$ip} has been unblocked and all attempts cleared");
+        $this->info("IP $ip has been unblocked and all attempts cleared");
         return 0;
     }
 
     /**
-     * Список заблокированных IP
+     * List of blocked IPs and emails
      */
     private function listBlocked(): int
     {
@@ -106,32 +112,22 @@ class SecurityManagement extends Command
 
         $blockedIps = [];
 
-        // Для файлового кеша используем другой подход
         if (config('cache.default') === 'file') {
             $this->info('File cache detected - showing estimated security status');
             $this->info('Blocked IPs: Unable to scan file cache directly');
             $this->info('Blocked emails: Unable to scan file cache directly');
             $this->info('Use: php artisan cache:clear to reset all blocks');
         } else {
-            // Получаем все ключи из кеша (только для Redis/Memcached)
             try {
-                // Используем Laravel Cache API вместо прямого обращения к Redis
-                $blockedIps = [];
-
-                // Пытаемся получить данные через стандартный Cache API
-                // Это работает для всех типов кеша
-                $cacheKeys = ['blocked_ip_', 'email_blocked_'];
-
-                // Для демонстрации показываем несколько известных ключей
                 for ($i = 1; $i <= 10; $i++) {
-                    $testIp = "192.168.1.{$i}";
-                    if (Cache::has("blocked_ip_{$testIp}")) {
+                    $testIp = "192.168.1.$i";
+                    if (Cache::has("blocked_ip_$testIp")) {
                         $blockedIps[] = $testIp;
                     }
                 }
 
                 $this->info('Note: Showing sample data - use Redis-specific tools for complete scan');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->warn('Unable to scan cache keys: ' . $e->getMessage());
             }
         }
@@ -141,7 +137,7 @@ class SecurityManagement extends Command
         } else {
             $this->info('Blocked IP addresses:');
             foreach ($blockedIps as $ip) {
-                $this->line("  - {$ip}");
+                $this->line("  - $ip");
             }
         }
 
@@ -150,39 +146,33 @@ class SecurityManagement extends Command
     }
 
     /**
-     * Очистка попыток входа
+     * Clear login attempts for an IP or email
      */
     private function clearAttempts(?string $target): int
     {
         if ($target) {
-            // Очищаем для конкретного IP или email
             if (filter_var($target, FILTER_VALIDATE_IP)) {
-                Cache::forget("login_attempts_ip_{$target}");
-                Cache::forget("total_attempts_ip_{$target}");
-                Cache::forget("suspicious_activity_{$target}");
-                $this->info("Login attempts cleared for IP: {$target}");
+                Cache::forget("login_attempts_ip_$target");
+                Cache::forget("total_attempts_ip_$target");
+                Cache::forget("suspicious_activity_$target");
+                $this->info("Login attempts cleared for IP: $target");
             } elseif (filter_var($target, FILTER_VALIDATE_EMAIL)) {
-                Cache::forget("login_attempts_email_{$target}");
-                $this->info("Login attempts cleared for email: {$target}");
+                Cache::forget("login_attempts_email_$target");
+                $this->info("Login attempts cleared for email: $target");
             } else {
                 $this->error('Target must be a valid IP address or email');
                 return 1;
             }
+        } elseif (config('cache.default') === 'file') {
+            Cache::flush();
+            $this->info('All cache cleared (file cache detected)');
         } else {
-            // Очищаем весь кеш для файлового хранилища
-            if (config('cache.default') === 'file') {
+            try {
                 Cache::flush();
-                $this->info('All cache cleared (file cache detected)');
-            } else {
-                // Для Redis/Memcached используем простой подход без прямого доступа к Redis
-                try {
-                    // Используем стандартные методы Cache вместо прямого Redis
-                    Cache::flush(); // Очищаем весь кеш
-                    $this->info('All login attempts and suspicious activity records cleared');
-                } catch (\Exception $e) {
-                    Cache::flush();
-                    $this->info('Cache cleared using flush method');
-                }
+                $this->info('All login attempts and suspicious activity records cleared');
+            } catch (Exception) {
+                Cache::flush();
+                $this->info('Cache cleared using flush method');
             }
         }
 
@@ -190,25 +180,22 @@ class SecurityManagement extends Command
     }
 
     /**
-     * Отчет по безопасности
+     * Report on security configuration and status
      */
     private function securityReport(): int
     {
         $this->info('=== SECURITY REPORT ===');
         $this->newLine();
-
-        // Для файлового кеша показываем общую информацию
         if (config('cache.default') === 'file') {
             $this->info('Cache Type: File Cache');
             $this->info('Security status: Active monitoring in place');
             $this->info('Note: Detailed cache statistics unavailable with file cache');
         } else {
-            // Для Redis/Memcached показываем общую статистику
             try {
                 $this->info('Cache Type: Redis/Memcached');
                 $this->info('Security status: Active monitoring in place');
                 $this->info('Note: Use redis-cli or cache management tools for detailed statistics');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->warn('Unable to get detailed cache statistics: ' . $e->getMessage());
             }
         }
@@ -223,11 +210,11 @@ class SecurityManagement extends Command
     }
 
     /**
-     * Проверка конфигурации безопасности
+     * Check security configuration
      */
     private function checkSecurityConfig(): void
     {
-        // Проверка .env настроек
+        // Check environment and configuration settings
         $checks = [
             'APP_ENV' => config('app.env') === 'production' ? '✓' : '✗',
             'APP_DEBUG' => config('app.debug') === false ? '✓' : '✗',
@@ -238,10 +225,10 @@ class SecurityManagement extends Command
 
         foreach ($checks as $setting => $status) {
             $color = $status === '✓' ? 'green' : 'red';
-            $this->line("<fg={$color}>{$status} {$setting}</fg={$color}>");
+            $this->line("<fg=$color>$status $setting</fg=$color>");
         }
 
-        // Проверка middleware
+        // Check middleware status
         $this->newLine();
         $this->info('Security Middleware Status:');
         $this->line('✓ SecurityHeadersMiddleware - Active');

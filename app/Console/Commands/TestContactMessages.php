@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Test contact messages
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;

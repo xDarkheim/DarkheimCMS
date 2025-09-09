@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
  * @method static \Illuminate\Database\Eloquent\Builder|Setting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting query()
  * @method static Setting create(array<string, mixed> $attributes = [])
+ * @method static where(string $string, string $key)
  */
 class Setting extends Model
 {

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Initialize default application settings
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -34,7 +39,7 @@ class InitializeSettings extends Command
             // General settings
             'site_name' => ['value' => 'Darkheim Development Studio', 'group' => 'general', 'type' => 'string', 'is_public' => true, 'description' => 'Site name displayed in header'],
             'site_description' => ['value' => 'Professional web development and design services', 'group' => 'general', 'type' => 'string', 'is_public' => true, 'description' => 'Site description for SEO'],
-            'admin_email' => ['value' => 'admin@darkheim.dev', 'group' => 'general', 'type' => 'string', 'is_public' => false, 'description' => 'Administrator email address'],
+            'admin_email' => ['value' => 'darkheim.studio@gmail.com', 'group' => 'general', 'type' => 'string', 'is_public' => false, 'description' => 'Administrator email address'],
             'items_per_page' => ['value' => 15, 'group' => 'general', 'type' => 'integer', 'is_public' => false, 'description' => 'Number of items per page in admin'],
 
             // Security settings
@@ -44,7 +49,7 @@ class InitializeSettings extends Command
             'enable_2fa' => ['value' => false, 'group' => 'security', 'type' => 'boolean', 'is_public' => false, 'description' => 'Enable two-factor authentication'],
 
             // Email settings
-            'contact_form_emails' => ['value' => ['admin@darkheim.dev'], 'group' => 'email', 'type' => 'array', 'is_public' => false, 'description' => 'Email addresses to receive contact form submissions'],
+            'contact_form_emails' => ['value' => ['darkheim.studio@gmail.com'], 'group' => 'email', 'type' => 'array', 'is_public' => false, 'description' => 'Email addresses to receive contact form submissions'],
             'smtp_enabled' => ['value' => false, 'group' => 'email', 'type' => 'boolean', 'is_public' => false, 'description' => 'Enable SMTP email sending'],
             'smtp_host' => ['value' => '', 'group' => 'email', 'type' => 'string', 'is_public' => false, 'description' => 'SMTP server host'],
             'smtp_port' => ['value' => 587, 'group' => 'email', 'type' => 'integer', 'is_public' => false, 'description' => 'SMTP server port'],

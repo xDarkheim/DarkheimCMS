@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * CompanyInfoController
+ * @author Dmytro Hovenko
+ */
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;

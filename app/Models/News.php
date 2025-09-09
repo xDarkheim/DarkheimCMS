@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
+ * @property mixed $title
  * @use HasFactory<NewsFactory>
  */
 class News extends Model

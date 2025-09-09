@@ -2,11 +2,25 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @method static count()
+ * @method static whereDate(string $string, CarbonInterface|Carbon $today)
+ * @method static whereBetween(string $string, array $array)
+ * @method static whereMonth(string $string, int $month)
+ * @method static where(string $string, string $string1)
+ * @method static selectRaw(string $string)
+ * @method static distinct()
+ */
 class ActivityLog extends Model
 {
+    /**
+     * @var array<int, string>
+     */
     protected $fillable = [
         'user_id',
         'action',
@@ -19,6 +33,9 @@ class ActivityLog extends Model
         'severity'
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'changes' => 'array'
     ];
@@ -93,11 +110,11 @@ class ActivityLog extends Model
     /**
      * Log model creation
      */
-    public static function logCreated(Model $model, string $description = null): self
+    public static function logCreated(Model $model, ?string $description = null): self
     {
         return static::log(
             'created',
-            $description ?: "Created {$model->getMorphClass()} #{$model->getKey()}",
+            $description ?? "Created {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
             (int) $model->getKey(),
             $model->toArray(),
@@ -110,7 +127,7 @@ class ActivityLog extends Model
      *
      * @param array<string, mixed> $originalData
      */
-    public static function logUpdated(Model $model, array $originalData, string $description = null): self
+    public static function logUpdated(Model $model, array $originalData, ?string $description = null): self
     {
         $changes = [];
         foreach ($model->getDirty() as $key => $newValue) {
@@ -122,7 +139,7 @@ class ActivityLog extends Model
 
         return static::log(
             'updated',
-            $description ?: "Updated {$model->getMorphClass()} #{$model->getKey()}",
+            $description ?? "Updated {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
             (int) $model->getKey(),
             $changes,
@@ -133,11 +150,11 @@ class ActivityLog extends Model
     /**
      * Log model deletion
      */
-    public static function logDeleted(Model $model, string $description = null): self
+    public static function logDeleted(Model $model, ?string $description = null): self
     {
         return static::log(
             'deleted',
-            $description ?: "Deleted {$model->getMorphClass()} #{$model->getKey()}",
+            $description ?? "Deleted {$model->getMorphClass()} #{$model->getKey()}",
             $model->getMorphClass(),
             (int) $model->getKey(),
             $model->toArray(),
@@ -151,48 +168,46 @@ class ActivityLog extends Model
     public static function logSecurity(string $event, string $description): self
     {
         return static::log(
-            'security',
+            'security_event',
             $description,
             null,
             null,
-            null,
+            ['event' => $event],
             'critical'
         );
     }
 
     /**
-     * Get formatted changes for display
+     * Get severity levels
+     *
+     * @return array<string>
      */
-    public function getFormattedChangesAttribute(): string
+    public static function getSeverityLevels(): array
     {
-        if (!$this->changes) return '';
-
-        $formatted = [];
-        foreach ($this->changes as $field => $change) {
-            if (is_array($change) && isset($change['old'], $change['new'])) {
-                $formatted[] = "{$field}: '{$change['old']}' → '{$change['new']}'";
-            }
-        }
-
-        return implode(', ', $formatted);
+        return ['info', 'warning', 'critical', 'success'];
     }
 
     /**
-     * Get severity color for display
+     * Scope for filtering by severity
      */
-    public function getSeverityColorAttribute(): string
+    public function scopeBySeverity($query, string $severity)
     {
-        switch ($this->severity) {
-            case 'critical':
-                return '#dc3545';
-            case 'warning':
-                return '#fd7e14';
-            case 'info':
-                return '#0dcaf0';
-            case 'success':
-                return '#198754';
-            default:
-                return '#6c757d';
-        }
+        return $query->where('severity', $severity);
+    }
+
+    /**
+     * Scope for filtering by action
+     */
+    public function scopeByAction($query, string $action)
+    {
+        return $query->where('action', $action);
+    }
+
+    /**
+     * Scope for filtering by date range
+     */
+    public function scopeByDateRange($query, string $from, string $to)
+    {
+        return $query->whereBetween('created_at', [$from, $to]);
     }
 }

@@ -4,6 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static orderBy(string $string)
+ * @method static create(array $validated)
+ * @method static where(string $string, mixed $id)
+ * @property mixed $id
+ */
 class CompanyInfo extends Model
 {
     protected $fillable = [
