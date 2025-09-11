@@ -136,7 +136,85 @@ class SecurityMiddleware
      */
     private function isAllowedContext(string $field): bool
     {
-        $allowed_fields = ['content', 'description', 'message', 'body'];
+        $allowed_fields = [
+            'content',
+            'description',
+            'message',
+            'body',
+            'excerpt',           // For news excerpts
+            'title',             // For news titles that might contain quotes
+            'meta_title',        // For SEO meta titles
+            'meta_description',  // For SEO meta descriptions
+            'author',            // For author names that might contain apostrophes
+            'category',          // For categories that might contain ampersands
+            'short_description', // For portfolio short descriptions
+            'technologies',      // For portfolio technologies
+            'client',            // For portfolio client names
+            'bio',               // For team member bios
+            'about',             // For about sections
+            'summary',           // For summaries
+            'details',           // For details
+            'note',              // For notes
+            'is_published',      // For toggle published status
+            'is_featured',       // For toggle featured status
+            'is_active',         // For toggle active status
+            'status',            // For status changes
+            'published_at',      // For publication dates
+            'name',              // For names
+            'email',             // For email fields
+            'phone',             // For phone numbers
+            'address',           // For addresses
+            'url',               // For URLs
+            'image_url',         // For image URLs
+            'tags',              // For tags
+            'slug',              // For slugs
+            // Team member specific fields
+            'position',          // For team member positions (might contain & in "Research & Development")
+            'department',        // For departments (might contain & in "Sales & Marketing")
+            'skills',            // For skills array (might contain quotes in skill names)
+            'social_links',      // For social links (URLs contain special characters)
+            'avatar',            // For avatar URLs
+            'joined_date',       // For join dates
+            'priority',          // For priority values
+            'show_on_website',   // For visibility toggle
+            // Career specific fields
+            'employment_type',   // For employment types
+            'experience_level',  // For experience levels
+            'location',          // For job locations
+            'salary_range',      // For salary ranges (might contain $ and commas)
+            'remote_available',  // For remote work availability
+            'application_deadline', // For application deadlines
+            'requirements',      // For job requirements
+            'benefits',          // For job benefits
+            // Contact form fields
+            'subject',           // For contact form subjects
+            'company',           // For company names
+            'position_interest', // For position of interest
+            'resume',            // For resume file names
+            // Portfolio specific fields
+            'project_url',       // For project URLs
+            'github_url',        // For GitHub URLs
+            'demo_url',          // For demo URLs
+            'features',          // For feature lists
+            'challenges',        // For project challenges
+            'solutions',         // For project solutions
+            // Company info fields
+            'company_name',      // For company name
+            'company_description', // For company description
+            'mission',           // For company mission
+            'vision',            // For company vision
+            'values',            // For company values
+            'history',           // For company history
+            'contact_email',     // For contact emails
+            'contact_phone',     // For contact phones
+            'contact_address',   // For contact addresses
+            'social_facebook',   // For Facebook URLs
+            'social_twitter',    // For Twitter URLs
+            'social_linkedin',   // For LinkedIn URLs
+            'social_instagram',  // For Instagram URLs
+            'social_youtube',    // For YouTube URLs
+            'social_github',     // For GitHub URLs
+        ];
         return in_array($field, $allowed_fields);
     }
 

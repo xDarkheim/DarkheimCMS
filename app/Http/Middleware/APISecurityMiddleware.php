@@ -15,6 +15,11 @@ class APISecurityMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Пропускаем админские маршруты, защищенные Sanctum
+        if ($this->isAdminRoute($request)) {
+            return $next($request);
+        }
+
         // Проверяем API ключ если требуется
         if (config('security.api_security.require_api_key', true)) {
             $this->validateApiKey($request);
@@ -197,5 +202,15 @@ class APISecurityMiddleware
         // Удаляем информацию о сервере
         $response->headers->remove('Server');
         $response->headers->remove('X-Powered-By');
+    }
+
+    /**
+     * Проверка, является ли маршрут админским
+     */
+    private function isAdminRoute(Request $request): bool
+    {
+        return $request->is('api/admin/*') ||
+               $request->is('admin/*') ||
+               $request->header('Authorization'); // Если есть Bearer токен
     }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Api\CareerController;
 use App\Http\Controllers\Api\TeamMemberController;
 use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessageController;
+use App\Http\Controllers\OrganizationDataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -139,6 +140,7 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
     Route::delete('/careers/{career}', [CareerController::class, 'destroy']);
 
     // Team management
+    Route::get('/team', [TeamMemberController::class, 'index']); // Добавляем GET для загрузки списка
     Route::post('/team', [TeamMemberController::class, 'store']);
     Route::put('/team/{teamMember}', [TeamMemberController::class, 'update']);
     Route::delete('/team/{teamMember}', [TeamMemberController::class, 'destroy']);
@@ -184,3 +186,25 @@ Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
 
 // Public settings endpoint
 Route::get('/settings/public', [App\Http\Controllers\Admin\SettingsController::class, 'getPublic']);
+
+// Organization Data API routes (public access)
+Route::prefix('organization')->group(function () {
+    Route::get('/departments', [OrganizationDataController::class, 'departments']);
+    Route::get('/positions', [OrganizationDataController::class, 'positions']);
+    Route::get('/skills', [OrganizationDataController::class, 'skills']);
+    Route::get('/employment-types', [OrganizationDataController::class, 'employmentTypes']);
+    Route::get('/experience-levels', [OrganizationDataController::class, 'experienceLevels']);
+    Route::get('/locations', [OrganizationDataController::class, 'locations']);
+    Route::get('/statuses', [OrganizationDataController::class, 'statuses']);
+    Route::get('/data-types', [OrganizationDataController::class, 'dataTypes']);
+    Route::get('/', [OrganizationDataController::class, 'index']);
+});
+
+// Admin Organization Data Management
+Route::middleware(['auth:sanctum'])->prefix('admin/organization')->group(function () {
+    Route::get('/', [OrganizationDataController::class, 'index']);
+    Route::post('/', [OrganizationDataController::class, 'store']);
+    Route::put('/{organizationData}', [OrganizationDataController::class, 'update']);
+    Route::delete('/{organizationData}', [OrganizationDataController::class, 'destroy']);
+    Route::post('/update-order', [OrganizationDataController::class, 'updateOrder']);
+});

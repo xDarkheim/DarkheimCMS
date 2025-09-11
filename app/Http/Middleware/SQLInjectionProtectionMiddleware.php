@@ -133,7 +133,29 @@ class SQLInjectionProtectionMiddleware
         // Пропускаем поля с разрешенным контентом
         $allowedFields = [
             'content', 'description', 'message', 'body', 'text',
-            'bio', 'about', 'summary', 'details', 'note'
+            'bio', 'about', 'summary', 'details', 'note',
+            'excerpt',           // For news excerpts
+            'title',             // For news titles
+            'meta_title',        // For SEO meta titles
+            'meta_description',  // For SEO meta descriptions
+            'author',            // For author names that might contain apostrophes
+            'category',          // For categories that might contain ampersands
+            'short_description', // For portfolio short descriptions
+            'technologies',      // For portfolio technologies
+            'client',            // For portfolio client names
+            'is_published',      // For toggle published status
+            'is_featured',       // For toggle featured status
+            'is_active',         // For toggle active status
+            'status',            // For status changes
+            'published_at',      // For publication dates
+            'name',              // For names
+            'email',             // For email fields
+            'phone',             // For phone numbers
+            'address',           // For addresses
+            'url',               // For URLs
+            'image_url',         // For image URLs
+            'tags',              // For tags
+            'slug'               // For slugs
         ];
 
         if (in_array($field, $allowedFields)) {

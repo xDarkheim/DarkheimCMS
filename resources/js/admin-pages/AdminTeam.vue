@@ -72,7 +72,7 @@
         <select v-model="departmentFilter" @change="applyFilters">
           <option value="">All Departments</option>
           <option v-for="dept in departmentsList" :key="dept" :value="dept">
-            {{ dept }}
+            {{ getDepartmentLabel(dept) }}
           </option>
         </select>
         <select v-model="visibilityFilter" @change="applyFilters">
@@ -103,6 +103,19 @@
       <button @click="loadTeamMembers" class="btn btn-primary">
         <i class="fas fa-retry"></i>
         Try Again
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div v-if="!loading && !error && !teamMembers.length" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3>No Team Members Yet</h3>
+      <p>Start building your team by adding your first member</p>
+      <button @click="showCreateModal" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Add First Member
       </button>
     </div>
 
@@ -144,6 +157,10 @@
                 Visible
                 <i class="fas fa-sort" :class="getSortIcon('show_on_website')"></i>
               </th>
+              <th @click="sortBy('priority')" class="sortable">
+                Priority
+                <i class="fas fa-sort" :class="getSortIcon('priority')"></i>
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -169,22 +186,22 @@
               </td>
               <td>
                 <div class="position-content">
-                  <span class="position-title">{{ member.position }}</span>
+                  <span class="position-title">{{ getPositionLabel(member.position) }}</span>
                 </div>
               </td>
               <td>
-                <span class="department-badge">{{ member.department }}</span>
+                <span class="department-badge">{{ getDepartmentLabel(member.department) }}</span>
               </td>
               <td>
                 <span class="status-badge" :class="member.status">
                   <i class="fas" :class="getStatusIcon(member.status)"></i>
-                  {{ formatStatus(member.status) }}
+                  {{ getStatusLabel(member.status) }}
                 </span>
               </td>
               <td class="skills-cell">
                 <div v-if="member.skills && member.skills.length" class="skills-preview">
                   <span v-for="skill in member.skills.slice(0, 3)" :key="skill" class="skill-tag">
-                    {{ skill }}
+                    {{ getSkillLabel(skill) }}
                   </span>
                   <span v-if="member.skills.length > 3" class="skills-more">
                     +{{ member.skills.length - 3 }}
@@ -198,6 +215,11 @@
                   {{ member.show_on_website ? 'Visible' : 'Hidden' }}
                 </span>
               </td>
+              <td>
+                <div class="priority-indicator" :class="getPriorityClass(member.priority)">
+                  {{ member.priority || 0 }}
+                </div>
+              </td>
               <td class="actions">
                 <div class="action-buttons">
                   <button @click="viewMember(member)" class="btn-icon info" title="View Details">
@@ -206,11 +228,11 @@
                   <button @click="editMember(member)" class="btn-icon" title="Edit">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button @click="toggleVisibility(member)" class="btn-icon" :class="member.show_on_website ? 'warning' : 'success'" :title="member.show_on_website ? 'Hide from website' : 'Show on website'">
-                    <i :class="member.show_on_website ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                  </button>
                   <button @click="duplicateMember(member)" class="btn-icon info" title="Duplicate">
                     <i class="fas fa-copy"></i>
+                  </button>
+                  <button @click="toggleVisibility(member)" class="btn-icon" :class="member.show_on_website ? 'warning' : 'success'" :title="member.show_on_website ? 'Hide from website' : 'Show on website'">
+                    <i :class="member.show_on_website ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                   </button>
                   <button @click="deleteMember(member)" class="btn-icon danger" title="Delete">
                     <i class="fas fa-trash"></i>
@@ -261,19 +283,6 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="!loading && !error && !teamMembers.length" class="empty-state">
-      <div class="empty-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <h3>No Team Members Yet</h3>
-      <p>Start building your team by adding your first member</p>
-      <button @click="showCreateModal" class="btn btn-primary">
-        <i class="fas fa-plus"></i>
-        Add First Member
-      </button>
-    </div>
-
     <!-- Enhanced Create/Edit Modal -->
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content large" @click.stop>
@@ -313,22 +322,33 @@
 
               <div class="form-group">
                 <label>Position/Title *</label>
-                <input v-model="form.position" type="text" required placeholder="e.g., Senior Developer">
+                <select v-model="form.position" required>
+                  <option value="">Select position</option>
+                  <option v-for="(label, key) in organizationData.positions" :key="key" :value="key">
+                    {{ label }}
+                  </option>
+                </select>
                 <small class="form-hint">Job title or role in the company</small>
               </div>
 
               <div class="form-group">
                 <label>Department *</label>
-                <input v-model="form.department" type="text" required placeholder="e.g., Engineering">
+                <select v-model="form.department" required>
+                  <option value="">Select department</option>
+                  <option v-for="(label, key) in organizationData.departments" :key="key" :value="key">
+                    {{ label }}
+                  </option>
+                </select>
                 <small class="form-hint">Department or team they belong to</small>
               </div>
 
               <div class="form-group">
                 <label>Employment Status *</label>
                 <select v-model="form.status" required>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="on-leave">On Leave</option>
+                  <option value="">Select status</option>
+                  <option v-for="(label, key) in organizationData.statuses" :key="key" :value="key">
+                    {{ label }}
+                  </option>
                 </select>
                 <small class="form-hint">Current employment status</small>
               </div>
@@ -345,7 +365,19 @@
                 <small class="form-hint">Date when they joined the company</small>
               </div>
 
-              <div class="form-group checkbox-group full-width">
+              <div class="form-group">
+                <label>Priority Level</label>
+                <select v-model.number="form.priority">
+                  <option value="0">Normal (0)</option>
+                  <option value="25">Low Priority (25)</option>
+                  <option value="50">Medium Priority (50)</option>
+                  <option value="75">High Priority (75)</option>
+                  <option value="100">Featured (100)</option>
+                </select>
+                <small class="form-hint">Higher priority members appear first on team page</small>
+              </div>
+
+              <div class="form-group checkbox-group">
                 <label class="checkbox-label">
                   <input v-model="form.show_on_website" type="checkbox">
                   <span class="checkmark"></span>
@@ -497,12 +529,12 @@
     </div>
 
     <!-- Member Details Modal -->
-    <div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
+    <div v-if="showDetailsModal && selectedMember" class="modal-overlay" @click="closeDetailsModal">
       <div class="modal-content medium" @click.stop>
         <div class="modal-header">
           <div class="modal-title">
             <h2>{{ selectedMember.name }}</h2>
-            <p class="modal-subtitle">{{ selectedMember.position }} • {{ selectedMember.department }}</p>
+            <p class="modal-subtitle">{{ getPositionLabel(selectedMember.position) }} • {{ getDepartmentLabel(selectedMember.department) }}</p>
           </div>
           <button @click="closeDetailsModal" class="btn-close">
             <i class="fas fa-times"></i>
@@ -517,8 +549,8 @@
             </div>
             <div class="member-info">
               <h3>{{ selectedMember.name }}</h3>
-              <p class="position">{{ selectedMember.position }}</p>
-              <p class="department">{{ selectedMember.department }}</p>
+              <p class="position">{{ getPositionLabel(selectedMember.position) }}</p>
+              <p class="department">{{ getDepartmentLabel(selectedMember.department) }}</p>
               <div class="member-meta">
                 <span v-if="selectedMember.email" class="meta-item">
                   <i class="fas fa-envelope"></i>
@@ -545,7 +577,7 @@
             <h4>Skills & Expertise</h4>
             <div class="skills-list">
               <span v-for="skill in selectedMember.skills" :key="skill" class="skill-tag">
-                {{ skill }}
+                {{ getSkillLabel(skill) }}
               </span>
             </div>
           </div>
@@ -607,7 +639,6 @@ export default {
     const loading = ref(false)
     const modalLoading = ref(false)
     const error = ref('')
-    const skillsInput = ref('')
     const newSkill = ref('')
     const avatarFile = ref(null)
     const avatarPreview = ref(null)
@@ -623,6 +654,61 @@ export default {
     const sortOrder = ref('desc')
     const toast = ref({ show: false, message: '', type: '' })
 
+    // Organization data with fallback values
+    const organizationData = ref({
+      departments: {
+        'engineering': 'Engineering',
+        'design': 'Design',
+        'marketing': 'Marketing',
+        'sales': 'Sales',
+        'hr': 'Human Resources',
+        'finance': 'Finance',
+        'operations': 'Operations',
+        'customer-support': 'Customer Support'
+      },
+      positions: {
+        'frontend-developer': 'Frontend Developer',
+        'backend-developer': 'Backend Developer',
+        'fullstack-developer': 'Full Stack Developer',
+        'ui-ux-designer': 'UI/UX Designer',
+        'product-manager': 'Product Manager',
+        'marketing-manager': 'Marketing Manager',
+        'sales-representative': 'Sales Representative',
+        'hr-specialist': 'HR Specialist',
+        'devops-engineer': 'DevOps Engineer',
+        'data-analyst': 'Data Analyst'
+      },
+      skills: {
+        'javascript': 'JavaScript',
+        'typescript': 'TypeScript',
+        'php': 'PHP',
+        'laravel': 'Laravel',
+        'vuejs': 'Vue.js',
+        'react': 'React',
+        'nodejs': 'Node.js',
+        'python': 'Python',
+        'mysql': 'MySQL',
+        'postgresql': 'PostgreSQL',
+        'mongodb': 'MongoDB',
+        'git': 'Git',
+        'docker': 'Docker',
+        'aws': 'AWS',
+        'html': 'HTML',
+        'css': 'CSS',
+        'figma': 'Figma',
+        'photoshop': 'Photoshop',
+        'communication': 'Communication',
+        'teamwork': 'Team Leadership',
+        'problem-solving': 'Problem Solving',
+        'project-management': 'Project Management'
+      },
+      statuses: {
+        'active': 'Active',
+        'inactive': 'Inactive',
+        'on-leave': 'On Leave'
+      }
+    })
+
     const form = ref({
       name: '',
       position: '',
@@ -633,6 +719,7 @@ export default {
       social_links: {},
       status: 'active',
       joined_date: null,
+      priority: 0,
       show_on_website: true
     })
 
@@ -650,11 +737,10 @@ export default {
       { id: 'social', label: 'Social Links', icon: 'fas fa-share-alt' }
     ])
 
-    const suggestedSkills = ref([
-      'JavaScript', 'PHP', 'Laravel', 'Vue.js', 'React', 'Node.js', 'Python', 'HTML',
-      'CSS', 'MySQL', 'PostgreSQL', 'Git', 'Docker', 'AWS', 'TypeScript', 'MongoDB',
-      'Figma', 'Photoshop', 'Project Management', 'Team Leadership', 'Communication'
-    ])
+    // Dynamic suggested skills from organization data
+    const suggestedSkills = computed(() => {
+      return Object.values(organizationData.value.skills)
+    })
 
     // Computed properties
     const visibleMembers = computed(() =>
@@ -695,8 +781,18 @@ export default {
       // Apply sorting
       return filtered.sort((a, b) => {
         const modifier = sortOrder.value === 'asc' ? 1 : -1
-        if (a[sortKey.value] < b[sortKey.value]) return -1 * modifier
-        if (a[sortKey.value] > b[sortKey.value]) return 1 * modifier
+        let aVal = a[sortKey.value]
+        let bVal = b[sortKey.value]
+
+        // Handle priority sorting (prioritize higher values)
+        if (sortKey.value === 'priority') {
+          aVal = a[sortKey.value] || 0
+          bVal = b[sortKey.value] || 0
+          return (bVal - aVal) * (sortOrder.value === 'asc' ? -1 : 1)
+        }
+
+        if (aVal < bVal) return -1 * modifier
+        if (aVal > bVal) return 1 * modifier
         return 0
       })
     })
@@ -741,17 +837,39 @@ export default {
       return token ? { Authorization: `Bearer ${token}` } : {}
     }
 
+    const loadOrganizationData = async () => {
+      try {
+        // Try to load organization data, but use defaults if it fails
+        const [departments, positions, skills, statuses] = await Promise.all([
+          axios.get('/api/organization/departments', { headers: getAuthHeaders() }).catch(() => ({ data: { data: organizationData.value.departments } })),
+          axios.get('/api/organization/positions', { headers: getAuthHeaders() }).catch(() => ({ data: { data: organizationData.value.positions } })),
+          axios.get('/api/organization/skills', { headers: getAuthHeaders() }).catch(() => ({ data: { data: organizationData.value.skills } })),
+          axios.get('/api/organization/statuses', { headers: getAuthHeaders() }).catch(() => ({ data: { data: organizationData.value.statuses } }))
+        ])
+
+        organizationData.value = {
+          departments: departments.data?.data || organizationData.value.departments,
+          positions: positions.data?.data || organizationData.value.positions,
+          skills: skills.data?.data || organizationData.value.skills,
+          statuses: statuses.data?.data || organizationData.value.statuses
+        }
+      } catch (err) {
+        console.error('Failed to load organization data, using defaults:', err)
+      }
+    }
+
     const loadTeamMembers = async () => {
       loading.value = true
       error.value = ''
       try {
-        const response = await axios.get('/api/team', {
+        const response = await axios.get('/api/admin/team', {
           headers: getAuthHeaders()
         })
-        teamMembers.value = response.data.data || []
+        teamMembers.value = response.data?.data || []
       } catch (err) {
         console.error('Failed to load team members:', err)
         error.value = 'Failed to load team members. Please try again later.'
+        teamMembers.value = []
       } finally {
         loading.value = false
       }
@@ -771,60 +889,75 @@ export default {
     }
 
     const editMember = (member) => {
-      Object.keys(form.value).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(member, key)) {
-          form.value[key] = member[key]
+      try {
+        resetForm()
+
+        // Copy member data safely
+        form.value = {
+          id: member.id,
+          name: member.name || '',
+          position: member.position || '',
+          department: member.department || '',
+          bio: member.bio || '',
+          email: member.email || '',
+          skills: Array.isArray(member.skills) ? [...member.skills] : [],
+          social_links: member.social_links && typeof member.social_links === 'object' ? {...member.social_links} : {},
+          status: member.status || 'active',
+          joined_date: formatDateForInput(member.joined_date),
+          priority: member.priority || 0,
+          show_on_website: Boolean(member.show_on_website)
         }
-      })
 
-      form.value.id = member.id
-      form.value.joined_date = formatDateForInput(member.joined_date)
+        // Handle social links safely
+        if (member.social_links && typeof member.social_links === 'object') {
+          Object.keys(socialLinks.value).forEach(platform => {
+            socialLinks.value[platform] = member.social_links[platform] || ''
+          })
+        }
 
-      if (member.skills) {
-        form.value.skills = Array.isArray(member.skills) ? [...member.skills] : []
-        skillsInput.value = form.value.skills.join(', ')
+        currentAvatarUrl.value = member.avatar || ''
+        avatarPreview.value = null
+
+        isEditing.value = true
+        activeTab.value = 'basic'
+        showModal.value = true
+      } catch (err) {
+        console.error('Error editing member:', err)
+        showToast('Failed to load member data for editing', 'error')
       }
-
-      if (member.social_links) {
-        Object.keys(socialLinks.value).forEach(platform => {
-          socialLinks.value[platform] = member.social_links[platform] || ''
-        })
-      }
-
-      currentAvatarUrl.value = member.avatar || ''
-      avatarPreview.value = member.avatar || null
-
-      isEditing.value = true
-      activeTab.value = 'basic'
-      showModal.value = true
     }
 
     const duplicateMember = (member) => {
-      Object.keys(form.value).forEach(key => {
-        if (key === 'skills') {
-          form.value[key] = member[key] ? [...member[key]] : []
-        } else if (key === 'name') {
-          form.value[key] = `Copy of ${member[key]}`
-        } else if (key === 'show_on_website') {
-          form.value[key] = false
-        } else {
-          form.value[key] = member[key] !== undefined ? member[key] : form.value[key]
+      try {
+        resetForm()
+
+        // Copy member data for duplication
+        form.value = {
+          name: `Copy of ${member.name || 'Unknown'}`,
+          position: member.position || '',
+          department: member.department || '',
+          bio: member.bio || '',
+          email: '', // Clear email for duplicate
+          skills: Array.isArray(member.skills) ? [...member.skills] : [],
+          social_links: {},
+          status: member.status || 'active',
+          joined_date: null,
+          priority: member.priority || 0,
+          show_on_website: false // Hide duplicate by default
         }
-      })
 
-      if (member.skills) {
-        skillsInput.value = form.value.skills.join(', ')
-      }
-
-      if (member.social_links) {
+        // Clear social links for duplicate
         Object.keys(socialLinks.value).forEach(platform => {
-          socialLinks.value[platform] = member.social_links[platform] || ''
+          socialLinks.value[platform] = ''
         })
-      }
 
-      isEditing.value = false
-      activeTab.value = 'basic'
-      showModal.value = true
+        isEditing.value = false
+        activeTab.value = 'basic'
+        showModal.value = true
+      } catch (err) {
+        console.error('Error duplicating member:', err)
+        showToast('Failed to duplicate member', 'error')
+      }
     }
 
     const formatDateForInput = (value) => {
@@ -834,18 +967,12 @@ export default {
           if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
           const d = new Date(value)
           if (!isNaN(d.getTime())) {
-            const yyyy = d.getFullYear()
-            const mm = String(d.getMonth() + 1).padStart(2, '0')
-            const dd = String(d.getDate()).padStart(2, '0')
-            return `${yyyy}-${mm}-${dd}`
+            return d.toISOString().split('T')[0]
           }
           return null
         }
         if (value instanceof Date) {
-          const yyyy = value.getFullYear()
-          const mm = String(value.getMonth() + 1).padStart(2, '0')
-          const dd = String(value.getDate()).padStart(2, '0')
-          return `${yyyy}-${mm}-${dd}`
+          return value.toISOString().split('T')[0]
         }
       } catch (_) { return null }
       return null
@@ -883,19 +1010,16 @@ export default {
       if (skill && !form.value.skills.includes(skill)) {
         form.value.skills.push(skill)
         newSkill.value = ''
-        skillsInput.value = form.value.skills.join(', ')
       }
     }
 
     const removeSkill = (index) => {
       form.value.skills.splice(index, 1)
-      skillsInput.value = form.value.skills.join(', ')
     }
 
     const addSuggestedSkill = (skill) => {
       if (!form.value.skills.includes(skill)) {
         form.value.skills.push(skill)
-        skillsInput.value = form.value.skills.join(', ')
       }
     }
 
@@ -910,10 +1034,9 @@ export default {
         }
 
         // Process skills
-        form.value.skills = skillsInput.value
-          .split(',')
-          .map(skill => skill.trim())
-          .filter(skill => skill.length > 0)
+        if (!Array.isArray(form.value.skills)) {
+          form.value.skills = []
+        }
 
         // Process social links
         form.value.social_links = Object.entries(socialLinks.value)
@@ -923,43 +1046,37 @@ export default {
             return acc
           }, {})
 
+        // Ensure show_on_website is a proper boolean
+        form.value.show_on_website = Boolean(form.value.show_on_website)
+
         const formData = new FormData()
 
-        // Required fields
-        formData.append('name', form.value.name)
-        formData.append('position', form.value.position)
-        formData.append('department', form.value.department)
-        formData.append('bio', form.value.bio)
-        formData.append('status', form.value.status)
-        formData.append('show_on_website', form.value.show_on_website ? '1' : '0')
-
-        // Optional fields
-        if (form.value.email) formData.append('email', form.value.email)
-        if (form.value.joined_date) formData.append('joined_date', form.value.joined_date)
-
-        // Arrays/objects as JSON
-        if (form.value.skills.length > 0) {
-          formData.append('skills', JSON.stringify(form.value.skills))
-        }
-        if (Object.keys(form.value.social_links).length > 0) {
-          formData.append('social_links', JSON.stringify(form.value.social_links))
-        }
+        // Add all form fields to FormData
+        Object.keys(form.value).forEach(key => {
+          if (key === 'skills' || key === 'social_links') {
+            formData.append(key, JSON.stringify(form.value[key]))
+          } else if (key === 'show_on_website') {
+            // Ensure boolean is sent as string '1' or '0' for proper backend handling
+            formData.append(key, form.value[key] ? '1' : '0')
+          } else if (form.value[key] !== null && form.value[key] !== undefined) {
+            formData.append(key, form.value[key])
+          }
+        })
 
         if (avatarFile.value) {
           formData.append('avatar', avatarFile.value)
         }
 
-        let response
         if (isEditing.value) {
           formData.append('_method', 'PUT')
-          response = await axios.post(`/api/admin/team/${form.value.id}`, formData, {
+          await axios.post(`/api/admin/team/${form.value.id}`, formData, {
             headers: {
               ...getAuthHeaders(),
               'Content-Type': 'multipart/form-data'
             }
           })
         } else {
-          response = await axios.post('/api/admin/team', formData, {
+          await axios.post('/api/admin/team', formData, {
             headers: {
               ...getAuthHeaders(),
               'Content-Type': 'multipart/form-data'
@@ -975,13 +1092,23 @@ export default {
         )
       } catch (err) {
         console.error('Failed to save team member:', err)
-        let message = err.response?.data?.message || err.message
-        const errors = err.response?.data?.errors
-        if (errors && typeof errors === 'object') {
-          const details = Object.values(errors).flat().join(', ')
-          if (details) message += `: ${details}`
+        let message = 'Failed to save team member'
+
+        if (err.response?.status === 422) {
+          const errors = err.response?.data?.errors
+          if (errors && typeof errors === 'object') {
+            const errorMessages = Object.values(errors).flat()
+            message = errorMessages.join(', ')
+          } else if (err.response?.data?.message) {
+            message = err.response.data.message
+          }
+        } else if (err.response?.data?.message) {
+          message = err.response.data.message
+        } else if (err.message) {
+          message = err.message
         }
-        showToast('Error saving team member: ' + message, 'error')
+
+        showToast(message, 'error')
       } finally {
         modalLoading.value = false
       }
@@ -1024,7 +1151,7 @@ export default {
       const csvContent = [
         'Name,Position,Department,Status,Email,Visible,Joined Date',
         ...filteredMembers.value.map(member =>
-          `"${member.name}","${member.position}","${member.department}","${formatStatus(member.status)}","${member.email || ''}","${member.show_on_website ? 'Yes' : 'No'}","${member.joined_date || ''}"`
+          `"${member.name}","${getPositionLabel(member.position)}","${getDepartmentLabel(member.department)}","${getStatusLabel(member.status)}","${member.email || ''}","${member.show_on_website ? 'Yes' : 'No'}","${member.joined_date || ''}"`
         )
       ].join('\n')
 
@@ -1058,9 +1185,9 @@ export default {
         social_links: {},
         status: 'active',
         joined_date: null,
+        priority: 0,
         show_on_website: true
       })
-      skillsInput.value = ''
       newSkill.value = ''
       avatarFile.value = null
       avatarPreview.value = null
@@ -1070,7 +1197,23 @@ export default {
       })
     }
 
-    // Utility methods
+    // Utility methods for organization data labels
+    const getPositionLabel = (position) => {
+      return organizationData.value.positions[position] || position
+    }
+
+    const getDepartmentLabel = (department) => {
+      return organizationData.value.departments[department] || department
+    }
+
+    const getStatusLabel = (status) => {
+      return organizationData.value.statuses[status] || status
+    }
+
+    const getSkillLabel = (skill) => {
+      return organizationData.value.skills[skill] || skill
+    }
+
     const getStatusIcon = (status) => {
       const icons = {
         'active': 'fa-check-circle',
@@ -1080,13 +1223,13 @@ export default {
       return icons[status] || 'fa-question-circle'
     }
 
-    const formatStatus = (status) => {
-      const statuses = {
-        'active': 'Active',
-        'inactive': 'Inactive',
-        'on-leave': 'On Leave'
-      }
-      return statuses[status] || status
+    const getPriorityClass = (priority) => {
+      const p = priority || 0
+      if (p === 0) return 'normal'
+      if (p <= 25) return 'low'
+      if (p <= 50) return 'medium'
+      if (p <= 75) return 'high'
+      return 'urgent'
     }
 
     const getSortIcon = (key) => {
@@ -1147,6 +1290,7 @@ export default {
     // Lifecycle
     onMounted(() => {
       loadTeamMembers()
+      loadOrganizationData()
 
       // Handle escape key for modals
       document.addEventListener('keydown', (e) => {
@@ -1167,7 +1311,6 @@ export default {
       modalLoading,
       error,
       form,
-      skillsInput,
       newSkill,
       socialLinks,
       avatarPreview,
@@ -1183,6 +1326,7 @@ export default {
       sortOrder,
       toast,
       formTabs,
+      organizationData,
       suggestedSkills,
       visibleMembers,
       activeMembers,
@@ -1210,8 +1354,12 @@ export default {
       removeSkill,
       addSuggestedSkill,
       formatDate,
+      getPositionLabel,
+      getDepartmentLabel,
+      getStatusLabel,
+      getSkillLabel,
       getStatusIcon,
-      formatStatus,
+      getPriorityClass,
       getSortIcon,
       sortBy,
       handleSearch,
@@ -1719,6 +1867,25 @@ export default {
   color: #e53e3e;
 }
 
+.priority-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin-left: 8px;
+}
+
+.priority-indicator.normal { background: #a0aec0; }
+.priority-indicator.low { background: #68d391; }
+.priority-indicator.medium { background: #f6e05e; }
+.priority-indicator.high { background: #fbd38d; }
+.priority-indicator.urgent { background: #fc8181; }
+
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -1828,6 +1995,31 @@ export default {
   padding: 24px;
   max-height: 60vh;
   overflow-y: auto;
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.modal-loading .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.modal-loading p {
+  color: #718096;
+  font-size: 14px;
+  margin: 0;
 }
 
 .form-tabs {

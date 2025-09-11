@@ -303,7 +303,12 @@
 
               <div class="form-group">
                 <label>Department *</label>
-                <input v-model="form.department" type="text" required placeholder="e.g., Engineering, Marketing">
+                <select v-model="form.department" required>
+                  <option value="">Select department</option>
+                  <option v-for="(label, key) in organizationData.departments" :key="key" :value="key">
+                    {{ label }}
+                  </option>
+                </select>
                 <small class="form-hint">The department this position belongs to</small>
               </div>
 
@@ -311,10 +316,9 @@
                 <label>Employment Type *</label>
                 <select v-model="form.employment_type" required>
                   <option value="">Select employment type</option>
-                  <option value="full-time">Full Time</option>
-                  <option value="part-time">Part Time</option>
-                  <option value="contract">Contract</option>
-                  <option value="internship">Internship</option>
+                  <option v-for="(label, key) in organizationData.employmentTypes" :key="key" :value="key">
+                    {{ label }}
+                  </option>
                 </select>
               </div>
 
@@ -322,18 +326,20 @@
                 <label>Experience Level *</label>
                 <select v-model="form.experience_level" required>
                   <option value="">Select experience level</option>
-                  <option value="entry">Entry Level</option>
-                  <option value="junior">Junior</option>
-                  <option value="mid">Mid Level</option>
-                  <option value="senior">Senior</option>
-                  <option value="lead">Lead</option>
-                  <option value="principal">Principal</option>
+                  <option v-for="(label, key) in organizationData.experienceLevels" :key="key" :value="key">
+                    {{ label }}
+                  </option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label>Location *</label>
-                <input v-model="form.location" type="text" required placeholder="e.g., New York, NY">
+                <select v-model="form.location" required>
+                  <option value="">Select location</option>
+                  <option v-for="(label, key) in organizationData.locations" :key="key" :value="key">
+                    {{ label }}
+                  </option>
+                </select>
                 <small class="form-hint">Primary work location</small>
               </div>
 
@@ -528,6 +534,17 @@ export default {
     const sortOrder = ref('desc')
     const toast = ref({ show: false, message: '', type: '' })
 
+    // Organization data
+    const organizationData = ref({
+      departments: {},
+      positions: {},
+      skills: {},
+      employmentTypes: {},
+      experienceLevels: {},
+      locations: {},
+      statuses: {}
+    })
+
     const form = ref({
       title: '',
       department: '',
@@ -552,11 +569,10 @@ export default {
       { id: 'skills', label: 'Skills', icon: 'fas fa-cogs' }
     ])
 
-    const suggestedSkills = ref([
-      'JavaScript', 'PHP', 'Laravel', 'Vue.js', 'React', 'Node.js', 'Python', 'MySQL',
-      'PostgreSQL', 'Git', 'Docker', 'AWS', 'HTML', 'CSS', 'TypeScript', 'MongoDB',
-      'Communication', 'Team Leadership', 'Problem Solving', 'Project Management'
-    ])
+    // Dynamic suggested skills from organization data
+    const suggestedSkills = computed(() => {
+      return Object.values(organizationData.value.skills)
+    })
 
     // Computed properties
     const activeCareers = computed(() =>
@@ -645,6 +661,140 @@ export default {
       return token ? { Authorization: `Bearer ${token}` } : {}
     }
 
+    const loadOrganizationData = async () => {
+      try {
+        // Load all organization data types in parallel
+        const [departments, positions, skills, employmentTypes, experienceLevels, locations, statuses] = await Promise.all([
+          axios.get('/api/organization/departments').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/positions').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/skills').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/employment-types').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/experience-levels').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/locations').catch(() => ({ data: { data: {} } })),
+          axios.get('/api/organization/statuses').catch(() => ({ data: { data: {} } }))
+        ])
+
+        organizationData.value = {
+          departments: departments.data.data || getDefaultDepartments(),
+          positions: positions.data.data || getDefaultPositions(),
+          skills: skills.data.data || getDefaultSkills(),
+          employmentTypes: employmentTypes.data.data || getDefaultEmploymentTypes(),
+          experienceLevels: experienceLevels.data.data || getDefaultExperienceLevels(),
+          locations: locations.data.data || getDefaultLocations(),
+          statuses: statuses.data.data || getDefaultStatuses()
+        }
+      } catch (err) {
+        console.error('Failed to load organization data:', err)
+        // Use fallback values if all API calls fail
+        organizationData.value = {
+          departments: getDefaultDepartments(),
+          positions: getDefaultPositions(),
+          skills: getDefaultSkills(),
+          employmentTypes: getDefaultEmploymentTypes(),
+          experienceLevels: getDefaultExperienceLevels(),
+          locations: getDefaultLocations(),
+          statuses: getDefaultStatuses()
+        }
+      }
+    }
+
+    const getDefaultDepartments = () => ({
+      'engineering': 'Engineering',
+      'design': 'Design',
+      'marketing': 'Marketing',
+      'sales': 'Sales',
+      'hr': 'Human Resources',
+      'finance': 'Finance',
+      'operations': 'Operations',
+      'customer-support': 'Customer Support'
+    })
+
+    const getDefaultPositions = () => ({
+      'frontend-developer': 'Frontend Developer',
+      'backend-developer': 'Backend Developer',
+      'fullstack-developer': 'Full Stack Developer',
+      'ui-ux-designer': 'UI/UX Designer',
+      'product-manager': 'Product Manager',
+      'marketing-manager': 'Marketing Manager',
+      'sales-representative': 'Sales Representative',
+      'hr-specialist': 'HR Specialist',
+      'devops-engineer': 'DevOps Engineer',
+      'data-analyst': 'Data Analyst'
+    })
+
+    const getDefaultEmploymentTypes = () => ({
+      'full-time': 'Full Time',
+      'part-time': 'Part Time',
+      'contract': 'Contract',
+      'internship': 'Internship',
+      'freelance': 'Freelance',
+      'temporary': 'Temporary'
+    })
+
+    const getDefaultExperienceLevels = () => ({
+      'entry': 'Entry Level',
+      'junior': 'Junior',
+      'mid': 'Mid Level',
+      'senior': 'Senior',
+      'lead': 'Lead',
+      'principal': 'Principal',
+      'director': 'Director'
+    })
+
+    const getDefaultLocations = () => ({
+      'remote': 'Remote',
+      'new-york': 'New York, NY',
+      'san-francisco': 'San Francisco, CA',
+      'london': 'London, UK',
+      'berlin': 'Berlin, Germany',
+      'toronto': 'Toronto, Canada',
+      'sydney': 'Sydney, Australia',
+      'tokyo': 'Tokyo, Japan'
+    })
+
+    const getDefaultStatuses = () => ({
+      'active': 'Active',
+      'inactive': 'Inactive',
+      'draft': 'Draft',
+      'archived': 'Archived'
+    })
+
+    const getDefaultSkills = () => ({
+      'javascript': 'JavaScript',
+      'typescript': 'TypeScript',
+      'php': 'PHP',
+      'laravel': 'Laravel',
+      'vuejs': 'Vue.js',
+      'react': 'React',
+      'nodejs': 'Node.js',
+      'python': 'Python',
+      'mysql': 'MySQL',
+      'postgresql': 'PostgreSQL',
+      'mongodb': 'MongoDB',
+      'git': 'Git',
+      'docker': 'Docker',
+      'aws': 'AWS',
+      'html': 'HTML',
+      'css': 'CSS',
+      'sass': 'SASS/SCSS',
+      'tailwindcss': 'Tailwind CSS',
+      'bootstrap': 'Bootstrap',
+      'figma': 'Figma',
+      'photoshop': 'Photoshop',
+      'sketch': 'Sketch',
+      'communication': 'Communication',
+      'teamwork': 'Team Leadership',
+      'problem-solving': 'Problem Solving',
+      'project-management': 'Project Management',
+      'agile': 'Agile/Scrum',
+      'testing': 'Testing',
+      'api-development': 'API Development',
+      'mobile-development': 'Mobile Development',
+      'devops': 'DevOps',
+      'cybersecurity': 'Cybersecurity'
+    })
+
+    // Methods
     const loadCareers = async () => {
       loading.value = true
       error.value = ''
@@ -941,9 +1091,35 @@ export default {
       return icons[type] || 'fa-info-circle'
     }
 
+    // Utility methods for getting organization data labels
+    const getDepartmentLabel = (key) => {
+      return organizationData.value.departments[key] || key
+    }
+
+    const getPositionLabel = (key) => {
+      return organizationData.value.positions[key] || key
+    }
+
+    const getEmploymentTypeLabel = (key) => {
+      return organizationData.value.employmentTypes[key] || formatEmploymentType(key)
+    }
+
+    const getExperienceLevelLabel = (key) => {
+      return organizationData.value.experienceLevels[key] || formatExperienceLevel(key)
+    }
+
+    const getLocationLabel = (key) => {
+      return organizationData.value.locations[key] || key
+    }
+
+    const getSkillLabel = (key) => {
+      return organizationData.value.skills[key] || key
+    }
+
     // Lifecycle
     onMounted(() => {
       loadCareers()
+      loadOrganizationData()
 
       // Handle escape key for modal
       document.addEventListener('keydown', (e) => {
@@ -1009,13 +1185,21 @@ export default {
       clearFilters,
       showToast,
       hideToast,
-      getToastIcon
+      getToastIcon,
+      organizationData,
+      getDepartmentLabel,
+      getPositionLabel,
+      getEmploymentTypeLabel,
+      getExperienceLevelLabel,
+      getLocationLabel,
+      getSkillLabel
     }
   }
 }
 </script>
 
 <style scoped>
+/* Admin Careers Styles */
 .admin-careers {
   padding: 24px;
   background: #f8fafc;
@@ -1099,34 +1283,7 @@ export default {
   font-size: 13px;
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: none;
-  background: #f7fafc;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon:hover {
-  background: #edf2f7;
-  transform: translateY(-1px);
-}
-
-.btn-icon.info { color: #3182ce; }
-.btn-icon.info:hover { background: #bee3f8; }
-.btn-icon.success { color: #38a169; }
-.btn-icon.success:hover { background: #c6f6d5; }
-.btn-icon.warning { color: #d69e2e; }
-.btn-icon.warning:hover { background: #faf089; }
-.btn-icon.danger { color: #e53e3e; }
-.btn-icon.danger:hover { background: #fed7d7; }
-
+/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -1183,6 +1340,7 @@ export default {
   font-weight: 500;
 }
 
+/* Filters */
 .filters-section {
   background: white;
   border-radius: 12px;
@@ -1246,6 +1404,7 @@ export default {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Loading, Error, Empty States */
 .loading-state, .error-state, .empty-state {
   display: flex;
   flex-direction: column;
@@ -1268,6 +1427,11 @@ export default {
   margin-bottom: 16px;
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .error-icon, .empty-icon {
   font-size: 64px;
   margin-bottom: 16px;
@@ -1277,6 +1441,7 @@ export default {
 .error-state .error-icon { color: #e53e3e; }
 .empty-state .empty-icon { color: #a0aec0; }
 
+/* Table Styles */
 .table-container {
   background: white;
   border-radius: 12px;
@@ -1356,35 +1521,25 @@ export default {
   background: #f8fafc;
 }
 
-.title-content strong {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a202c;
-  display: block;
-  margin-bottom: 4px;
+/* Career specific styles */
+.career-title .title-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .career-meta {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .experience-level, .salary-range {
   font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-.experience-level {
-  background: #edf2f7;
-  color: #4a5568;
-}
-
-.salary-range {
-  background: #f0fff4;
-  color: #38a169;
+  color: #718096;
+  background: #f7fafc;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .department-badge {
@@ -1399,12 +1554,11 @@ export default {
 
 .badge {
   display: inline-block;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
 }
 
 .badge.success { background: #f0fff4; color: #38a169; }
@@ -1415,20 +1569,18 @@ export default {
 .location-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .remote-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  background: #e6fffa;
-  color: #319795;
-  border-radius: 6px;
   font-size: 11px;
-  font-weight: 600;
-  width: fit-content;
+  color: #38a169;
+  background: #f0fff4;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .status-badge {
@@ -1439,6 +1591,8 @@ export default {
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .status-badge.active {
@@ -1452,51 +1606,41 @@ export default {
 }
 
 .priority-indicator {
-  padding: 6px 12px;
-  border-radius: 8px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
+  min-width: 40px;
   text-align: center;
-  min-width: 60px;
 }
 
 .priority-indicator.normal { background: #edf2f7; color: #4a5568; }
 .priority-indicator.low { background: #e6fffa; color: #319795; }
 .priority-indicator.medium { background: #fffbeb; color: #d69e2e; }
 .priority-indicator.high { background: #fed7d7; color: #e53e3e; }
-.priority-indicator.urgent {
-  background: #e53e3e;
-  color: white;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
+.priority-indicator.urgent { background: #742a2a; color: white; }
 
 .deadline {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #4a5568;
+  gap: 4px;
+  font-size: 12px;
 }
 
-.deadline.urgent {
-  color: #e53e3e;
-  font-weight: 600;
-}
-
-.deadline.past {
-  color: #a0aec0;
-  text-decoration: line-through;
-}
+.deadline.normal { color: #4a5568; }
+.deadline.urgent { color: #e53e3e; font-weight: 600; }
+.deadline.past { color: #a0aec0; text-decoration: line-through; }
 
 .no-deadline {
+  font-size: 12px;
   color: #a0aec0;
   font-style: italic;
-  font-size: 13px;
+}
+
+/* Action buttons */
+.actions {
+  width: 140px;
 }
 
 .action-buttons {
@@ -1505,6 +1649,35 @@ export default {
   justify-content: flex-end;
 }
 
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #f7fafc;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: #edf2f7;
+  transform: translateY(-1px);
+}
+
+.btn-icon.info { color: #3182ce; }
+.btn-icon.info:hover { background: #bee3f8; }
+.btn-icon.success { color: #38a169; }
+.btn-icon.success:hover { background: #c6f6d5; }
+.btn-icon.warning { color: #d69e2e; }
+.btn-icon.warning:hover { background: #faf089; }
+.btn-icon.danger { color: #e53e3e; }
+.btn-icon.danger:hover { background: #fed7d7; }
+
+/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -1530,6 +1703,7 @@ export default {
   gap: 4px;
 }
 
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1606,6 +1780,7 @@ export default {
   overflow-y: auto;
 }
 
+/* Form Tabs */
 .form-tabs {
   display: flex;
   border-bottom: 2px solid #e2e8f0;
@@ -1663,6 +1838,7 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Form Styles */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1734,6 +1910,7 @@ export default {
   accent-color: #667eea;
 }
 
+/* Skills */
 .skills-input {
   display: flex;
   gap: 12px;
@@ -1821,6 +1998,7 @@ export default {
   background: #f7fafc;
 }
 
+/* Toast Notifications */
 .toast {
   position: fixed;
   top: 24px;
@@ -1879,11 +2057,6 @@ export default {
 .toast-close:hover {
   background: #f7fafc;
   color: #4a5568;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Responsive Design */
