@@ -625,8 +625,11 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useNotifications } from '../composables/useNotifications'
 import axios from 'axios'
+
+const { showSuccess, showError, showWarning, showInfo } = useNotifications()
 
 export default {
   name: 'AdminTeam',
@@ -868,7 +871,7 @@ export default {
         teamMembers.value = response.data?.data || []
       } catch (err) {
         console.error('Failed to load team members:', err)
-        error.value = 'Failed to load team members. Please try again later.'
+        showError('Failed to load team members. Please try again.')
         teamMembers.value = []
       } finally {
         loading.value = false
@@ -1027,88 +1030,30 @@ export default {
       try {
         modalLoading.value = true
 
-        // Validate required fields
-        if (!form.value.name || !form.value.position || !form.value.department || !form.value.bio) {
-          showToast('Please fill in all required fields', 'error')
-          return
+        // Prepare form data
+        const memberData = {
+          ...form.value,
+          social_links: socialLinks.value
         }
 
-        // Process skills
-        if (!Array.isArray(form.value.skills)) {
-          form.value.skills = []
-        }
-
-        // Process social links
-        form.value.social_links = Object.entries(socialLinks.value)
-          .filter(([, url]) => (url || '').trim() !== '')
-          .reduce((acc, [platform, url]) => {
-            acc[platform] = url
-            return acc
-          }, {})
-
-        // Ensure show_on_website is a proper boolean
-        form.value.show_on_website = Boolean(form.value.show_on_website)
-
-        const formData = new FormData()
-
-        // Add all form fields to FormData
-        Object.keys(form.value).forEach(key => {
-          if (key === 'skills' || key === 'social_links') {
-            formData.append(key, JSON.stringify(form.value[key]))
-          } else if (key === 'show_on_website') {
-            // Ensure boolean is sent as string '1' or '0' for proper backend handling
-            formData.append(key, form.value[key] ? '1' : '0')
-          } else if (form.value[key] !== null && form.value[key] !== undefined) {
-            formData.append(key, form.value[key])
-          }
-        })
-
-        if (avatarFile.value) {
-          formData.append('avatar', avatarFile.value)
-        }
-
+        let response
         if (isEditing.value) {
-          formData.append('_method', 'PUT')
-          await axios.post(`/api/admin/team/${form.value.id}`, formData, {
-            headers: {
-              ...getAuthHeaders(),
-              'Content-Type': 'multipart/form-data'
-            }
+          response = await axios.put(`/api/admin/team/${form.value.id}`, memberData, {
+            headers: getAuthHeaders()
           })
+          showSuccess('Team member updated successfully!')
         } else {
-          await axios.post('/api/admin/team', formData, {
-            headers: {
-              ...getAuthHeaders(),
-              'Content-Type': 'multipart/form-data'
-            }
+          response = await axios.post('/api/admin/team', memberData, {
+            headers: getAuthHeaders()
           })
+          showSuccess('Team member created successfully!')
         }
 
         closeModal()
         await loadTeamMembers()
-        showToast(
-          isEditing.value ? 'Team member updated successfully!' : 'Team member added successfully!',
-          'success'
-        )
       } catch (err) {
         console.error('Failed to save team member:', err)
-        let message = 'Failed to save team member'
-
-        if (err.response?.status === 422) {
-          const errors = err.response?.data?.errors
-          if (errors && typeof errors === 'object') {
-            const errorMessages = Object.values(errors).flat()
-            message = errorMessages.join(', ')
-          } else if (err.response?.data?.message) {
-            message = err.response.data.message
-          }
-        } else if (err.response?.data?.message) {
-          message = err.response.data.message
-        } else if (err.message) {
-          message = err.message
-        }
-
-        showToast(message, 'error')
+        showError(err.response?.data?.message || 'Failed to save team member. Please try again.')
       } finally {
         modalLoading.value = false
       }
@@ -1123,27 +1068,28 @@ export default {
         await axios.delete(`/api/admin/team/${member.id}`, {
           headers: getAuthHeaders()
         })
+        showSuccess(`Team member "${member.name}" deleted successfully`)
         await loadTeamMembers()
-        showToast('Team member deleted successfully!', 'success')
       } catch (err) {
         console.error('Failed to delete team member:', err)
-        showToast('Failed to delete team member. Please try again later.', 'error')
+        showError('Failed to delete team member. Please try again.')
       }
     }
 
     const toggleVisibility = async (member) => {
       try {
-        await axios.post(`/api/admin/team/${member.id}/toggle-visible`, {}, {
+        const newVisibility = !member.show_on_website
+        await axios.patch(`/api/admin/team/${member.id}/visibility`, {
+          show_on_website: newVisibility
+        }, {
           headers: getAuthHeaders()
         })
-        member.show_on_website = !member.show_on_website
-        showToast(
-          `Member ${member.show_on_website ? 'shown' : 'hidden'} on website successfully!`,
-          'success'
-        )
+
+        member.show_on_website = newVisibility
+        showSuccess(`Team member is now ${newVisibility ? 'visible' : 'hidden'} on the website`)
       } catch (err) {
         console.error('Failed to toggle visibility:', err)
-        showToast('Failed to update visibility. Please try again later.', 'error')
+        showError('Failed to update visibility. Please try again.')
       }
     }
 

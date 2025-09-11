@@ -18,14 +18,33 @@ class TeamMemberController extends Controller
      */
     public function index(): JsonResponse
     {
-        $teamMembers = TeamMember::orderBy('priority', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        try {
+            $teamMembers = TeamMember::orderBy('priority', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $teamMembers
-        ]);
+            // Ensure we always return an array, even if empty
+            $membersArray = $teamMembers->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => $membersArray,
+                'count' => count($membersArray)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load team members: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return empty array instead of error to prevent empty pages
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'count' => 0,
+                'message' => 'Team members are temporarily unavailable'
+            ]);
+        }
     }
 
     /**

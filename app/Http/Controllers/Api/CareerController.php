@@ -7,28 +7,60 @@ use App\Models\Career;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class CareerController extends Controller
 {
     public function index(): JsonResponse
     {
-        $careers = Career::active()
-            ->byPriority()
-            ->latest()
-            ->get();
+        try {
+            $careers = Career::active()
+                ->byPriority()
+                ->latest()
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $careers
-        ]);
+            // Ensure we always return an array, even if empty
+            $careersArray = $careers->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => $careersArray,
+                'count' => count($careersArray)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to load careers: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Return empty array instead of error to prevent empty pages
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'count' => 0,
+                'message' => 'Careers are temporarily unavailable'
+            ]);
+        }
     }
 
     public function show(Career $career): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => $career
-        ]);
+        try {
+            return response()->json([
+                'success' => true,
+                'data' => $career
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to show career: ' . $e->getMessage(), [
+                'career_id' => $career->id ?? 'unknown',
+                'exception' => $e
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Career not found'
+            ], 404);
+        }
     }
 
     public function store(Request $request): JsonResponse

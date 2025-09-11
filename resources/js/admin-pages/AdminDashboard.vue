@@ -328,11 +328,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
-import { useAdminAuth } from '../admin-composables/useAdminAuth'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useNotifications } from '../composables/useNotifications'
 import { adminApiService } from '../admin-services/adminApi'
+import { useAdminAuth } from '../admin-composables/useAdminAuth'
 
 const { user, initializeAuth } = useAdminAuth()
+const { showSuccess, showError, showWarning, showInfo } = useNotifications()
 
 // Loading and error states
 const loading = ref(false)
@@ -631,8 +633,50 @@ const loadDashboardData = async (showLoading = true, retryCount = 0) => {
 const refreshData = async () => {
   if (loading.value) return
 
-  addNotification('Updating data...', 'info', 2000)
-  await loadDashboardData(true)
+  try {
+    loading.value = true
+    await Promise.all([
+      loadStats(),
+      loadRecentActivity(),
+      loadSystemStatus()
+    ])
+    showSuccess('Dashboard data refreshed successfully!')
+  } catch (error) {
+    console.error('Failed to refresh data:', error)
+    showError('Failed to refresh dashboard data. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadStats = async () => {
+  try {
+    const response = await adminApiService.getDashboardStats()
+    stats.value = response.data
+  } catch (error) {
+    console.error('Failed to load stats:', error)
+    showError('Failed to load statistics')
+  }
+}
+
+const loadRecentActivity = async () => {
+  try {
+    const response = await adminApiService.getRecentActivity()
+    recentActivity.value = response.data
+  } catch (error) {
+    console.error('Failed to load recent activity:', error)
+    showWarning('Failed to load recent activity')
+  }
+}
+
+const loadSystemStatus = async () => {
+  try {
+    const response = await adminApiService.getSystemStatus()
+    systemStatus.value = response.data
+  } catch (error) {
+    console.error('Failed to load system status:', error)
+    showWarning('System status unavailable')
+  }
 }
 
 // Real-time activity updates

@@ -13,8 +13,25 @@
       </div>
     </section>
 
+    <!-- Error State -->
+    <section v-if="error && !loading" class="career-error">
+      <div class="container">
+        <div class="error-state">
+          <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3>Unable to Load Job Positions</h3>
+          <p>{{ error }}</p>
+          <button @click="retryLoad" class="btn btn--primary">
+            <i class="fas fa-refresh"></i>
+            Try Again
+          </button>
+        </div>
+      </div>
+    </section>
+
     <!-- Enhanced Stats Section -->
-    <section class="career-stats" v-if="!loading">
+    <section class="career-stats" v-if="!loading && !error">
       <div class="container">
         <div class="stats-grid">
           <div class="stat-item">
@@ -62,7 +79,7 @@
     </section>
 
     <!-- Filters Section -->
-    <section class="career-filters" v-if="totalPositions > 0">
+    <section class="career-filters" v-if="totalPositions > 0 && !error">
       <div class="container">
         <div class="filters-wrapper">
           <div class="filter-header">
@@ -78,7 +95,7 @@
                   v-model="searchQuery"
                   type="text"
                   placeholder="Search positions, skills, or departments..."
-                  @input="applyFilters"
+                  @input="debouncedApplyFilters"
                 >
               </div>
             </div>
@@ -98,10 +115,9 @@
                 <label>Employment Type</label>
                 <select v-model="typeFilter" @change="applyFilters">
                   <option value="">All Types</option>
-                  <option value="full-time">Full Time</option>
-                  <option value="part-time">Part Time</option>
-                  <option value="contract">Contract</option>
-                  <option value="internship">Internship</option>
+                  <option v-for="type in employmentTypes" :key="type.key" :value="type.key">
+                    {{ type.label }}
+                  </option>
                 </select>
               </div>
 
@@ -109,12 +125,9 @@
                 <label>Experience Level</label>
                 <select v-model="experienceFilter" @change="applyFilters">
                   <option value="">All Levels</option>
-                  <option value="entry">Entry Level</option>
-                  <option value="junior">Junior</option>
-                  <option value="mid">Mid Level</option>
-                  <option value="senior">Senior</option>
-                  <option value="lead">Lead</option>
-                  <option value="principal">Principal</option>
+                  <option v-for="level in experienceLevels" :key="level.key" :value="level.key">
+                    {{ level.label }}
+                  </option>
                 </select>
               </div>
 
@@ -170,7 +183,7 @@
         </div>
 
         <!-- Job Listings -->
-        <div v-else-if="filteredCareers.length > 0" class="jobs-section">
+        <div v-else-if="filteredCareers.length > 0 && !error" class="jobs-section">
           <div class="section-header">
             <h2>
               {{ hasActiveFilters ? 'Filtered Results' : 'Open Positions' }}
@@ -266,7 +279,7 @@
         </div>
 
         <!-- No Results State -->
-        <div v-else-if="!loading && hasActiveFilters" class="no-results-state">
+        <div v-else-if="!loading && hasActiveFilters && !error" class="no-results-state">
           <div class="no-results-icon">
             <i class="fas fa-search"></i>
           </div>
@@ -279,7 +292,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="!loading && totalPositions === 0" class="empty-state">
+        <div v-else-if="!loading && totalPositions === 0 && !error" class="empty-state">
           <div class="empty-icon">
             <i class="fas fa-briefcase"></i>
           </div>
@@ -449,7 +462,7 @@
     </div>
 
     <!-- Why Work With Us Section -->
-    <section class="career-benefits">
+    <section class="career-benefits" v-if="!error">
       <div class="container">
         <div class="section-header">
           <h2>Why Work With Us?</h2>
@@ -504,7 +517,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="career-cta">
+    <section class="career-cta" v-if="!error">
       <div class="container">
         <div class="career-cta__content">
           <h2 class="career-cta__title">Ready to Join Our Team?</h2>
@@ -535,9 +548,11 @@ import axios from 'axios'
 export default {
   name: 'CareerPage',
   setup() {
+    // State
     const careers = ref([])
     const selectedJob = ref(null)
     const loading = ref(false)
+    const error = ref(null)
     const searchQuery = ref('')
     const departmentFilter = ref('')
     const typeFilter = ref('')
@@ -548,20 +563,112 @@ export default {
     const showQuickApplyModal = ref(false)
     const quickApplyJob = ref(null)
 
-    // Организационные данные
+    // Organization data with defaults
     const organizationData = ref({
-      departments: [],
-      employment_types: [],
-      experience_levels: [],
-      locations: [],
-      skills: []
+      departments: [
+        { key: 'engineering', label: 'Engineering' },
+        { key: 'design', label: 'Design' },
+        { key: 'marketing', label: 'Marketing' },
+        { key: 'sales', label: 'Sales' },
+        { key: 'hr', label: 'Human Resources' },
+        { key: 'finance', label: 'Finance' },
+        { key: 'operations', label: 'Operations' },
+        { key: 'customer-support', label: 'Customer Support' }
+      ],
+      employment_types: [
+        { key: 'full-time', label: 'Full Time' },
+        { key: 'part-time', label: 'Part Time' },
+        { key: 'contract', label: 'Contract' },
+        { key: 'internship', label: 'Internship' }
+      ],
+      experience_levels: [
+        { key: 'entry', label: 'Entry Level' },
+        { key: 'junior', label: 'Junior' },
+        { key: 'mid', label: 'Mid Level' },
+        { key: 'senior', label: 'Senior' },
+        { key: 'lead', label: 'Lead' },
+        { key: 'principal', label: 'Principal' }
+      ],
+      locations: [
+        { key: 'remote', label: 'Remote' },
+        { key: 'new-york', label: 'New York, NY' },
+        { key: 'san-francisco', label: 'San Francisco, CA' },
+        { key: 'london', label: 'London, UK' },
+        { key: 'berlin', label: 'Berlin, Germany' }
+      ]
     })
 
+    // Modal tabs configuration
     const modalTabs = ref([
       { id: 'description', label: 'Description', icon: 'fas fa-file-text' },
       { id: 'requirements', label: 'Requirements', icon: 'fas fa-list-check' },
       { id: 'benefits', label: 'Benefits', icon: 'fas fa-heart' }
     ])
+
+    // Utility functions
+    const useDebounce = (func, delay) => {
+      let timeoutId
+      return (...args) => {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => func(...args), delay)
+      }
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return ''
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    }
+
+    const formatText = (text) => {
+      if (!text) return ''
+      return text
+        .replace(/\n/g, '<br>')
+        .replace(/•\s/g, '<li>')
+        .replace(/^\s*-\s/gm, '<li>')
+        .replace(/(<li>.*?)(?=<li>|$)/gs, '<ul>$1</ul>')
+        .replace(/<li>/g, '<li>')
+        .replace(/<\/ul><ul>/g, '')
+    }
+
+    const isDeadlineSoon = (deadline, daysThreshold = 7) => {
+      if (!deadline) return false
+      const now = new Date()
+      const deadlineDate = new Date(deadline)
+      const diff = deadlineDate - now
+      return diff > 0 && diff < daysThreshold * 24 * 60 * 60 * 1000
+    }
+
+    const formatEmploymentType = (type) => {
+      const orgType = organizationData.value.employment_types.find(t => t.key === type)
+      if (orgType) return orgType.label
+
+      const types = {
+        'full-time': 'Full Time',
+        'part-time': 'Part Time',
+        'contract': 'Contract',
+        'internship': 'Internship'
+      }
+      return types[type] || type
+    }
+
+    const formatExperienceLevel = (level) => {
+      const orgLevel = organizationData.value.experience_levels.find(l => l.key === level)
+      if (orgLevel) return orgLevel.label
+
+      const levels = {
+        'entry': 'Entry Level',
+        'junior': 'Junior',
+        'mid': 'Mid Level',
+        'senior': 'Senior',
+        'lead': 'Lead',
+        'principal': 'Principal'
+      }
+      return levels[level] || level
+    }
 
     // Computed properties
     const totalPositions = computed(() => careers.value.length)
@@ -579,67 +686,57 @@ export default {
     )
 
     const departments = computed(() => {
-      // Используем данные из OrganizationData, но также добавляем уникальные департаменты из вакансий
       const orgDepartments = organizationData.value.departments.map(d => d.label)
       const careerDepartments = [...new Set(careers.value.map(career => career.department))]
       return [...new Set([...orgDepartments, ...careerDepartments])].sort()
     })
 
+    const employmentTypes = computed(() => organizationData.value.employment_types)
+
+    const experienceLevels = computed(() => organizationData.value.experience_levels)
+
     const locations = computed(() => {
-      // Используем данные из OrganizationData, но также добавляем уникальные локации из вакансий
       const orgLocations = organizationData.value.locations.map(l => l.label)
       const careerLocations = [...new Set(careers.value.map(career => career.location))]
       return [...new Set([...orgLocations, ...careerLocations])].sort()
     })
 
-    const teamSize = computed(() => {
-      // Можно получить из API статистики команды
-      return 25
-    })
-
     const filteredCareers = computed(() => {
       let filtered = careers.value.filter(career => {
-        // Only show active positions on public page
         if (!career.is_active) return false
 
-        // Search filter
         const matchesSearch = !searchQuery.value ||
-          career.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          career.department.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          career.location.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          career.short_description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          career.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          career.department?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          career.location?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          career.short_description?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
           (career.skills && career.skills.some(skill =>
             skill.toLowerCase().includes(searchQuery.value.toLowerCase())
           ))
 
-        // Department filter
         const matchesDepartment = !departmentFilter.value ||
           career.department === departmentFilter.value
 
-        // Type filter
         const matchesType = !typeFilter.value ||
           career.employment_type === typeFilter.value
 
-        // Experience filter
         const matchesExperience = !experienceFilter.value ||
           career.experience_level === experienceFilter.value
 
-        // Location filter
         const matchesLocation = !locationFilter.value ||
           (locationFilter.value === 'remote' ? career.remote_available : career.location === locationFilter.value)
 
         return matchesSearch && matchesDepartment && matchesType && matchesExperience && matchesLocation
       })
 
-      // Apply sorting
       return filtered.sort((a, b) => {
         switch (sortBy.value) {
           case 'title':
-            return a.title.localeCompare(b.title)
+            return (a.title || '').localeCompare(b.title || '')
           case 'department':
-            return a.department.localeCompare(b.department)
+            return (a.department || '').localeCompare(b.department || '')
           case 'created_at':
-            return new Date(b.created_at) - new Date(a.created_at)
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0)
           case 'deadline':
             if (!a.application_deadline && !b.application_deadline) return 0
             if (!a.application_deadline) return 1
@@ -665,175 +762,48 @@ export default {
     // Methods
     const loadOrganizationData = async () => {
       try {
-        // Загружаем все организационные данные параллельно
-        const [departments, employmentTypes, experienceLevels, locations, skills] = await Promise.all([
-          axios.get('/api/organization/departments').catch(() => ({ data: { data: [] } })),
-          axios.get('/api/organization/employment-types').catch(() => ({ data: { data: [] } })),
-          axios.get('/api/organization/experience-levels').catch(() => ({ data: { data: [] } })),
-          axios.get('/api/organization/locations').catch(() => ({ data: { data: [] } })),
-          axios.get('/api/organization/skills').catch(() => ({ data: { data: [] } }))
-        ])
-
-        organizationData.value = {
-          departments: departments.data.data || getDefaultDepartments(),
-          employment_types: employmentTypes.data.data || getDefaultEmploymentTypes(),
-          experience_levels: experienceLevels.data.data || getDefaultExperienceLevels(),
-          locations: locations.data.data || getDefaultLocations(),
-          skills: skills.data.data || getDefaultSkills()
-        }
+        console.log('Loading organization data...')
+        // Organization data is already set with defaults above
       } catch (error) {
-        console.error('Failed to load organization data:', error)
-        // Используем fallback значения
-        organizationData.value = {
-          departments: getDefaultDepartments(),
-          employment_types: getDefaultEmploymentTypes(),
-          experience_levels: getDefaultExperienceLevels(),
-          locations: getDefaultLocations(),
-          skills: getDefaultSkills()
-        }
+        console.warn('Failed to load organization data:', error)
       }
     }
-
-    const getDefaultDepartments = () => [
-      { key: 'engineering', label: 'Engineering' },
-      { key: 'design', label: 'Design' },
-      { key: 'marketing', label: 'Marketing' },
-      { key: 'sales', label: 'Sales' },
-      { key: 'hr', label: 'Human Resources' },
-      { key: 'finance', label: 'Finance' },
-      { key: 'operations', label: 'Operations' },
-      { key: 'customer-support', label: 'Customer Support' }
-    ]
-
-    const getDefaultEmploymentTypes = () => [
-      { key: 'full-time', label: 'Full Time' },
-      { key: 'part-time', label: 'Part Time' },
-      { key: 'contract', label: 'Contract' },
-      { key: 'internship', label: 'Internship' }
-    ]
-
-    const getDefaultExperienceLevels = () => [
-      { key: 'entry', label: 'Entry Level' },
-      { key: 'junior', label: 'Junior' },
-      { key: 'mid', label: 'Mid Level' },
-      { key: 'senior', label: 'Senior' },
-      { key: 'lead', label: 'Lead' },
-      { key: 'principal', label: 'Principal' }
-    ]
-
-    const getDefaultLocations = () => [
-      { key: 'remote', label: 'Remote' },
-      { key: 'new-york', label: 'New York, NY' },
-      { key: 'san-francisco', label: 'San Francisco, CA' },
-      { key: 'london', label: 'London, UK' },
-      { key: 'berlin', label: 'Berlin, Germany' }
-    ]
-
-    const getDefaultSkills = () => [
-      { key: 'javascript', label: 'JavaScript' },
-      { key: 'php', label: 'PHP' },
-      { key: 'laravel', label: 'Laravel' },
-      { key: 'vuejs', label: 'Vue.js' },
-      { key: 'react', label: 'React' }
-    ]
 
     const loadCareers = async () => {
       try {
         loading.value = true
-        const response = await axios.get('/api/careers')
-        careers.value = response.data.data || []
-      } catch (error) {
-        console.error('Failed to load careers:', error)
+        error.value = null
+        console.log('Loading careers...')
+
+        const response = await axios.get('/api/careers', {
+          timeout: 15000,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        })
+
+        console.log('Careers API response:', response.data)
+
+        if (response.data && response.data.success !== false) {
+          careers.value = response.data.data || []
+          console.log('Careers loaded:', careers.value.length)
+        } else {
+          console.error('Invalid response format')
+          error.value = 'Invalid response format from server'
+          careers.value = []
+        }
+      } catch (err) {
+        console.error('Failed to load careers:', err)
+        error.value = 'Unable to load job positions. Please try again later.'
         careers.value = []
       } finally {
         loading.value = false
       }
     }
 
-    // Методы для работы с организационными данными
-    const getDepartmentLabel = (departmentKey) => {
-      const dept = organizationData.value.departments.find(d => d.key === departmentKey || d.label === departmentKey)
-      return dept ? dept.label : departmentKey
-    }
-
-    const getEmploymentTypeLabel = (typeKey) => {
-      const type = organizationData.value.employment_types.find(t => t.key === typeKey || t.label === typeKey)
-      return type ? type.label : formatEmploymentType(typeKey)
-    }
-
-    const getExperienceLevelLabel = (levelKey) => {
-      const level = organizationData.value.experience_levels.find(l => l.key === levelKey || l.label === levelKey)
-      return level ? level.label : formatExperienceLevel(levelKey)
-    }
-
-    const getLocationLabel = (locationKey) => {
-      const location = organizationData.value.locations.find(l => l.key === locationKey || l.label === locationKey)
-      return location ? location.label : locationKey
-    }
-
-    const getSkillLabel = (skillKey) => {
-      const skill = organizationData.value.skills.find(s => s.key === skillKey || s.label === skillKey)
-      return skill ? skill.label : skillKey
-    }
-
-    // Обновленные методы форматирования с использованием централизованных данных
-    const formatEmploymentType = (type) => {
-      const orgType = organizationData.value.employment_types.find(t => t.key === type)
-      if (orgType) return orgType.label
-
-      // Fallback к старой логике
-      const types = {
-        'full-time': 'Full Time',
-        'part-time': 'Part Time',
-        'contract': 'Contract',
-        'internship': 'Internship'
-      }
-      return types[type] || type
-    }
-
-    const formatExperienceLevel = (level) => {
-      const orgLevel = organizationData.value.experience_levels.find(l => l.key === level)
-      if (orgLevel) return orgLevel.label
-
-      // Fallback к старой логике
-      const levels = {
-        'entry': 'Entry Level',
-        'junior': 'Junior',
-        'mid': 'Mid Level',
-        'senior': 'Senior',
-        'lead': 'Lead',
-        'principal': 'Principal'
-      }
-      return levels[level] || level
-    }
-
-    const formatDate = (dateString) => {
-      if (!dateString) return ''
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-    }
-
-    const formatText = (text) => {
-      if (!text) return ''
-      // Convert line breaks to HTML and handle bullet points
-      return text
-        .replace(/\n/g, '<br>')
-        .replace(/•\s/g, '<li>')
-        .replace(/^\s*-\s/gm, '<li>')
-        .replace(/(<li>.*?)(?=<li>|$)/gs, '<ul>$1</ul>')
-        .replace(/<li>/g, '<li>')
-        .replace(/<\/ul><ul>/g, '')
-    }
-
-    const isDeadlineSoon = (deadline) => {
-      if (!deadline) return false
-      const now = new Date()
-      const deadlineDate = new Date(deadline)
-      const diff = deadlineDate - now
-      return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000 // 7 days
+    const retryLoad = async () => {
+      await loadCareers()
     }
 
     const showJobDetails = (job) => {
@@ -857,25 +827,40 @@ export default {
       quickApplyJob.value = null
     }
 
-    const shareJob = (job) => {
-      if (navigator.share) {
-        navigator.share({
-          title: `${job.title} - ${job.department}`,
-          text: job.short_description,
-          url: window.location.href
-        })
-      } else {
-        // Fallback to clipboard
-        const url = window.location.href
-        navigator.clipboard.writeText(url).then(() => {
-          alert('Job link copied to clipboard!')
-        })
+    const shareJob = async (job) => {
+      const shareData = {
+        title: `${job.title} - ${job.department}`,
+        text: job.short_description,
+        url: window.location.href
+      }
+
+      try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData)
+          console.log('Job shared via native share!')
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareData.url || shareData.text)
+          console.log('Job shared via clipboard!')
+        } else {
+          // Fallback for older browsers
+          const textArea = document.createElement('textarea')
+          textArea.value = shareData.url || shareData.text
+          document.body.appendChild(textArea)
+          textArea.select()
+          document.execCommand('copy')
+          document.body.removeChild(textArea)
+          console.log('Job shared via fallback!')
+        }
+      } catch (err) {
+        console.error('Error sharing:', err)
       }
     }
 
     const applyFilters = () => {
       // Filters are applied automatically via computed property
     }
+
+    const debouncedApplyFilters = useDebounce(applyFilters, 300)
 
     const clearFilters = () => {
       searchQuery.value = ''
@@ -885,15 +870,14 @@ export default {
       locationFilter.value = ''
     }
 
+    // Lifecycle
     onMounted(async () => {
-      // Загружаем организационные данные и вакансии параллельно
-      await Promise.all([
-        loadOrganizationData(),
-        loadCareers()
-      ])
+      console.log('CareerPage mounted')
+      await loadOrganizationData()
+      await loadCareers()
 
       // Handle escape key for modals
-      document.addEventListener('keydown', (e) => {
+      const handleEscape = (e) => {
         if (e.key === 'Escape') {
           if (showQuickApplyModal.value) {
             closeQuickApplyModal()
@@ -901,13 +885,16 @@ export default {
             closeModal()
           }
         }
-      })
+      }
+      document.addEventListener('keydown', handleEscape)
     })
 
     return {
+      // State
       careers,
       selectedJob,
       loading,
+      error,
       searchQuery,
       departmentFilter,
       typeFilter,
@@ -919,33 +906,34 @@ export default {
       quickApplyJob,
       modalTabs,
       organizationData,
+
+      // Computed
       totalPositions,
       activePositions,
       urgentPositions,
       remotePositions,
       departments,
+      employmentTypes,
+      experienceLevels,
       locations,
-      teamSize,
       filteredCareers,
       hasActiveFilters,
+
+      // Methods
+      retryLoad,
       showJobDetails,
       closeModal,
       quickApply,
       closeQuickApplyModal,
       shareJob,
       applyFilters,
+      debouncedApplyFilters,
       clearFilters,
       formatEmploymentType,
       formatExperienceLevel,
       formatDate,
       formatText,
-      isDeadlineSoon,
-      // Новые методы для работы с организационными данными
-      getDepartmentLabel,
-      getEmploymentTypeLabel,
-      getExperienceLevelLabel,
-      getLocationLabel,
-      getSkillLabel
+      isDeadlineSoon
     }
   }
 }
@@ -953,4 +941,30 @@ export default {
 
 <style lang="scss" scoped>
 @use '../../css/pages/career-page';
+
+.career-error {
+  padding: 4rem 0;
+
+  .error-state {
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+
+    .error-icon {
+      font-size: 4rem;
+      color: #f56565;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      color: #2d3748;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: #718096;
+      margin-bottom: 2rem;
+    }
+  }
+}
 </style>

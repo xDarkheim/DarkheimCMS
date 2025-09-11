@@ -276,6 +276,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { adminApiService } from '../admin-services/adminApi'
+import { useNotifications } from '../composables/useNotifications'
+
+const { showSuccess, showError, showWarning } = useNotifications()
 
 const news = ref({ data: [], current_page: 1, last_page: 1 })
 const showModal = ref(false)
@@ -318,7 +321,7 @@ const loadNews = async (page = 1) => {
     })
 
     if (!token) {
-      error.value = 'No authentication token found. Please log in again.'
+      showError('No authentication token found. Please log in again.')
       return
     }
 
@@ -348,21 +351,21 @@ const loadNews = async (page = 1) => {
       data: err.response?.data
     })
 
-    error.value = 'Failed to load news articles'
-
     // Show user-friendly error based on status
     if (err.response?.status === 401) {
-      error.value = 'Authentication required. Please log in again.'
+      showError('Authentication required. Please log in again.')
       // Автоматически перенаправляем на страницу входа
       setTimeout(() => {
         window.location.href = '/admin/login'
       }, 2000)
     } else if (err.response?.status === 403) {
-      error.value = 'Access denied. You do not have permission to view news.'
+      showError('Access denied. You do not have permission to view news.')
     } else if (err.response?.status === 500) {
-      error.value = 'Server error. Please try again later.'
+      showError('Server error. Please try again later.')
     } else if (err.response?.status === 404) {
-      error.value = 'News API endpoint not found.'
+      showError('News API endpoint not found.')
+    } else {
+      showError('Failed to load news articles')
     }
   } finally {
     loading.value = false
@@ -376,6 +379,7 @@ const loadCategories = async () => {
     console.log('Loaded categories:', categories.value)
   } catch (error) {
     console.error('Failed to load categories:', error)
+    showWarning('Failed to load categories. Using default categories.')
     categories.value = {}
   }
 }
@@ -429,18 +433,16 @@ const saveArticle = async () => {
     let response
     if (editingArticle.value) {
       response = await adminApiService.updateNews(editingArticle.value.id, formData)
+      showSuccess('Article updated successfully!')
     } else {
       response = await adminApiService.createNews(formData)
+      showSuccess('Article created successfully!')
     }
 
     console.log('Save response:', response.data)
 
     closeModal()
     await loadNews(news.value.current_page)
-
-    // Show success message
-    const action = editingArticle.value ? 'updated' : 'created'
-    alert(`Article ${action} successfully!`)
 
   } catch (err) {
     console.error('Failed to save article:', err)
@@ -450,10 +452,13 @@ const saveArticle = async () => {
       const errors = err.response.data.errors
       const errorMessages = Object.values(errors).flat()
       error.value = errorMessages.join(', ')
+      showError(`Validation error: ${errorMessages.join(', ')}`)
     } else if (err.response?.data?.message) {
       error.value = err.response.data.message
+      showError(err.response.data.message)
     } else {
       error.value = 'Failed to save article. Please check your input and try again.'
+      showError('Failed to save article. Please check your input and try again.')
     }
   } finally {
     saving.value = false
@@ -480,18 +485,16 @@ const saveDraft = async () => {
     let response
     if (editingArticle.value) {
       response = await adminApiService.updateNews(editingArticle.value.id, formData)
+      showSuccess('Article updated as draft successfully!')
     } else {
       response = await adminApiService.createNews(formData)
+      showSuccess('Article created as draft successfully!')
     }
 
     console.log('Save draft response:', response.data)
 
     closeModal()
     await loadNews(news.value.current_page)
-
-    // Show success message
-    const action = editingArticle.value ? 'updated' : 'created'
-    alert(`Article ${action} as draft successfully!`)
 
   } catch (err) {
     console.error('Failed to save draft:', err)
@@ -501,10 +504,13 @@ const saveDraft = async () => {
       const errors = err.response.data.errors
       const errorMessages = Object.values(errors).flat()
       error.value = errorMessages.join(', ')
+      showError(`Validation error: ${errorMessages.join(', ')}`)
     } else if (err.response?.data?.message) {
       error.value = err.response.data.message
+      showError(err.response.data.message)
     } else {
       error.value = 'Failed to save draft. Please check your input and try again.'
+      showError('Failed to save draft. Please check your input and try again.')
     }
   } finally {
     saving.value = false
@@ -515,11 +521,11 @@ const deleteArticle = async (article) => {
   if (confirm(`Are you sure you want to delete "${article.title}"? This action cannot be undone.`)) {
     try {
       await adminApiService.deleteNews(article.id)
-      await loadNews(news.value.current_page)
-      alert('Article deleted successfully!')
+      showSuccess(`Article "${article.title}" deleted successfully`)
+      loadNews(news.value.current_page)
     } catch (error) {
       console.error('Failed to delete article:', error)
-      alert('Failed to delete article. Please try again.')
+      showError('Failed to delete article. Please try again.')
     }
   }
 }

@@ -395,6 +395,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { adminApiService } from '../admin-services/adminApi'
+import { useNotifications } from '../composables/useNotifications'
+
+const { showSuccess, showError, showWarning } = useNotifications()
 
 const portfolios = ref({ data: [], current_page: 1, last_page: 1 })
 const categories = ref([])
@@ -443,6 +446,7 @@ const loadProjects = async (page = 1) => {
     const user = await adminApiService.validateToken()
     if (!user) {
       isAuthenticated.value = false
+      showError('Authentication required. Please log in again.')
       return
     }
 
@@ -455,6 +459,9 @@ const loadProjects = async (page = 1) => {
     console.error('Failed to load projects:', error)
     if (error.response?.status === 401) {
       isAuthenticated.value = false
+      showError('Authentication required. Please log in again.')
+    } else {
+      showError('Failed to load portfolio projects. Please try again.')
     }
   }
 }
@@ -483,6 +490,7 @@ const loadCategories = async () => {
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
+    showWarning('Failed to load categories. Using fallback categories.')
     // Fallback: extract unique categories from existing projects
     const uniqueCategories = [...new Set(portfolios.value.data?.map(p => p.portfolio_category?.name || p.category).filter(Boolean))]
     categories.value = uniqueCategories.map((name, index) => ({
@@ -597,144 +605,36 @@ const saveProject = async () => {
     saving.value = true
     error.value = ''
 
-    // Находим выбранную категорию для получения её slug
-    const selectedCategory = categories.value.find(cat => cat.id == form.value.portfolio_category_id)
-
-    // Подготавливаем данные для отправки с правильной обработкой всех типов
-    const cleanedForm = {
-      ...form.value,
-      // ВАЖНО: поле category должно содержать slug категории, а не ID
-      category: selectedCategory ? selectedCategory.slug : '',
-      // Очищаем пустые изображения галереи
-      gallery_images: form.value.gallery_images.filter(img => img && img.trim()),
-      // Убеждаемся что массив технологий корректно обработан
-      technologies: Array.isArray(form.value.technologies) ? form.value.technologies : [],
-      // Правильно обрабатываем числовые значения
-      sort_order: Number(form.value.sort_order) || 0,
-      portfolio_category_id: form.value.portfolio_category_id || null,
-      // Обрабатываем булевы значения
-      is_featured: Boolean(form.value.is_featured),
-      is_published: Boolean(form.value.is_published),
-      // Обрабатываем дату - если пустая, отправляем null
-      completed_at: form.value.completed_at || null
-    }
-
-    // Удаляем пустые строковые поля для более чистых данных
-    Object.keys(cleanedForm).forEach(key => {
-      if (typeof cleanedForm[key] === 'string' && cleanedForm[key].trim() === '') {
-        cleanedForm[key] = null
-      }
-    })
-
-    console.log('Sending cleaned form data:', cleanedForm)
-
     if (editingProject.value) {
-      await adminApiService.updatePortfolio(editingProject.value.id, cleanedForm)
+      await adminApiService.updatePortfolio(editingProject.value.id, form.value)
+      showSuccess('Project updated successfully!')
     } else {
-      await adminApiService.createPortfolio(cleanedForm)
+      await adminApiService.createPortfolio(form.value)
+      showSuccess('Project created successfully!')
     }
 
     closeModal()
     loadProjects(portfolios.value.current_page)
   } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to save project'
+    showError(err.response?.data?.message || 'Failed to save project')
     console.error('Failed to save project:', err)
-
-    // Более подробная обработка ошибок
-    if (err.response?.data?.errors) {
-      // Если сервер вернул ошибки валидации
-      const validationErrors = err.response.data.errors
-      const errorMessages = Object.values(validationErrors).flat()
-      error.value = errorMessages.join('; ')
-    } else if (err.response?.data?.message) {
-      error.value = err.response.data.message
-    } else if (err.response?.status === 422) {
-      error.value = 'Validation failed. Please check your input data.'
-    } else if (err.response?.status === 401) {
-      error.value = 'Authentication failed. Please log in again.'
-      isAuthenticated.value = false
-    } else {
-      error.value = 'Failed to save project. Please try again.'
-    }
   } finally {
     saving.value = false
   }
 }
 
-const deleteProject = async (project, $event) => {
+const deleteProject = async (project, event) => {
+  event.stopPropagation()
+
   if (confirm(`Are you sure you want to delete "${project.title}"? This action cannot be undone.`)) {
-    let deleteButton = null
-
     try {
-      // Validate authentication before attempting delete
-      const user = await adminApiService.validateToken()
-      if (!user) {
-        alert('Your session has expired. Please log in again.')
-        isAuthenticated.value = false
-        return
-      }
-
-      // Show loading state by disabling the delete button temporarily
-      if ($event && $event.target) {
-        deleteButton = $event.target.closest('button')
-        if (deleteButton) {
-          deleteButton.disabled = true
-          deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'
-        }
-      }
-
-      const response = await adminApiService.deletePortfolio(project.id)
-
-      // Show success message
-      console.log(`Project "${project.title}" deleted successfully`)
-
-      // Reload projects on current page, or go to previous page if current page becomes empty
-      const currentPage = portfolios.value.current_page
-      const projectsOnCurrentPage = portfolios.value.data.length
-
-      if (projectsOnCurrentPage === 1 && currentPage > 1) {
-        // If this was the last project on a page > 1, go to previous page
-        await loadProjects(currentPage - 1)
-      } else {
-        await loadProjects(currentPage)
-      }
-
+      await adminApiService.deletePortfolio(project.id)
+      showSuccess(`Project "${project.title}" deleted successfully`)
+      loadProjects(portfolios.value.current_page)
     } catch (error) {
       console.error('Failed to delete project:', error)
-
-      // Provide more specific error messages
-      let errorMessage = 'Failed to delete project'
-
-      if (error.response?.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
-        isAuthenticated.value = false
-        // Очищаем токены при ошибке аутентификации
-        localStorage.removeItem('admin_token')
-        localStorage.removeItem('admin_user')
-      } else if (error.response?.status === 403) {
-        errorMessage = 'Access denied. You do not have permission to delete this project.'
-      } else if (error.response?.status === 404) {
-        errorMessage = 'Project not found. It may have already been deleted.'
-        // Refresh the list since the item doesn't exist
-        await loadProjects(portfolios.value.current_page)
-      } else if (error.response?.status === 500) {
-        errorMessage = 'Server error occurred while deleting the project. Please try again.'
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error
-      } else if (!navigator.onLine) {
-        errorMessage = 'No internet connection. Please check your network and try again.'
-      } else if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
-        errorMessage = 'Network error. Please check your connection and try again.'
-      }
-
-      alert(errorMessage)
-    } finally {
-      // Re-enable the delete button
-      if (deleteButton) {
-        deleteButton.disabled = false
-        deleteButton.innerHTML = '<i class="fas fa-trash"></i>'
-      }
+      showError('Failed to delete project. Please try again.')
     }
   }
 }

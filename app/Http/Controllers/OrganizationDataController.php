@@ -41,12 +41,27 @@ class OrganizationDataController extends Controller
      */
     public function departments(): JsonResponse
     {
-        $departments = OrganizationData::getDepartments();
+        try {
+            $departments = OrganizationData::getDepartments();
 
-        return response()->json([
-            'success' => true,
-            'data' => $departments
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $departments ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load departments: ' . $e->getMessage());
+
+            // Return default departments as fallback
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'engineering', 'label' => 'Engineering'],
+                    ['key' => 'design', 'label' => 'Design'],
+                    ['key' => 'marketing', 'label' => 'Marketing'],
+                    ['key' => 'sales', 'label' => 'Sales']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -54,12 +69,25 @@ class OrganizationDataController extends Controller
      */
     public function positions(): JsonResponse
     {
-        $positions = OrganizationData::getPositions();
+        try {
+            $positions = OrganizationData::getPositions();
 
-        return response()->json([
-            'success' => true,
-            'data' => $positions
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $positions ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load positions: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'developer', 'label' => 'Developer'],
+                    ['key' => 'designer', 'label' => 'Designer'],
+                    ['key' => 'manager', 'label' => 'Manager']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -67,12 +95,25 @@ class OrganizationDataController extends Controller
      */
     public function skills(): JsonResponse
     {
-        $skills = OrganizationData::getSkills();
+        try {
+            $skills = OrganizationData::getSkills();
 
-        return response()->json([
-            'success' => true,
-            'data' => $skills
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $skills ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load skills: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'javascript', 'label' => 'JavaScript'],
+                    ['key' => 'php', 'label' => 'PHP'],
+                    ['key' => 'laravel', 'label' => 'Laravel']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -80,12 +121,25 @@ class OrganizationDataController extends Controller
      */
     public function employmentTypes(): JsonResponse
     {
-        $types = OrganizationData::getEmploymentTypes();
+        try {
+            $types = OrganizationData::getEmploymentTypes();
 
-        return response()->json([
-            'success' => true,
-            'data' => $types
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $types ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load employment types: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'full-time', 'label' => 'Full Time'],
+                    ['key' => 'part-time', 'label' => 'Part Time'],
+                    ['key' => 'contract', 'label' => 'Contract']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -93,12 +147,25 @@ class OrganizationDataController extends Controller
      */
     public function experienceLevels(): JsonResponse
     {
-        $levels = OrganizationData::getExperienceLevels();
+        try {
+            $levels = OrganizationData::getExperienceLevels();
 
-        return response()->json([
-            'success' => true,
-            'data' => $levels
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $levels ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load experience levels: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'junior', 'label' => 'Junior'],
+                    ['key' => 'mid', 'label' => 'Mid Level'],
+                    ['key' => 'senior', 'label' => 'Senior']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -106,12 +173,24 @@ class OrganizationDataController extends Controller
      */
     public function locations(): JsonResponse
     {
-        $locations = OrganizationData::getLocations();
+        try {
+            $locations = OrganizationData::getLocations();
 
-        return response()->json([
-            'success' => true,
-            'data' => $locations
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $locations ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load locations: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'remote', 'label' => 'Remote'],
+                    ['key' => 'office', 'label' => 'Office']
+                ]
+            ]);
+        }
     }
 
     /**
@@ -119,12 +198,24 @@ class OrganizationDataController extends Controller
      */
     public function statuses(): JsonResponse
     {
-        $statuses = OrganizationData::getStatuses();
+        try {
+            $statuses = OrganizationData::getStatuses();
 
-        return response()->json([
-            'success' => true,
-            'data' => $statuses
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $statuses ?: []
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load statuses: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    ['key' => 'active', 'label' => 'Active'],
+                    ['key' => 'inactive', 'label' => 'Inactive']
+                ]
+            ]);
+        }
     }
 
     /**

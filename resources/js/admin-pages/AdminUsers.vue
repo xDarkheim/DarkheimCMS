@@ -190,6 +190,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { adminApiService } from '../admin-services/adminApi'
+import { useNotifications } from '../composables/useNotifications'
+
+const { showSuccess, showError, showWarning } = useNotifications()
 
 const users = ref({ data: [], current_page: 1, last_page: 1 })
 const showModal = ref(false)
@@ -222,6 +225,7 @@ const loadUsers = async (page = 1) => {
     users.value = response.data
   } catch (error) {
     console.error('Failed to load users:', error)
+    showError('Failed to load users. Please try again.')
   }
 }
 
@@ -252,14 +256,17 @@ const saveUser = async () => {
 
     if (editingUser.value) {
       await adminApiService.updateUser(editingUser.value.id, form.value)
+      showSuccess('User updated successfully!')
     } else {
       await adminApiService.createUser(form.value)
+      showSuccess('User created successfully!')
     }
 
     closeModal()
     loadUsers(users.value.current_page)
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to save user'
+    showError(err.response?.data?.message || 'Failed to save user')
     console.error('Failed to save user:', err)
   } finally {
     saving.value = false
@@ -270,10 +277,11 @@ const deleteUser = async (user) => {
   if (confirm(`Are you sure you want to delete "${user.name}"? This action cannot be undone.`)) {
     try {
       await adminApiService.deleteUser(user.id)
+      showSuccess(`User "${user.name}" deleted successfully`)
       loadUsers(users.value.current_page)
     } catch (error) {
       console.error('Failed to delete user:', error)
-      alert('Failed to delete user')
+      showError('Failed to delete user. Please try again.')
     }
   }
 }
