@@ -1,0 +1,91 @@
+// =====================================================
+// MODERN DESIGN SYSTEM - MAIN SCSS FILE
+// =====================================================
+
+// 1. ABSTRACTS - Variables, mixins, functions (must be first)
+@use 'abstracts/variables';
+@use 'abstracts/mixins';
+
+// 2. BASE - Reset, typography, utilities
+@use 'base/reset';
+@use 'base/utilities';
+@use 'base/typography';
+@use 'base/layout';
+
+// 3. COMPONENTS - Reusable UI components
+@use 'components/buttons';
+@use 'components/cards';
+@use 'components/forms';
+@use 'components/sections';
+@use 'components/search';
+@use 'components/pricing';
+@use 'components/modal';
+@use 'components/team-modal';
+@use 'components/career-modal';
+
+// 4. LAYOUT - Header, footer, navigation
+@use 'layout/header';
+@use 'layout/footer';
+
+// 5. PAGES - Page-specific styles
+@use 'pages/home-page';
+@use 'pages/about-page';
+@use 'pages/services-page';
+@use 'pages/contact-page';
+@use 'pages/portfolio-page';
+@use 'pages/career-page';
+@use 'pages/team-page';
+
+// 6. FONT AWESOME - Using only custom font configuration
+// Note: Removed FontAwesome SCSS imports to avoid conflicting font paths
+// Using only our custom fontawesome.scss with proper font references
+
+// 7. FONT AWESOME FIXES - Using modern @use syntax
+@use 'fontawesome';
+
+// 8. GLOBAL APP STYLES (after all @use rules)
+body {
+  font-family: var(--font-family-sans), serif;
+  line-height: 1.6;
+  color: var(--color-neutral-900);  // Black text
+  background: var(--color-neutral-50);  // White background
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+// Специальный класс для страниц, которые нуждаются в отступе от хедера
+.page-with-header-offset {
+  padding-top: 80px; // Компенсируем высоту фиксированного хедера
+}
+
+// Класс для главной страницы без отступа
+.home-page {
+  .hero-section {
+    // Hero секция на главной занимает весь экран включая область под хедером
+    padding-top: 0;
+  }
+}
+
+// Animation classes for page transitions
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}

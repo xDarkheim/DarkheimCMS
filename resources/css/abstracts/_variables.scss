@@ -1,0 +1,192 @@
+// =====================================================
+// CSS VARIABLES & COLOR SYSTEM
+// =====================================================
+
+:root {
+  // Primary Colors - Rich dark palette with bright accents
+  --color-primary-50: #f8fafc;   // Pure white
+  --color-primary-100: #f1f5f9;  // Off-white
+  --color-primary-200: #e2e8f0;  // Light gray
+  --color-primary-300: #cbd5e1;  // Medium light gray
+  --color-primary-400: #94a3b8;  // Medium gray
+  --color-primary-500: #64748b;  // Neutral gray
+  --color-primary-600: #475569;  // Dark gray
+  --color-primary-700: #334155;  // Darker gray
+  --color-primary-800: #1e293b;  // Very dark gray
+  --color-primary-900: #0f172a;  // Deep dark
+
+  // Secondary Colors - Dark tones with rich accents
+  --color-secondary-50: #ffffff;   // Pure white highlight
+  --color-secondary-100: #f8fafc;  // Off-white
+  --color-secondary-200: #e2e8f0;  // Light accent
+  --color-secondary-300: #cbd5e1;  // Medium light
+  --color-secondary-400: #94a3b8;  // Medium
+  --color-secondary-500: #64748b;  // Neutral
+  --color-secondary-600: #475569;  // Dark
+  --color-secondary-700: #334155;  // Darker
+  --color-secondary-800: #1e293b;  // Very dark
+  --color-secondary-900: #0f172a;  // Deep dark
+
+  // Neutral Colors - Rich dark spectrum
+  --color-neutral-50: #ffffff;   // Pure white
+  --color-neutral-100: #f8fafc;  // Off-white background
+  --color-neutral-200: #e2e8f0;  // Light gray
+  --color-neutral-300: #cbd5e1;  // Medium light gray
+  --color-neutral-400: #94a3b8;  // Medium gray
+  --color-neutral-500: #64748b;  // Neutral gray
+  --color-neutral-600: #475569;  // Dark gray
+  --color-neutral-700: #334155;  // Darker gray
+  --color-neutral-800: #1e293b;  // Very dark gray
+  --color-neutral-900: #0f172a;  // Deep dark
+
+  // Accent Colors - Rich and vibrant
+  --color-accent-blue-50: #eff6ff;
+  --color-accent-blue-500: #3b82f6;
+  --color-accent-blue-600: #2563eb;
+  --color-accent-blue-700: #1d4ed8;
+  --color-accent-blue-900: #1e3a8a;
+
+  --color-accent-purple-50: #faf5ff;
+  --color-accent-purple-500: #8b5cf6;
+  --color-accent-purple-600: #7c3aed;
+  --color-accent-purple-700: #6d28d9;
+  --color-accent-purple-900: #4c1d95;
+
+  --color-accent-emerald-50: #ecfdf5;
+  --color-accent-emerald-500: #10b981;
+  --color-accent-emerald-600: #059669;
+  --color-accent-emerald-700: #047857;
+  --color-accent-emerald-900: #064e3b;
+
+  --color-accent-amber-50: #fffbeb;
+  --color-accent-amber-500: #f59e0b;
+  --color-accent-amber-600: #d97706;
+  --color-accent-amber-700: #b45309;
+  --color-accent-amber-900: #78350f;
+
+  --color-accent-rose-50: #fff1f2;
+  --color-accent-rose-500: #f43f5e;
+  --color-accent-rose-600: #e11d48;
+  --color-accent-rose-700: #be185d;
+  --color-accent-rose-900: #881337;
+
+  // Success Colors - Rich green tones
+  --color-success-50: #ecfdf5;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-900: #064e3b;
+
+  // Warning Colors - Rich amber tones
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-900: #78350f;
+
+  // Error Colors - Rich red tones
+  --color-error-50: #fff1f2;
+  --color-error-500: #f43f5e;
+  --color-error-600: #e11d48;
+  --color-error-700: #be185d;
+  --color-error-900: #881337;
+
+  // Simplified color mappings - Dark theme with rich accents
+  --color-primary: #0f172a;          // Deep dark primary
+  --color-secondary: #ffffff;        // Pure white secondary
+  --color-accent: #8b5cf6;           // Purple accent
+  --color-accent-alt: #3b82f6;       // Blue accent alternative
+  --color-dark: #0f172a;            // Deep dark
+  --color-light: #ffffff;           // Pure white
+  --color-gray: #64748b;            // Medium gray
+  --color-success: #10b981;         // Emerald success
+  --color-bg: #ffffff;              // White background
+  --color-bg-alt: #f8fafc;          // Alternative light background
+  --color-bg-dark: #1e293b;         // Dark background
+  --color-bg-darker: #0f172a;       // Darker background
+
+  // Typography
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'Fira Code', 'Monaco', 'Consolas', monospace;
+
+  // Font Sizes
+  --font-size-xs: 0.75rem;    // 12px
+  --font-size-sm: 0.875rem;   // 14px
+  --font-size-base: 1rem;     // 16px
+  --font-size-lg: 1.125rem;   // 18px
+  --font-size-xl: 1.25rem;    // 20px
+  --font-size-2xl: 1.5rem;    // 24px
+  --font-size-3xl: 1.875rem;  // 30px
+  --font-size-4xl: 2.25rem;   // 36px
+  --font-size-5xl: 3rem;      // 48px
+  --font-size-6xl: 3.75rem;   // 60px
+
+  // Font Weights
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  // Line Heights
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  // Spacing Scale
+  --space-1: 0.25rem;   // 4px
+  --space-2: 0.5rem;    // 8px
+  --space-3: 0.75rem;   // 12px
+  --space-4: 1rem;      // 16px
+  --space-5: 1.25rem;   // 20px
+  --space-6: 1.5rem;    // 24px
+  --space-8: 2rem;      // 32px
+  --space-10: 2.5rem;   // 40px
+  --space-12: 3rem;     // 48px
+  --space-16: 4rem;     // 64px
+  --space-20: 5rem;     // 80px
+  --space-24: 6rem;     // 96px
+
+  // Border Radius
+  --radius-sm: 0.25rem;   // 4px
+  --radius-base: 0.375rem; // 6px
+  --radius-md: 0.5rem;    // 8px
+  --radius-lg: 0.75rem;   // 12px
+  --radius-xl: 1rem;      // 16px
+  --radius-2xl: 1.5rem;   // 24px
+  --radius-full: 9999px;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  // Transitions
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+
+  // Z-Index Scale
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 10000;
+  --z-modal: 10001;
+  --z-popover: 10010;
+  --z-tooltip: 10020;
+  --z-toast: 1080;
+
+  // Container Sizes
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+}

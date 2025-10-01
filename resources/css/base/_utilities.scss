@@ -1,0 +1,282 @@
+// =====================================================
+// UTILITY CLASSES
+// =====================================================
+
+// Animation classes
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
+  animation-play-state: paused;
+}
+
+.animate-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s ease-out forwards;
+  animation-play-state: paused;
+}
+
+// Keyframe animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Enable animations when elements come into view
+.animate-fade-in,
+.animate-slide-up {
+  animation-play-state: running;
+}
+
+// Visibility utilities
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible;
+}
+
+// Text utilities
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// Spacing utilities
+.mt-auto {
+  margin-top: auto;
+}
+
+.mb-auto {
+  margin-bottom: auto;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.mr-auto {
+  margin-right: auto;
+}
+
+// Flex utilities
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+// Background utilities
+.bg-transparent {
+  background-color: transparent;
+}
+
+// Overflow utilities
+.overflow-hidden {
+  overflow: hidden;
+}
+
+// Position utilities
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+// Z-index utilities
+.z-10 {
+  z-index: 10;
+}
+
+.z-20 {
+  z-index: 20;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+// Loading states
+.loading {
+  position: relative;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Color utility classes
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-accent { color: var(--color-accent) !important; }
+.text-accent-alt { color: var(--color-accent-alt) !important; }
+.text-success { color: var(--color-success-500) !important; }
+.text-warning { color: var(--color-warning-500) !important; }
+.text-error { color: var(--color-error-500) !important; }
+.text-light { color: var(--color-light) !important; }
+.text-dark { color: var(--color-primary) !important; }
+
+// Accent text colors
+.text-purple { color: var(--color-accent-purple-500) !important; }
+.text-blue { color: var(--color-accent-blue-500) !important; }
+.text-emerald { color: var(--color-accent-emerald-500) !important; }
+.text-amber { color: var(--color-accent-amber-500) !important; }
+.text-rose { color: var(--color-accent-rose-500) !important; }
+
+// Background utility classes
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-accent { background-color: var(--color-accent) !important; }
+.bg-accent-alt { background-color: var(--color-accent-alt) !important; }
+.bg-success { background-color: var(--color-success-500) !important; }
+.bg-warning { background-color: var(--color-warning-500) !important; }
+.bg-error { background-color: var(--color-error-500) !important; }
+.bg-light { background-color: var(--color-light) !important; }
+.bg-dark { background-color: var(--color-bg-dark) !important; }
+.bg-darker { background-color: var(--color-bg-darker) !important; }
+
+// Accent background colors
+.bg-purple { background-color: var(--color-accent-purple-500) !important; }
+.bg-blue { background-color: var(--color-accent-blue-500) !important; }
+.bg-emerald { background-color: var(--color-accent-emerald-500) !important; }
+.bg-amber { background-color: var(--color-accent-amber-500) !important; }
+.bg-rose { background-color: var(--color-accent-rose-500) !important; }
+
+// Light accent backgrounds
+.bg-purple-light { background-color: var(--color-accent-purple-50) !important; }
+.bg-blue-light { background-color: var(--color-accent-blue-50) !important; }
+.bg-emerald-light { background-color: var(--color-accent-emerald-50) !important; }
+.bg-amber-light { background-color: var(--color-accent-amber-50) !important; }
+.bg-rose-light { background-color: var(--color-accent-rose-50) !important; }
+
+// Border utility classes
+.border-primary { border-color: var(--color-primary) !important; }
+.border-accent { border-color: var(--color-accent) !important; }
+.border-accent-alt { border-color: var(--color-accent-alt) !important; }
+.border-success { border-color: var(--color-success-500) !important; }
+.border-warning { border-color: var(--color-warning-500) !important; }
+.border-error { border-color: var(--color-error-500) !important; }
+
+// Accent border colors
+.border-purple { border-color: var(--color-accent-purple-500) !important; }
+.border-blue { border-color: var(--color-accent-blue-500) !important; }
+.border-emerald { border-color: var(--color-accent-emerald-500) !important; }
+.border-amber { border-color: var(--color-accent-amber-500) !important; }
+.border-rose { border-color: var(--color-accent-rose-500) !important; }
+
+// Gradient utility classes
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-neutral-800) 100%) !important;
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-alt) 100%) !important;
+}
+
+.gradient-rainbow {
+  background: linear-gradient(135deg,
+    var(--color-accent-purple-500) 0%,
+    var(--color-accent-blue-500) 25%,
+    var(--color-accent-emerald-500) 50%,
+    var(--color-accent-amber-500) 75%,
+    var(--color-accent-rose-500) 100%
+  ) !important;
+}
+
+.gradient-dark {
+  background: linear-gradient(135deg, var(--color-bg-darker) 0%, var(--color-bg-dark) 100%) !important;
+}
+
+.gradient-light {
+  background: linear-gradient(135deg, var(--color-neutral-50) 0%, var(--color-neutral-100) 100%) !important;
+}
+
+// Hover effects
+.hover-accent:hover { color: var(--color-accent) !important; }
+.hover-primary:hover { color: var(--color-primary) !important; }
+.hover-lift:hover { transform: translateY(-2px); }
+.hover-lift-lg:hover { transform: translateY(-4px); }

@@ -1,0 +1,119 @@
+// =====================================================
+// LAYOUT & CONTAINER STYLES
+// =====================================================
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+
+  @media (min-width: 640px) {
+    max-width: var(--container-sm);
+  }
+
+  @media (min-width: 768px) {
+    max-width: var(--container-md);
+  }
+
+  @media (min-width: 1024px) {
+    max-width: var(--container-lg);
+    padding: 0 var(--space-8);
+  }
+
+  @media (min-width: 1280px) {
+    max-width: var(--container-xl);
+  }
+
+  @media (min-width: 1536px) {
+    max-width: var(--container-2xl);
+  }
+}
+
+// Section utilities
+.section {
+  padding: var(--space-16) 0;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: var(--space-12) 0;
+  }
+
+  &--light {
+    background: var(--color-neutral-50);
+  }
+
+  &--dark {
+    background: var(--color-neutral-900);
+    color: var(--color-neutral-100);
+
+    .section__title,
+    .section__subtitle {
+      color: var(--color-neutral-100);
+    }
+  }
+
+  &--gradient {
+    background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-600) 100%);
+    color: white;
+
+    .section__title,
+    .section__subtitle {
+      color: white;
+    }
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+
+    @media (max-width: 768px) {
+      margin-bottom: var(--space-8);
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-extrabold);
+    margin-bottom: var(--space-4);
+    color: var(--color-neutral-900);
+
+    @media (max-width: 768px) {
+      font-size: var(--font-size-3xl);
+    }
+  }
+
+  &__subtitle {
+    font-size: var(--font-size-xl);
+    color: var(--color-neutral-600);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: var(--line-height-relaxed);
+
+    @media (max-width: 768px) {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  &__text {
+    font-size: var(--font-size-lg);
+    color: var(--color-neutral-600);
+    line-height: var(--line-height-relaxed);
+
+    @media (max-width: 768px) {
+      font-size: var(--font-size-base);
+    }
+  }
+}
+
+// Utility classes
+.mb-6 {
+  margin-bottom: var(--space-6);
+}
+
+.mb-8 {
+  margin-bottom: var(--space-8);
+}
+
+.mt-12 {
+  margin-top: var(--space-12);
+}

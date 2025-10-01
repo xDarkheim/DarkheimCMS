@@ -1,0 +1,32 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - routes/
+        - database/
+        - tests/
+
+    level: 6
+
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Laravel framework-specific generic types that are complex to specify
+        - '#Method .* return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types#'
+        - '#Method .* has parameter .* with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types#'
+        - '#Method .* return type with generic class Illuminate\\Database\\Eloquent\\Relations\\.* does not specify its types#'
+        - '#Method .* has parameter .* with generic class App\\Models\\.* but does not specify its types#'
+        # PHPUnit assertions that are always true due to known types
+        - '#Call to method PHPUnit\\Framework\\Assert::assert(IsArray|IsBool|True)\(\) with .* will always evaluate to true#'
+        # Factory generic type specifications in test properties
+        - '#Property .* with generic class App\\Models\\.* does not specify its types: TFactory#'
+        # Laravel view function parameter type issue
+        - '#Parameter \#1 \$view of function view expects view-string\|null, string given#'
+
+    excludePaths:
+        - vendor/
+        - storage/
+        - bootstrap/cache/
+        - node_modules/

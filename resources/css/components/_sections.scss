@@ -1,0 +1,313 @@
+// =====================================================
+// SECTION COMPONENTS
+// =====================================================
+
+// Section header styles
+.section__header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+
+  &.text-left {
+    text-align: left;
+  }
+}
+
+.section__title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);  // Black title text
+  margin-bottom: var(--space-4);
+  line-height: var(--line-height-tight);
+
+  @media (max-width: 768px) {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+.section__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-neutral-700);  // Dark gray subtitle
+  line-height: var(--line-height-relaxed);
+  max-width: 600px;
+  margin: 0 auto;
+
+  .text-left & {
+    margin: 0;
+  }
+}
+
+.section__text {
+  font-size: var(--font-size-base);
+  color: var(--color-neutral-700);  // Dark gray text
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-4);
+}
+
+// Grid system
+.grid {
+  display: grid;
+  gap: var(--space-6);
+
+  &--2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  &--3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  &--4 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  @media (max-width: 768px) {
+    &--2,
+    &--3,
+    &--4 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Gap utilities
+.gap-8 {
+  gap: var(--space-8);
+}
+
+.gap-12 {
+  gap: var(--space-12);
+}
+
+// Alignment utilities
+.items-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+// Margin utilities
+.mb-6 {
+  margin-bottom: var(--space-6);
+}
+
+.mb-8 {
+  margin-bottom: var(--space-8);
+}
+
+// Stats components
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-8);
+  text-align: center;
+
+  &__item {
+    padding: var(--space-6);
+    background: var(--color-neutral-50);  // White stats background
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-base);
+    border: 2px solid var(--color-neutral-200);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-primary);  // Black border on hover
+    }
+  }
+
+  &__icon {
+    font-size: 2.5rem;
+    color: var(--color-primary);  // Black icon
+    margin-bottom: var(--space-4);
+  }
+
+  &__number {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);  // Black numbers
+    display: block;
+    line-height: 1;
+    margin-bottom: var(--space-2);
+  }
+
+  &__label {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-700);  // Dark gray label
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Feature cards
+.feature-card {
+  background: var(--color-neutral-50);  // White feature card background
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  transition: var(--transition-base);
+  height: 100%;
+  border: 2px solid var(--color-neutral-200);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);  // Black border on hover
+  }
+
+  &__icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-6);
+    background: var(--color-neutral-100);  // Light gray icon background
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-neutral-200);
+
+    i {
+      font-size: 2rem;
+      color: var(--color-primary);  // Black icon
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);  // Black title text
+    margin-bottom: var(--space-4);
+  }
+
+  &__text {
+    color: var(--color-neutral-700);  // Dark gray text
+    line-height: var(--line-height-relaxed);
+  }
+}
+
+// Basic section styles (these override base/_layout.scss for specific needs)
+.section-override {
+  &--hero {
+    background: linear-gradient(135deg, var(--color-neutral-50) 0%, var(--color-neutral-100) 100%);  // White to light gray gradient
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+  }
+
+  &--hero-dark {
+    background: linear-gradient(135deg, var(--color-bg-darker) 0%, var(--color-bg-dark) 100%);
+    color: var(--color-light);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 10%, rgba(59, 130, 246, 0.25) 0%, transparent 50%);
+      pointer-events: none;
+    }
+  }
+}
+
+// CTA sections
+.cta-section {
+  text-align: center;
+  padding: var(--space-20) 0;
+  background: var(--color-neutral-100);  // Light gray background
+
+  &--dark {
+    background: var(--color-bg-dark);
+    color: var(--color-light);
+  }
+
+  &--accent {
+    background: linear-gradient(135deg, var(--color-accent-purple-900) 0%, var(--color-accent-blue-900) 100%);
+    color: var(--color-light);
+  }
+
+  &--gradient {
+    background: linear-gradient(135deg,
+      var(--color-accent-purple-50) 0%,
+      var(--color-accent-blue-50) 25%,
+      var(--color-accent-emerald-50) 50%,
+      var(--color-accent-amber-50) 75%,
+      var(--color-accent-rose-50) 100%
+    );
+  }
+
+  &__title {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-extrabold);
+    margin-bottom: var(--space-4);
+    color: var(--color-neutral-900);  // Black title text
+
+    .cta-section--dark & {
+      color: var(--color-light);
+    }
+
+    .cta-section--accent & {
+      color: var(--color-light);
+    }
+  }
+
+  &__subtitle {
+    font-size: var(--font-size-xl);
+    color: var(--color-neutral-700);  // Dark gray subtitle
+    margin-bottom: var(--space-8);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+
+    .cta-section--dark & {
+      color: var(--color-neutral-300);
+    }
+
+    .cta-section--accent & {
+      color: var(--color-light);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+// Hero sections
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+
+  &__content {
+    max-width: 800px;
+    margin: 0 auto;
+    z-index: 2;
+    position: relative;
+  }
+}

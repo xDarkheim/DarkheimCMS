@@ -1,0 +1,95 @@
+// =====================================================
+// TYPOGRAPHY STYLES
+// =====================================================
+
+// Base typography
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-neutral-800);
+}
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-neutral-900);
+}
+
+h1 {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-extrabold);
+
+  @media (max-width: 768px) {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+h2 {
+  font-size: var(--font-size-4xl);
+
+  @media (max-width: 768px) {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+h3 {
+  font-size: var(--font-size-3xl);
+
+  @media (max-width: 768px) {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+h4 {
+  font-size: var(--font-size-2xl);
+}
+
+h5 {
+  font-size: var(--font-size-xl);
+}
+
+h6 {
+  font-size: var(--font-size-lg);
+}
+
+// Paragraphs
+p {
+  margin-bottom: var(--space-4);
+  line-height: var(--line-height-relaxed);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Text utilities
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-600) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+// Links
+a {
+  color: var(--color-primary-600);
+  transition: color var(--transition-base);
+
+  &:hover {
+    color: var(--color-primary-700);
+  }
+}
